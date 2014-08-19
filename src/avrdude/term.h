@@ -30,6 +30,8 @@ extern "C" {
 
 int terminal_mode(PROGRAMMER * pgm, struct avrpart * p);
 char * terminal_get_input(const char *prompt);
+int read_eeprom(PROGRAMMER * pgm, struct avrpart * p, int addr, int numBytes);
+int write_eeprom(PROGRAMMER * pgm, struct avrpart * p, int addr, int value);
 
 #ifdef __cplusplus
 }

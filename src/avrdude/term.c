@@ -970,4 +970,45 @@ int terminal_mode(PROGRAMMER * pgm, struct avrpart * p)
   return rc;
 }
 
+int write_eeprom(PROGRAMMER * pgm, struct avrpart * p, int addr, int value)
+{
+	int rc;
+	int     argc;
+	char ** argv;
+	char cmdbuf[256];
+	
+	sprintf(cmdbuf, "write ee %d %d", addr, value);
+	
+	fprintf(stdout, "%s\n", cmdbuf);
+	
+	argc = tokenize(cmdbuf, &argv);
+	rc = do_cmd(pgm, p, argc, argv);
+	free(argv);
+	if (rc > 0) {
+		rc = 0;
+	}
+
+	return rc;
+}
+
+int read_eeprom(PROGRAMMER * pgm, struct avrpart * p, int addr, int numBytes)
+{
+	int rc;
+	int     argc;
+	char ** argv;
+	char cmdbuf[256];
+	
+	sprintf(cmdbuf, "dump ee %d %d", addr, numBytes);
+	
+	fprintf(stdout, "%s\n", cmdbuf);
+	
+	argc = tokenize(cmdbuf, &argv);
+	rc = do_cmd(pgm, p, argc, argv);
+	free(argv);
+	if (rc > 0) {
+		rc = 0;
+	}
+
+	return rc;
+}
 

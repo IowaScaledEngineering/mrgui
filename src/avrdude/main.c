@@ -123,6 +123,8 @@ static void usage(void)
  "  -v                         Verbose output. -v -v for more.\n"
  "  -q                         Quell progress output. -q -q for less.\n"
  "  -l logfile                 Use logfile rather than stderr for diagnostics.\n"
+ "  -W <address>,<value>       Write <value> to EEPROM <address>"
+ "  -R <address>,<bytes>       Read number of <bytes> starting from EEPROM <address>"
  "  -?                         Display this usage.\n"
  "\navrdude version %s, URL: <http://savannah.nongnu.org/projects/avrdude/>\n"
           ,progname, version);
@@ -316,6 +318,9 @@ int main(int argc, char * argv [])
   int     calibrate;   /* 1=calibrate RC oscillator, 0=don't */
   char  * port;        /* device port (/dev/xxx) */
   int     terminal;    /* 1=enter terminal mode, 0=don't */
+  int     read_eep;    /* 1=read eeprom mode, 0=don't */
+  int     write_eep;   /* 1=write eeprom mode, 0=don't */
+  int eep_addr, eep_value;
   int     verify;      /* perform a verify operation */
   char  * exitspecs;   /* exit specs string from command line */
   char  * programmer;  /* programmer id */
@@ -397,6 +402,8 @@ int main(int argc, char * argv [])
   p             = NULL;
   ovsigck       = 0;
   terminal      = 0;
+  write_eep     = 0;
+  read_eep      = 0;
   verify        = 1;        /* on by default */
   quell_progress = 0;
   exitspecs     = NULL;
@@ -453,7 +460,7 @@ int main(int argc, char * argv [])
   /*
    * process command line arguments
    */
-  while ((ch = getopt(argc,argv,"?b:B:c:C:DeE:Fi:l:np:OP:qstU:uvVx:yY:")) != -1) {
+  while ((ch = getopt(argc,argv,"?b:B:c:C:DeE:Fi:l:np:OP:qstU:uvVW:R:x:yY:")) != -1) {
 
     switch (ch) {
       case 'b': /* override default programmer baud rate */
@@ -572,6 +579,22 @@ int main(int argc, char * argv [])
 
       case 'V':
         verify = 0;
+        break;
+
+      case 'R':
+      	// FIXME: Add error checking for argument address and value
+      	eep_addr = strtoul(optarg, &e, 0);
+      	e++;
+      	eep_value = strtoul(e, NULL, 0);
+        read_eep = 1;
+        break;
+
+      case 'W':
+      	// FIXME: Add error checking for argument address and value
+      	eep_addr = strtoul(optarg, &e, 0);
+      	e++;
+      	eep_value = strtoul(e, NULL, 0);
+        write_eep = 1;
         break;
 
       case 'x':
@@ -1201,6 +1224,12 @@ int main(int argc, char * argv [])
      * terminal mode
      */
     exitrc = terminal_mode(pgm, p);
+  }
+  else if (read_eep){
+  	exitrc = read_eeprom(pgm, p, eep_addr, eep_value);
+  }
+  else if (write_eep){
+  	exitrc = write_eeprom(pgm, p, eep_addr, eep_value);
   }
 
   if (!init_ok) {
