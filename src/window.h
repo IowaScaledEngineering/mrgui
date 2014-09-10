@@ -44,18 +44,16 @@ class Window : public QWidget
 public slots:
     void write(void);
     void read(void);
-	void turnoutPolarityText(void);
 	
 public:
     Window();
 
 private:
 	HexSpinBox *nodeAddr, *clockSource;
-	QDoubleSpinBox *updateInterval;
-	QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *maxDeadReckoning, *blinky;
-	QCheckBox *turnoutPolarity0, *turnoutPolarity2;
+	QDoubleSpinBox *updateInterval, *blinky;
+	QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *maxDeadReckoning;
 	QRadioButton *ledPolarityAnode, *ledPolarityCathode;
-	QComboBox *detectorPolarity;
+	QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity;
 	
 	int readByte(int addr);
 	int readWord(int addr);

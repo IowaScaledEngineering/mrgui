@@ -75,7 +75,7 @@ Window::Window()
 	timelock->setSingleStep(1);
 	timelock->setSuffix("s");
 
-	QLabel *debounceLabel = new QLabel(tr("Debounce Time:"));
+	QLabel *debounceLabel = new QLabel(tr("Interlocking:"));
 	debounce = new QSpinBox;
 	debounce->setRange(0, 255);
 	debounce->setSingleStep(1);
@@ -94,22 +94,22 @@ Window::Window()
 	maxDeadReckoning->setSuffix("s");
 
 	QLabel *blinkyLabel = new QLabel(tr("Blink Period:"));
-	blinky = new QSpinBox;
-	blinky->setRange(0, 255);
-	blinky->setSingleStep(1);
+	blinky = new QDoubleSpinBox;
+	blinky->setRange(0, 25.5);
+	blinky->setSingleStep(0.1);
+	blinky->setDecimals(1);
 	blinky->setSuffix("s");
 
-	QLabel *turnoutPolarityLabel = new QLabel(tr("Turnout Polarity:"));
-	QLabel *turnoutPolarity0Label = new QLabel(tr("West"));
-	turnoutPolarity0 = new QCheckBox(tr("Low = Main, High = Siding"));
-	turnoutPolarity0->setChecked(false);
-	connect(turnoutPolarity0, SIGNAL(stateChanged(int)), this, SLOT(turnoutPolarityText()));
-	QLabel *turnoutPolarity2Label = new QLabel(tr("North"));
-	turnoutPolarity2 = new QCheckBox(tr("Low = Main, High = Siding"));
-	turnoutPolarity2->setChecked(false);
-	connect(turnoutPolarity2, SIGNAL(stateChanged(int)), this, SLOT(turnoutPolarityText()));
+	QLabel *turnoutPolarity0Label = new QLabel(tr("West Polarity:"));
+	turnoutPolarity0 = new QComboBox();
+	turnoutPolarity0->addItem(tr("Low = Main, High = Siding"));
+	turnoutPolarity0->addItem(tr("High = Main, Low = Siding"));
+	QLabel *turnoutPolarity2Label = new QLabel(tr("North Polarity:"));
+	turnoutPolarity2 = new QComboBox();
+	turnoutPolarity2->addItem(tr("Low = Main, High = Siding"));
+	turnoutPolarity2->addItem(tr("High = Main, Low = Siding"));
 
-	QLabel *detectorPolarityLabel = new QLabel(tr("Detector Polarity:"));
+	QLabel *detectorPolarityLabel = new QLabel(tr("Polarity:"));
 	detectorPolarity = new QComboBox();
 	detectorPolarity->addItem("High = Train Present");
 	detectorPolarity->addItem("Low = Train Present");
@@ -134,6 +134,10 @@ Window::Window()
 	readButton->setFocusPolicy(Qt::NoFocus);
 	connect(readButton, SIGNAL(clicked()), this, SLOT(read()));
 
+	QPushButton *firmwareButton = new QPushButton(tr("&Update Firmware"));
+	firmwareButton->setFocusPolicy(Qt::NoFocus);
+//	connect(readButton, SIGNAL(clicked()), this, SLOT(read()));
+
 	// Create widget layout
 	QGroupBox *mrbusCommonGroup = new QGroupBox(tr("MRBus Common"));
 	QHBoxLayout *mrbusCommonLayout = new QHBoxLayout;
@@ -145,9 +149,16 @@ Window::Window()
 	mrbusCommonLayout->addStretch(1);  // Add sacrificial stretch space to end
 	mrbusCommonGroup->setLayout(mrbusCommonLayout);
 
+
+
 	QGroupBox *iiabGroup = new QGroupBox(tr("Interlocking-In-A-Box"));
 	QGridLayout *iiabLayout = new QGridLayout;
-	
+
+
+
+	QGroupBox *detectorGroup = new QGroupBox(tr("Detector Configuration"));
+	QGridLayout *detectorLayout = new QGridLayout;
+
 	QHBoxLayout *timeoutLayout = new QHBoxLayout;
 	timeoutLayout->addWidget(timeout0Label);
 	timeoutLayout->addWidget(timeout0);
@@ -160,43 +171,88 @@ Window::Window()
 	timeoutLayout->addSpacing(10);
 	timeoutLayout->addWidget(timeout3Label);
 	timeoutLayout->addWidget(timeout3);
+	timeoutLayout->addSpacing(10);
+	timeoutLayout->addWidget(debounceLabel);
+	timeoutLayout->addWidget(debounce);
 	
+	detectorLayout->addWidget(timeoutLabel, 0, 0);
+	detectorLayout->addLayout(timeoutLayout, 0, 1, Qt::AlignLeft);
+	detectorLayout->addWidget(detectorPolarityLabel, 1, 0);
+	detectorLayout->addWidget(detectorPolarity, 1, 1, Qt::AlignLeft);
+	detectorLayout->setColumnStretch(0, 0);
+	detectorLayout->setColumnStretch(1, 1);
+	detectorGroup->setLayout(detectorLayout);
+
+
+
+	QGroupBox *signalGroup = new QGroupBox(tr("Signal Configuration"));
+	QGridLayout *signalLayout = new QGridLayout;
+
+	QHBoxLayout *ledPolarityLayout = new QHBoxLayout;
+	ledPolarityLayout->addWidget(ledPolarityAnode);
+	ledPolarityLayout->addWidget(ledPolarityCathode);
+
+	signalLayout->addWidget(ledPolarityLabel, 0, 0);
+	signalLayout->addLayout(ledPolarityLayout, 0, 1, Qt::AlignLeft);
+	signalLayout->addWidget(blinkyLabel, 1, 0);
+	signalLayout->addWidget(blinky, 1, 1, Qt::AlignLeft);
+	signalLayout->setColumnStretch(0, 0);
+	signalLayout->setColumnStretch(1, 1);
+	signalGroup->setLayout(signalLayout);
+
+
+
+	QGroupBox *turnoutGroup = new QGroupBox(tr("Turnout Configuration"));
+	QGridLayout *turnoutLayout = new QGridLayout;
+
+	QGridLayout *turnoutPolarityLayout = new QGridLayout;
+	turnoutPolarityLayout->addWidget(turnoutPolarity0Label, 0, 0);
+	turnoutPolarityLayout->addWidget(turnoutPolarity0, 0, 1);
+	turnoutPolarityLayout->addWidget(turnoutPolarity2Label, 1, 0);
+	turnoutPolarityLayout->addWidget(turnoutPolarity2, 1, 1);
+	
+	turnoutLayout->addLayout(turnoutPolarityLayout, 0, 1, Qt::AlignLeft);
+	turnoutLayout->setColumnStretch(0, 0);
+	turnoutLayout->setColumnStretch(1, 1);
+	turnoutGroup->setLayout(turnoutLayout);
+
+
+
+	QGroupBox *miscGroup = new QGroupBox(tr("Miscellaneous Configuration"));
+	QGridLayout *miscLayout = new QGridLayout;
+
+	miscLayout->addWidget(lockoutLabel, 0, 0);
+	miscLayout->addWidget(lockout, 0, 1, Qt::AlignLeft);
+	miscLayout->addWidget(timelockLabel, 1, 0);
+	miscLayout->addWidget(timelock, 1, 1, Qt::AlignLeft);
+	miscLayout->setColumnStretch(0, 0);
+	miscLayout->setColumnStretch(1, 1);
+	miscGroup->setLayout(miscLayout);
+
+
+
+	QGroupBox *scheduleGroup = new QGroupBox(tr("Scheduled Train Configuration"));
+	QGridLayout *scheduleLayout = new QGridLayout;
+
 	QHBoxLayout *clockLayout = new QHBoxLayout;
 	clockLayout->addWidget(clockSourceLabel);
 	clockLayout->addWidget(clockSource);
 	clockLayout->addSpacing(10);
 	clockLayout->addWidget(maxDeadReckoningLabel);
 	clockLayout->addWidget(maxDeadReckoning);
+	scheduleLayout->addWidget(clockLabel, 4, 0);
+	scheduleLayout->addLayout(clockLayout, 4, 1, Qt::AlignLeft);
+	scheduleLayout->setColumnStretch(0, 0);
+	scheduleLayout->setColumnStretch(1, 1);
+	scheduleGroup->setLayout(scheduleLayout);
 
-	QHBoxLayout *turnoutPolarityLayout = new QHBoxLayout;
-	turnoutPolarityLayout->addWidget(turnoutPolarity0Label);
-	turnoutPolarityLayout->addWidget(turnoutPolarity0);
-	turnoutPolarityLayout->addSpacing(10);
-	turnoutPolarityLayout->addWidget(turnoutPolarity2Label);
-	turnoutPolarityLayout->addWidget(turnoutPolarity2);
-	
-	QHBoxLayout *ledPolarityLayout = new QHBoxLayout;
-	ledPolarityLayout->addWidget(ledPolarityAnode);
-	ledPolarityLayout->addWidget(ledPolarityCathode);
 
-	iiabLayout->addWidget(timeoutLabel, 0, 0);
-	iiabLayout->addLayout(timeoutLayout, 0, 1, 1, 2, Qt::AlignLeft);
-	iiabLayout->addWidget(lockoutLabel, 1, 0);
-	iiabLayout->addWidget(lockout, 1, 1, Qt::AlignLeft);
-	iiabLayout->addWidget(timelockLabel, 2, 0);
-	iiabLayout->addWidget(timelock, 2, 1, Qt::AlignLeft);
-	iiabLayout->addWidget(debounceLabel, 3, 0);
-	iiabLayout->addWidget(debounce, 3, 1, Qt::AlignLeft);
-	iiabLayout->addWidget(clockLabel, 4, 0);
-	iiabLayout->addLayout(clockLayout, 4, 1, Qt::AlignLeft);
-	iiabLayout->addWidget(blinkyLabel, 5, 0);
-	iiabLayout->addWidget(blinky, 5, 1, Qt::AlignLeft);
-	iiabLayout->addWidget(detectorPolarityLabel, 6, 0);
-	iiabLayout->addWidget(detectorPolarity, 6, 1, Qt::AlignLeft);
-	iiabLayout->addWidget(turnoutPolarityLabel, 7, 0);
-	iiabLayout->addLayout(turnoutPolarityLayout, 7, 1, Qt::AlignLeft);
-	iiabLayout->addWidget(ledPolarityLabel, 8, 0);
-	iiabLayout->addLayout(ledPolarityLayout, 8, 1, Qt::AlignLeft);
+
+	iiabLayout->addWidget(detectorGroup, 0, 0, 1, 2, Qt::AlignLeft);
+	iiabLayout->addWidget(signalGroup, 1, 0, 1, 2, Qt::AlignLeft);
+	iiabLayout->addWidget(turnoutGroup, 2, 0, 1, 2, Qt::AlignLeft);
+	iiabLayout->addWidget(miscGroup, 3, 0, 1, 2, Qt::AlignLeft);
+	iiabLayout->addWidget(scheduleGroup, 4, 0, 1, 2, Qt::AlignLeft);
 	iiabLayout->setColumnStretch(0, 0);
 	iiabLayout->setColumnStretch(1, 1);
 	iiabGroup->setLayout(iiabLayout);
@@ -205,6 +261,7 @@ Window::Window()
 	QHBoxLayout *buttonsLayout = new QHBoxLayout;
 	buttonsLayout->addWidget(writeButton);
 	buttonsLayout->addWidget(readButton);
+	buttonsLayout->addWidget(firmwareButton);
 	buttonsLayout->addStretch(1);  // Add sacrificial stretch space to end
 	buttonsGroup->setLayout(buttonsLayout);
 
@@ -216,19 +273,6 @@ Window::Window()
 	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; margin-top: 1ex; font-weight: bold;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; padding: 0 3px;}");
 	setLayout(layout);
 	setWindowTitle(tr("MRGui Programmer"));
-}
-
-void Window::turnoutPolarityText(void)
-{
-	if(turnoutPolarity0->isChecked())
-		turnoutPolarity0->setText("High = Main, Low = Diverging");
-	else
-		turnoutPolarity0->setText("Low = Main, High = Diverging");
-
-	if(turnoutPolarity2->isChecked())
-		turnoutPolarity2->setText("High = Main, Low = Diverging");
-	else
-		turnoutPolarity2->setText("Low = Main, High = Diverging");
 }
 
 void Window::write(void)
