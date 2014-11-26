@@ -24,23 +24,10 @@ LICENSE:
 
 #include "window.h"
 #include "hexspinbox.h"
+#include "avr.h"
 
 Window::Window()
 {
-	QLabel *nodeAddrLabel = new QLabel(tr("Node Address:"));
-	nodeAddr = new HexSpinBox;
-	nodeAddr->setValue(0);
-	nodeAddr->setRange(1,254);
-	nodeAddr->setPrefix("0x");
-
-	QLabel *updateIntervalLabel = new QLabel(tr("Update Interval:"));
-	updateInterval = new QDoubleSpinBox;
-	updateInterval->setRange(0.0, 6553.5);
-	updateInterval->setSingleStep(1.0);
-	updateInterval->setDecimals(1);
-	updateInterval->setValue(5.0);
-	updateInterval->setSuffix("s");
-
 	QLabel *timeoutLabel = new QLabel(tr("Timeout:"));
 	QLabel *timeout0Label = new QLabel(tr("West"));
 	QLabel *timeout1Label = new QLabel(tr("East"));
@@ -93,10 +80,6 @@ Window::Window()
 	ledPolarityGroup->addButton(ledPolarityAnode);
 	ledPolarityGroup->addButton(ledPolarityCathode);
 
-//#define EE_INPUT_POLARITY0      0x20
-//#define EE_INPUT_POLARITY1      0x21
-//#define EE_SIGNAL_CONFIG        0x30
-
 	QPushButton *writeButton = new QPushButton(tr("&Write"));
 	writeButton->setFocusPolicy(Qt::NoFocus);
 	connect(writeButton, SIGNAL(clicked()), this, SLOT(write()));
@@ -107,29 +90,10 @@ Window::Window()
 
 	QPushButton *firmwareButton = new QPushButton(tr("&Update Firmware"));
 	firmwareButton->setFocusPolicy(Qt::NoFocus);
-//	connect(readButton, SIGNAL(clicked()), this, SLOT(read()));
 
 	// Create widget layout
-	QGroupBox *mrbusCommonGroup = new QGroupBox(tr("MRBus Common"));
-	QHBoxLayout *mrbusCommonLayout = new QHBoxLayout;
-	mrbusCommonLayout->addWidget(nodeAddrLabel, 0);
-	mrbusCommonLayout->addWidget(nodeAddr, 0);
-	mrbusCommonLayout->addSpacing(10);
-	mrbusCommonLayout->addWidget(updateIntervalLabel, 0);
-	mrbusCommonLayout->addWidget(updateInterval, 0);
-	mrbusCommonLayout->addStretch(1);  // Add sacrificial stretch space to end
-	mrbusCommonGroup->setLayout(mrbusCommonLayout);
-
-
-
-	QGroupBox *iiabGroup = new QGroupBox(tr("Interlocking-In-A-Box"));
-	QGridLayout *iiabLayout = new QGridLayout;
-
-
-
-	QGroupBox *detectorGroup = new QGroupBox(tr("Detector Configuration"));
+	QWidget *detectorPage = new QWidget();
 	QGridLayout *detectorLayout = new QGridLayout;
-
 	QHBoxLayout *timeoutLayout = new QHBoxLayout;
 	timeoutLayout->addWidget(timeout0Label);
 	timeoutLayout->addWidget(timeout0);
@@ -145,18 +109,17 @@ Window::Window()
 	timeoutLayout->addSpacing(10);
 	timeoutLayout->addWidget(debounceLabel);
 	timeoutLayout->addWidget(debounce);
-	
 	detectorLayout->addWidget(timeoutLabel, 0, 0);
 	detectorLayout->addLayout(timeoutLayout, 0, 1, Qt::AlignLeft);
 	detectorLayout->addWidget(detectorPolarityLabel, 1, 0);
 	detectorLayout->addWidget(detectorPolarity, 1, 1, Qt::AlignLeft);
 	detectorLayout->setColumnStretch(0, 0);
 	detectorLayout->setColumnStretch(1, 1);
-	detectorGroup->setLayout(detectorLayout);
+	detectorPage->setLayout(detectorLayout);
 
 
 
-	QGroupBox *signalGroup = new QGroupBox(tr("Signal Configuration"));
+	QWidget *signalPage = new QWidget();
 	QFormLayout *signalLayout = new QFormLayout;
 	QHBoxLayout *ledPolarityLayout = new QHBoxLayout;
 	ledPolarityLayout->addWidget(ledPolarityAnode);
@@ -169,11 +132,11 @@ Window::Window()
 	blinky->setSuffix("s");
 	signalLayout->addRow(tr("Blink Period:"), blinky);
 	signalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-	signalGroup->setLayout(signalLayout);
+	signalPage->setLayout(signalLayout);
 
 
 
-	QGroupBox *turnoutGroup = new QGroupBox(tr("Turnout Configuration"));
+	QWidget *turnoutPage = new QWidget();
 	QFormLayout *turnoutLayout = new QFormLayout;
 	turnoutPolarity0 = new QComboBox();
 	turnoutPolarity0->addItem(tr("Low = Main, High = Siding"));
@@ -184,11 +147,11 @@ Window::Window()
 	turnoutPolarity2->addItem(tr("High = Main, Low = Siding"));
 	turnoutLayout->addRow(tr("North Polarity:"), turnoutPolarity2);
 	turnoutLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-	turnoutGroup->setLayout(turnoutLayout);
+	turnoutPage->setLayout(turnoutLayout);
 
 
 
-	QGroupBox *timingGroup = new QGroupBox(tr("Timing Configuration"));
+	QWidget *timingPage = new QWidget();
 	QFormLayout *timingLayout = new QFormLayout;
 	lockout = new QSpinBox;
 	lockout->setRange(0, 255);
@@ -200,13 +163,13 @@ Window::Window()
 	timelock->setSingleStep(1);
 	timelock->setSuffix("s");
 	timingLayout->addRow(tr("Timelock Time:"), timelock);
-	timingGroup->setLayout(timingLayout);
+	timingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	timingPage->setLayout(timingLayout);
 
 
 
-	QGroupBox *scheduleGroup = new QGroupBox(tr("Scheduled Train Configuration"));
+	QWidget *schedulePage = new QWidget();
 	QGridLayout *scheduleLayout = new QGridLayout;
-
 	QHBoxLayout *clockLayout = new QHBoxLayout;
 	clockLayout->addWidget(clockSourceLabel);
 	clockLayout->addWidget(clockSource);
@@ -217,99 +180,86 @@ Window::Window()
 	scheduleLayout->addLayout(clockLayout, 4, 1, Qt::AlignLeft);
 	scheduleLayout->setColumnStretch(0, 0);
 	scheduleLayout->setColumnStretch(1, 1);
-	scheduleGroup->setLayout(scheduleLayout);
+	schedulePage->setLayout(scheduleLayout);
 
 
 
-	iiabLayout->addWidget(detectorGroup, 0, 0, 1, 2, Qt::AlignLeft);
-	iiabLayout->addWidget(signalGroup, 1, 0, 1, 2, Qt::AlignLeft);
-	iiabLayout->addWidget(turnoutGroup, 2, 0, 1, 2, Qt::AlignLeft);
-	iiabLayout->addWidget(timingGroup, 3, 0, 1, 2, Qt::AlignLeft);
-	iiabLayout->addWidget(scheduleGroup, 4, 0, 1, 2, Qt::AlignLeft);
-	iiabLayout->setColumnStretch(0, 0);
-	iiabLayout->setColumnStretch(1, 1);
-	iiabGroup->setLayout(iiabLayout);
+	QWidget *nodeWidgets = new QWidget();
+	QHBoxLayout *nodeLayout = new QHBoxLayout;
+	QLabel *nodeAddrLabel = new QLabel(tr("Node Address:"));
+	nodeAddr = new HexSpinBox;
+	nodeAddr->setValue(0);
+	nodeAddr->setRange(1,254);
+	nodeAddr->setPrefix("0x");
+	nodeLayout->addWidget(nodeAddrLabel, 0);
+	nodeLayout->addWidget(nodeAddr, 0);
+	nodeLayout->addSpacing(10);
+	QLabel *transmitIntervalLabel = new QLabel(tr("Transmit Interval:"));
+	transmitInterval = new QDoubleSpinBox;
+	transmitInterval->setRange(0.0, 6553.5);
+	transmitInterval->setSingleStep(1.0);
+	transmitInterval->setDecimals(1);
+	transmitInterval->setValue(5.0);
+	transmitInterval->setSuffix("s");
+	nodeLayout->addWidget(transmitIntervalLabel, 0);
+	nodeLayout->addWidget(transmitInterval, 0);
+	nodeLayout->addStretch(1);  // Add sacrificial stretch space to middle
+	nodeLayout->addWidget(readButton);
+	nodeLayout->addWidget(writeButton);
+//	nodeLayout->addWidget(firmwareButton);
+	nodeWidgets->setLayout(nodeLayout);
 
-	QGroupBox *buttonsGroup = new QGroupBox(tr("Actions"));
-	QHBoxLayout *buttonsLayout = new QHBoxLayout;
-	buttonsLayout->addWidget(writeButton);
-	buttonsLayout->addWidget(readButton);
-	buttonsLayout->addWidget(firmwareButton);
-	buttonsLayout->addStretch(1);  // Add sacrificial stretch space to end
-	buttonsGroup->setLayout(buttonsLayout);
+	QTabWidget *iiabTabs = new QTabWidget();
+	iiabTabs->addTab(detectorPage, "Detectors");
+	iiabTabs->addTab(signalPage, "Signals");
+	iiabTabs->addTab(turnoutPage, "Turnouts");
+	iiabTabs->addTab(timingPage, "Timing");
+	iiabTabs->addTab(schedulePage, "Schedules");
+
+	QAction *readAction = new QAction(tr("&Read"), this);
+	QAction *writeAction = new QAction(tr("&Write"), this);
+	QAction *updateAction = new QAction(tr("&Update Firmware..."), this);
+
+	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+	fileMenu->addAction(updateAction);
+
+	QMenu *configMenu = menuBar()->addMenu(tr("&Config"));
+	configMenu->addAction(readAction);
+	connect(readAction, SIGNAL(triggered()), this, SLOT(read()));
+	configMenu->addAction(writeAction);
+	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
 
 	QVBoxLayout *layout = new QVBoxLayout;
-	layout->addWidget(mrbusCommonGroup);
-	layout->addWidget(iiabGroup);
-	layout->addWidget(buttonsGroup);
+	layout->addWidget(iiabTabs);
+	layout->addWidget(nodeWidgets);
 
-	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; margin-top: 1ex; font-weight: bold;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; padding: 0 3px;}");
-	setLayout(layout);
+    QWidget *widget = new QWidget;
+    setCentralWidget(widget);
+	widget->setLayout(layout);
+
 	setWindowTitle(tr("MRGui Programmer"));
 }
 
 void Window::write(void)
 {
-	char buffer[256];
-	int byte;
+	uint8_t data[256];
 
-	sprintf(buffer, "$(/bin/pwd)/avrdude/avrdude -c usbtiny -p atmega328p -W 0,%d", nodeAddr->value());
-	if(system(buffer)) {};
+	data[0] = nodeAddr->value();
+	avrWriteEEPROM(0x00, data, 1);
 
-	printf("value: %f\n", (double)updateInterval->value());
-	byte = (int)((updateInterval->value() * 10) / 256) & 0xFF;
-	printf("byte: %d\n", byte);
-	sprintf(buffer, "$(/bin/pwd)/avrdude/avrdude -c usbtiny -p atmega328p -W 2,%d", byte);
-	if(system(buffer)) {};
-	byte = (int)(updateInterval->value() * 10) & 0xFF;
-	printf("byte: %d\n", byte);
-	sprintf(buffer, "$(/bin/pwd)/avrdude/avrdude -c usbtiny -p atmega328p -W 3,%d", byte);
-	if(system(buffer)) {};
+	data[0] = (int)((transmitInterval->value() * 10) / 256) & 0xFF;
+	data[1] = (int)(transmitInterval->value() * 10) & 0xFF;
+	avrWriteEEPROM(0x02, data, 2);
 }
 
 void Window::read(void)
 {
-	nodeAddr->setValue(readByte(0x00));
-	updateInterval->setValue(readWord(0x02) / 10.0);
-}
+	uint8_t data[256];
 
-int Window::readByte(int addr)
-{
-	FILE *fp;
-	char buffer[256];
-	int value = 0;
+	avrReadEEPROM(0x00, data, 1);
+	nodeAddr->setValue(data[0]);
 
-	sprintf(buffer, "$(/bin/pwd)/avrdude/avrdude -c usbtiny -p atmega328p -R %d,1 | grep ^%04X", addr, addr);
-	printf("%s\n", buffer);
-	fp = popen(buffer, "r");
-	if (fp != NULL)
-	{
-		while (fgets(buffer, sizeof(buffer), fp) != NULL)
-		{
-			sscanf(buffer, "%x %x", &addr, &value);
-		}
-	}
-	fclose(fp);
-	return (value);
-}
-
-int Window::readWord(int addr)
-{
-	FILE *fp;
-	char buffer[256];
-	int value = 0, value2 = 0;
-
-	sprintf(buffer, "$(/bin/pwd)/avrdude/avrdude -c usbtiny -p atmega328p -R %d,2 | grep ^%04X", addr, addr);
-	printf("%s\n", buffer);
-	fp = popen(buffer, "r");
-	if (fp != NULL)
-	{
-		while (fgets(buffer, sizeof(buffer), fp) != NULL)
-		{
-			sscanf(buffer, "%x %x %x", &addr, &value, &value2);
-		}
-	}
-	fclose(fp);
-	return ((value*256)+value2);
+	avrReadEEPROM(0x02, data, 2);
+	transmitInterval->setValue((data[0]*256 + data[1]) / 10.0);
 }
 

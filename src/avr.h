@@ -2,7 +2,7 @@
 Title:    MRGui
 Authors:  Michael Petersen <railfan@drgw.net>
           Nathan D. Holmes <maverick@drgw.net>
-File:     window.h
+File:     avr.h
 License:  GNU General Public License v3
 
 LICENSE:
@@ -20,45 +20,10 @@ LICENSE:
 
 *************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef AVR_H
+#define AVR_H
 
-#include <QWidget>
-#include <QMainWindow>
-#include "hexspinbox.h"
-
-QT_BEGIN_NAMESPACE
-class QDateTimeEdit;
-class QSpinBox;
-class QDoubleSpinBox;
-class QGroupBox;
-class QCheckBox;
-class QRadioButton;
-class QComboBox;
-class QLabel;
-class QMenu;
-QT_END_NAMESPACE
-
-class Window : public QMainWindow
-{
-    Q_OBJECT
-
-public slots:
-    void write(void);
-    void read(void);
-	
-public:
-    Window();
-
-private:
-	HexSpinBox *nodeAddr, *clockSource;
-	QDoubleSpinBox *transmitInterval, *blinky;
-	QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *maxDeadReckoning;
-	QRadioButton *ledPolarityAnode, *ledPolarityCathode;
-	QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity;
-	
-	int readByte(int addr);
-	int readWord(int addr);
-};
+void avrReadEEPROM(int addr, uint8_t *data, int numBytes);
+void avrWriteEEPROM(int addr, uint8_t *data, int numBytes);
 
 #endif
