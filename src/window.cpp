@@ -63,18 +63,6 @@ Window::Window()
 	timeout3->setSingleStep(1);
 	timeout3->setSuffix("s");
 
-	QLabel *lockoutLabel = new QLabel(tr("Lockout Time:"));
-	lockout = new QSpinBox;
-	lockout->setRange(0, 255);
-	lockout->setSingleStep(1);
-	lockout->setSuffix("s");
-
-	QLabel *timelockLabel = new QLabel(tr("Timelock Time:"));
-	timelock = new QSpinBox;
-	timelock->setRange(0, 255);
-	timelock->setSingleStep(1);
-	timelock->setSuffix("s");
-
 	QLabel *debounceLabel = new QLabel(tr("Interlocking:"));
 	debounce = new QSpinBox;
 	debounce->setRange(0, 255);
@@ -93,29 +81,12 @@ Window::Window()
 	maxDeadReckoning->setSingleStep(1);
 	maxDeadReckoning->setSuffix("s");
 
-	QLabel *blinkyLabel = new QLabel(tr("Blink Period:"));
-	blinky = new QDoubleSpinBox;
-	blinky->setRange(0, 25.5);
-	blinky->setSingleStep(0.1);
-	blinky->setDecimals(1);
-	blinky->setSuffix("s");
-
-	QLabel *turnoutPolarity0Label = new QLabel(tr("West Polarity:"));
-	turnoutPolarity0 = new QComboBox();
-	turnoutPolarity0->addItem(tr("Low = Main, High = Siding"));
-	turnoutPolarity0->addItem(tr("High = Main, Low = Siding"));
-	QLabel *turnoutPolarity2Label = new QLabel(tr("North Polarity:"));
-	turnoutPolarity2 = new QComboBox();
-	turnoutPolarity2->addItem(tr("Low = Main, High = Siding"));
-	turnoutPolarity2->addItem(tr("High = Main, Low = Siding"));
-
 	QLabel *detectorPolarityLabel = new QLabel(tr("Polarity:"));
 	detectorPolarity = new QComboBox();
 	detectorPolarity->addItem("High = Train Present");
 	detectorPolarity->addItem("Low = Train Present");
 
 	QButtonGroup *ledPolarityGroup = new QButtonGroup();
-	QLabel *ledPolarityLabel = new QLabel(tr("LED Polarity:"));
 	ledPolarityAnode = new QRadioButton("Common Anode");
 	ledPolarityAnode->setChecked(true);
 	ledPolarityCathode = new QRadioButton("Common Cathode");
@@ -186,48 +157,50 @@ Window::Window()
 
 
 	QGroupBox *signalGroup = new QGroupBox(tr("Signal Configuration"));
-	QGridLayout *signalLayout = new QGridLayout;
-
+	QFormLayout *signalLayout = new QFormLayout;
 	QHBoxLayout *ledPolarityLayout = new QHBoxLayout;
 	ledPolarityLayout->addWidget(ledPolarityAnode);
 	ledPolarityLayout->addWidget(ledPolarityCathode);
-
-	signalLayout->addWidget(ledPolarityLabel, 0, 0);
-	signalLayout->addLayout(ledPolarityLayout, 0, 1, Qt::AlignLeft);
-	signalLayout->addWidget(blinkyLabel, 1, 0);
-	signalLayout->addWidget(blinky, 1, 1, Qt::AlignLeft);
-	signalLayout->setColumnStretch(0, 0);
-	signalLayout->setColumnStretch(1, 1);
+	signalLayout->addRow(tr("LED Polarity:"), ledPolarityLayout);
+	blinky = new QDoubleSpinBox;
+	blinky->setRange(0, 25.5);
+	blinky->setSingleStep(0.1);
+	blinky->setDecimals(1);
+	blinky->setSuffix("s");
+	signalLayout->addRow(tr("Blink Period:"), blinky);
+	signalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	signalGroup->setLayout(signalLayout);
 
 
 
 	QGroupBox *turnoutGroup = new QGroupBox(tr("Turnout Configuration"));
-	QGridLayout *turnoutLayout = new QGridLayout;
-
-	QGridLayout *turnoutPolarityLayout = new QGridLayout;
-	turnoutPolarityLayout->addWidget(turnoutPolarity0Label, 0, 0);
-	turnoutPolarityLayout->addWidget(turnoutPolarity0, 0, 1);
-	turnoutPolarityLayout->addWidget(turnoutPolarity2Label, 1, 0);
-	turnoutPolarityLayout->addWidget(turnoutPolarity2, 1, 1);
-	
-	turnoutLayout->addLayout(turnoutPolarityLayout, 0, 1, Qt::AlignLeft);
-	turnoutLayout->setColumnStretch(0, 0);
-	turnoutLayout->setColumnStretch(1, 1);
+	QFormLayout *turnoutLayout = new QFormLayout;
+	turnoutPolarity0 = new QComboBox();
+	turnoutPolarity0->addItem(tr("Low = Main, High = Siding"));
+	turnoutPolarity0->addItem(tr("High = Main, Low = Siding"));
+	turnoutLayout->addRow(tr("West Polarity:"), turnoutPolarity0);
+	turnoutPolarity2 = new QComboBox();
+	turnoutPolarity2->addItem(tr("Low = Main, High = Siding"));
+	turnoutPolarity2->addItem(tr("High = Main, Low = Siding"));
+	turnoutLayout->addRow(tr("North Polarity:"), turnoutPolarity2);
+	turnoutLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	turnoutGroup->setLayout(turnoutLayout);
 
 
 
-	QGroupBox *miscGroup = new QGroupBox(tr("Miscellaneous Configuration"));
-	QGridLayout *miscLayout = new QGridLayout;
-
-	miscLayout->addWidget(lockoutLabel, 0, 0);
-	miscLayout->addWidget(lockout, 0, 1, Qt::AlignLeft);
-	miscLayout->addWidget(timelockLabel, 1, 0);
-	miscLayout->addWidget(timelock, 1, 1, Qt::AlignLeft);
-	miscLayout->setColumnStretch(0, 0);
-	miscLayout->setColumnStretch(1, 1);
-	miscGroup->setLayout(miscLayout);
+	QGroupBox *timingGroup = new QGroupBox(tr("Timing Configuration"));
+	QFormLayout *timingLayout = new QFormLayout;
+	lockout = new QSpinBox;
+	lockout->setRange(0, 255);
+	lockout->setSingleStep(1);
+	lockout->setSuffix("s");
+	timingLayout->addRow(tr("Lockout Time:"), lockout);
+	timelock = new QSpinBox;
+	timelock->setRange(0, 255);
+	timelock->setSingleStep(1);
+	timelock->setSuffix("s");
+	timingLayout->addRow(tr("Timelock Time:"), timelock);
+	timingGroup->setLayout(timingLayout);
 
 
 
@@ -251,7 +224,7 @@ Window::Window()
 	iiabLayout->addWidget(detectorGroup, 0, 0, 1, 2, Qt::AlignLeft);
 	iiabLayout->addWidget(signalGroup, 1, 0, 1, 2, Qt::AlignLeft);
 	iiabLayout->addWidget(turnoutGroup, 2, 0, 1, 2, Qt::AlignLeft);
-	iiabLayout->addWidget(miscGroup, 3, 0, 1, 2, Qt::AlignLeft);
+	iiabLayout->addWidget(timingGroup, 3, 0, 1, 2, Qt::AlignLeft);
 	iiabLayout->addWidget(scheduleGroup, 4, 0, 1, 2, Qt::AlignLeft);
 	iiabLayout->setColumnStretch(0, 0);
 	iiabLayout->setColumnStretch(1, 1);
