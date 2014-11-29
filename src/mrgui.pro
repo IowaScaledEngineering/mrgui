@@ -9,5 +9,5 @@ INCLUDEPATH += .
 QT += widgets
 
 # Input
-HEADERS += hexspinbox.h window.h
-SOURCES += hexspinbox.cpp main.cpp window.cpp
+HEADERS += hexspinbox.h window.h avr.h
+SOURCES += hexspinbox.cpp main.cpp window.cpp avr.cpp

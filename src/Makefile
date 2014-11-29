@@ -47,13 +47,15 @@ OBJECTS_DIR   = ./
 
 SOURCES       = hexspinbox.cpp \
 		main.cpp \
-		window.cpp moc_hexspinbox.cpp \
-		moc_window.cpp avr.cpp
+		window.cpp \
+		avr.cpp moc_hexspinbox.cpp \
+		moc_window.cpp
 OBJECTS       = hexspinbox.o \
 		main.o \
 		window.o \
+		avr.o \
 		moc_hexspinbox.o \
-		moc_window.o avr.o
+		moc_window.o
 DIST          = /home/railfan/Qt5.3.1/5.3/gcc_64/mkspecs/features/spec_pre.prf \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/mkspecs/common/shell-unix.conf \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/mkspecs/common/unix.conf \
@@ -163,7 +165,8 @@ DIST          = /home/railfan/Qt5.3.1/5.3/gcc_64/mkspecs/features/spec_pre.prf \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/mkspecs/features/lex.prf \
 		mrgui.pro hexspinbox.cpp \
 		main.cpp \
-		window.cpp
+		window.cpp \
+		avr.cpp
 QMAKE_TARGET  = mrgui
 DESTDIR       = #avoid trailing-slash linebreak
 TARGET        = mrgui
@@ -426,7 +429,7 @@ qmake_all: FORCE
 
 dist: 
 	@test -d .tmp/mrgui1.0.0 || mkdir -p .tmp/mrgui1.0.0
-	$(COPY_FILE) --parents $(DIST) .tmp/mrgui1.0.0/ && $(COPY_FILE) --parents hexspinbox.h window.h .tmp/mrgui1.0.0/ && $(COPY_FILE) --parents hexspinbox.cpp main.cpp window.cpp .tmp/mrgui1.0.0/ && (cd `dirname .tmp/mrgui1.0.0` && $(TAR) mrgui1.0.0.tar mrgui1.0.0 && $(COMPRESS) mrgui1.0.0.tar) && $(MOVE) `dirname .tmp/mrgui1.0.0`/mrgui1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/mrgui1.0.0
+	$(COPY_FILE) --parents $(DIST) .tmp/mrgui1.0.0/ && $(COPY_FILE) --parents hexspinbox.h window.h avr.h .tmp/mrgui1.0.0/ && $(COPY_FILE) --parents hexspinbox.cpp main.cpp window.cpp avr.cpp .tmp/mrgui1.0.0/ && (cd `dirname .tmp/mrgui1.0.0` && $(TAR) mrgui1.0.0.tar mrgui1.0.0 && $(COMPRESS) mrgui1.0.0.tar) && $(MOVE) `dirname .tmp/mrgui1.0.0`/mrgui1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/mrgui1.0.0
 
 
 clean:compiler_clean 
@@ -659,6 +662,10 @@ moc_window.cpp: /home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QWidget \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtCore/qfiledevice.h \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtGui/qvector2d.h \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtGui/qtouchdevice.h \
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QMainWindow \
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/qmainwindow.h \
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/qtabwidget.h \
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtGui/qicon.h \
 		hexspinbox.h \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QSpinBox \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/qspinbox.h \
@@ -1091,6 +1098,10 @@ main.o: main.cpp /home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QApplication
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtGui/qinputmethod.h \
 		window.h \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QWidget \
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QMainWindow \
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/qmainwindow.h \
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/qtabwidget.h \
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtGui/qicon.h \
 		hexspinbox.h \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QSpinBox \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/qspinbox.h \
@@ -1530,9 +1541,14 @@ window.o: window.cpp /home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QtWidget
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/qtwidgetsversion.h \
 		window.h \
 		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QWidget \
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QMainWindow \
 		hexspinbox.h \
-		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QSpinBox
+		/home/railfan/Qt5.3.1/5.3/gcc_64/include/QtWidgets/QSpinBox \
+		avr.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o window.o window.cpp
+
+avr.o: avr.cpp avr.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o avr.o avr.cpp
 
 moc_hexspinbox.o: moc_hexspinbox.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_hexspinbox.o moc_hexspinbox.cpp
