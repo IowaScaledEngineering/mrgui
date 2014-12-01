@@ -49,13 +49,14 @@ void avrReadEEPROM(int addr, uint8_t *data, int numBytes)
 
 	for(i=0; i<numBytes; i++)
 	{
-		sprintf(buffer, "$(/bin/pwd)/avrdude/avrdude -c usbtiny -p atmega328p -R %d,1 | grep ^%04X", addr, addr);
+		sprintf(buffer, "$(/bin/pwd)/avrdude/avrdude -c usbtiny -p atmega328p -R %d,1 | grep -i ^%04X", addr, addr);
 		printf("%s\n", buffer);
 		fp = popen(buffer, "r");
 		if (fp != NULL)
 		{
 			while (fgets(buffer, sizeof(buffer), fp) != NULL)
 			{
+				printf("%s\n", buffer);
 				sscanf(buffer, "%*x %x", &value);
 				*(data+i) = value;
 			}

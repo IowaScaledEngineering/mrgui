@@ -52,8 +52,8 @@ public:
 
 private:
 	HexSpinBox *nodeAddr, *clockSource;
-	QDoubleSpinBox *transmitInterval, *blinky;
-	QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *maxDeadReckoning;
+	QDoubleSpinBox *transmitInterval, *blinky, *maxDeadReckoning;
+	QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *simTrainWindow;
 	QRadioButton *ledPolarityAnode, *ledPolarityCathode;
 	QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity;
 	

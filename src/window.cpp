@@ -22,6 +22,8 @@ LICENSE:
 
 #include <QtWidgets>
 
+#include "../../../../mrbus/mrb-iiab/src/mrb-iiab-eeprom.h"
+#include "../../../../mrbus/mrbus2/src/mrbus-constants.h"
 #include "window.h"
 #include "hexspinbox.h"
 #include "avr.h"
@@ -56,22 +58,10 @@ Window::Window()
 	debounce->setSingleStep(1);
 	debounce->setSuffix("s");
 
-	QLabel *clockLabel = new QLabel(tr("Fast Clock:"));
-	QLabel *clockSourceLabel = new QLabel(tr("Address"));
-	clockSource = new HexSpinBox;
-	clockSource->setValue(0);
-	clockSource->setPrefix("0x");
-
-	QLabel *maxDeadReckoningLabel = new QLabel(tr("Timeout"));
-	maxDeadReckoning = new QSpinBox;
-	maxDeadReckoning->setRange(0, 255);
-	maxDeadReckoning->setSingleStep(1);
-	maxDeadReckoning->setSuffix("s");
-
 	QLabel *detectorPolarityLabel = new QLabel(tr("Polarity:"));
 	detectorPolarity = new QComboBox();
-	detectorPolarity->addItem("High = Train Present");
-	detectorPolarity->addItem("Low = Train Present");
+	detectorPolarity->addItem("High = Train Present",1);
+	detectorPolarity->addItem("Low = Train Present",0);
 
 	QButtonGroup *ledPolarityGroup = new QButtonGroup();
 	ledPolarityAnode = new QRadioButton("Common Anode");
@@ -169,17 +159,24 @@ Window::Window()
 
 
 	QWidget *schedulePage = new QWidget();
-	QGridLayout *scheduleLayout = new QGridLayout;
-	QHBoxLayout *clockLayout = new QHBoxLayout;
-	clockLayout->addWidget(clockSourceLabel);
-	clockLayout->addWidget(clockSource);
-	clockLayout->addSpacing(10);
-	clockLayout->addWidget(maxDeadReckoningLabel);
-	clockLayout->addWidget(maxDeadReckoning);
-	scheduleLayout->addWidget(clockLabel, 4, 0);
-	scheduleLayout->addLayout(clockLayout, 4, 1, Qt::AlignLeft);
-	scheduleLayout->setColumnStretch(0, 0);
-	scheduleLayout->setColumnStretch(1, 1);
+	QFormLayout *scheduleLayout = new QFormLayout;
+	clockSource = new HexSpinBox;
+	clockSource->setValue(0);
+	clockSource->setPrefix("0x");
+	scheduleLayout->addRow(tr("Fast Clock Address:"), clockSource);
+	maxDeadReckoning = new QDoubleSpinBox;
+	maxDeadReckoning->setRange(0.0, 25.5);
+	maxDeadReckoning->setSingleStep(1.0);
+	maxDeadReckoning->setDecimals(1);
+	maxDeadReckoning->setValue(5.0);
+	maxDeadReckoning->setSuffix("s");
+	scheduleLayout->addRow(tr("Fast Clock Timeout:"), maxDeadReckoning);
+	simTrainWindow = new QSpinBox;
+	simTrainWindow->setRange(0, 255);
+	simTrainWindow->setSingleStep(1);
+	simTrainWindow->setSuffix("min");
+	scheduleLayout->addRow(tr("Trigger Window:"), simTrainWindow);
+	scheduleLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	schedulePage->setLayout(scheduleLayout);
 
 
@@ -216,18 +213,20 @@ Window::Window()
 	iiabTabs->addTab(timingPage, "Timing");
 	iiabTabs->addTab(schedulePage, "Schedules");
 
-	QAction *readAction = new QAction(tr("&Read"), this);
-	QAction *writeAction = new QAction(tr("&Write"), this);
+	QAction *openAction = new QAction(tr("&Open..."), this);
+	QAction *readAction = new QAction(tr("&Read EEPROM"), this);
+	QAction *writeAction = new QAction(tr("&Write EEPROM"), this);
 	QAction *updateAction = new QAction(tr("&Update Firmware..."), this);
 
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-	fileMenu->addAction(updateAction);
+	fileMenu->addAction(openAction);
 
-	QMenu *configMenu = menuBar()->addMenu(tr("&Config"));
+	QMenu *configMenu = menuBar()->addMenu(tr("&Program"));
 	configMenu->addAction(readAction);
 	connect(readAction, SIGNAL(triggered()), this, SLOT(read()));
 	configMenu->addAction(writeAction);
 	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
+	configMenu->addAction(updateAction);
 
 	QVBoxLayout *layout = new QVBoxLayout;
 	layout->addWidget(iiabTabs);
@@ -250,16 +249,107 @@ void Window::write(void)
 	data[0] = (int)((transmitInterval->value() * 10) / 256) & 0xFF;
 	data[1] = (int)(transmitInterval->value() * 10) & 0xFF;
 	avrWriteEEPROM(0x02, data, 2);
+
+	data[0] = timeout0->value();
+	data[1] = timeout1->value();
+	data[2] = timeout2->value();
+	data[3] = timeout3->value();
+	avrWriteEEPROM(EE_TIMEOUT_SECONDS, data, 4);
+
+	data[0] = lockout->value();
+	avrWriteEEPROM(EE_LOCKOUT_SECONDS, data, 1);
+
+	data[0] = timelock->value();
+	avrWriteEEPROM(EE_TIMELOCK_SECONDS, data, 1);
+
+	data[0] = debounce->value();
+	avrWriteEEPROM(EE_DEBOUNCE_SECONDS, data, 1);
+
+	data[0] = clockSource->value();
+	avrWriteEEPROM(EE_CLOCK_SOURCE_ADDRESS, data, 1);
+
+	data[0] = maxDeadReckoning->value() * 10;
+	avrWriteEEPROM(EE_MAX_DEAD_RECKONING, data, 1);
+
+	data[0] = simTrainWindow->value();
+	avrWriteEEPROM(EE_SIM_TRAIN_WINDOW, data, 1);
+
+	data[0] = blinky->value() * 10;
+	avrWriteEEPROM(EE_BLINKY_DECISECS, data, 1);
+
+	//FIXME: Add polarity0 write
 }
 
 void Window::read(void)
 {
 	uint8_t data[256];
+	int index;
 
-	avrReadEEPROM(0x00, data, 1);
+	avrReadEEPROM(MRBUS_EE_DEVICE_ADDR, data, 1);
 	nodeAddr->setValue(data[0]);
 
-	avrReadEEPROM(0x02, data, 2);
+	avrReadEEPROM(MRBUS_EE_DEVICE_UPDATE_H, &data[0], 1);
+	avrReadEEPROM(MRBUS_EE_DEVICE_UPDATE_L, &data[1], 1);
 	transmitInterval->setValue((data[0]*256 + data[1]) / 10.0);
+
+	avrReadEEPROM(EE_TIMEOUT_SECONDS, data, 4);
+	timeout0->setValue(data[0]);
+	timeout1->setValue(data[1]);
+	timeout2->setValue(data[2]);
+	timeout3->setValue(data[3]);
+
+	avrReadEEPROM(EE_LOCKOUT_SECONDS, data, 1);
+	lockout->setValue(data[0]);
+
+	avrReadEEPROM(EE_TIMELOCK_SECONDS, data, 1);
+	timelock->setValue(data[0]);
+
+	avrReadEEPROM(EE_DEBOUNCE_SECONDS, data, 1);
+	debounce->setValue(data[0]);
+
+	avrReadEEPROM(EE_CLOCK_SOURCE_ADDRESS, data, 1);
+	clockSource->setValue(data[0]);
+
+	avrReadEEPROM(EE_MAX_DEAD_RECKONING, data, 1);
+	maxDeadReckoning->setValue(data[0] / 10.0);
+
+	avrReadEEPROM(EE_SIM_TRAIN_WINDOW, data, 1);
+	simTrainWindow->setValue(data[0]);
+
+	avrReadEEPROM(EE_BLINKY_DECISECS, data, 1);
+	blinky->setValue(data[0] / 10.0);
+
+	avrReadEEPROM(EE_INPUT_POLARITY0, data, 1);
+	switch(data[0] & 0x7F)
+	{
+		case 0x7F:
+			index = detectorPolarity->findData(1);
+			break;
+		case 0x00:
+			index = detectorPolarity->findData(0);
+			break;
+		default:
+			index = -1;
+			break;
+	}
+	if(-1 != index)
+		detectorPolarity->setCurrentIndex(index);
+	else
+	{
+		// FIXME: Handle mixed cases
+	}
 }
+
+/*
+#define EE_INPUT_POLARITY0      0x20
+#define EE_INPUT_POLARITY1      0x21
+#define EE_OUTPUT_POLARITY0     0x22
+#define EE_OUTPUT_POLARITY1     0x23
+#define EE_OUTPUT_POLARITY2     0x24
+#define EE_OUTPUT_POLARITY3     0x25
+#define EE_OUTPUT_POLARITY4     0x26
+#define EE_MISC_CONFIG          0x30
+#define EE_SIM_TRAINS           0x40
+*/
+
 
