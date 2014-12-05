@@ -23,11 +23,12 @@ LICENSE:
 #include <QApplication>
 
 #include "window.h"
+#include "node-iiab.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    Window window;
+    Node_IIAB window;
     window.show();
     return app.exec();
 }

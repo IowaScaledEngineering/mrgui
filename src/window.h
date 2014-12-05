@@ -27,12 +27,18 @@ LICENSE:
 #include <QMainWindow>
 #include "hexspinbox.h"
 
+#define MRBUS_EE_DEVICE_ADDR         0
+#define MRBUS_EE_DEVICE_OPT_FLAGS    1
+#define MRBUS_EE_DEVICE_UPDATE_H     2
+#define MRBUS_EE_DEVICE_UPDATE_L     3
+
 QT_BEGIN_NAMESPACE
 class QDateTimeEdit;
 class QSpinBox;
 class QDoubleSpinBox;
 class QGroupBox;
 class QCheckBox;
+class QPushButton;
 class QRadioButton;
 class QComboBox;
 class QLabel;
@@ -43,22 +49,18 @@ class Window : public QMainWindow
 {
     Q_OBJECT
 
-public slots:
-    void write(void);
-    void read(void);
+	public slots:
 	
-public:
-    Window();
-
-private:
-	HexSpinBox *nodeAddr, *clockSource;
-	QDoubleSpinBox *transmitInterval, *blinky, *maxDeadReckoning;
-	QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *simTrainWindow;
-	QRadioButton *ledPolarityAnode, *ledPolarityCathode;
-	QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity;
+	public:
+		Window();
+		QPushButton *writeButton, *readButton, *firmwareButton;
+		QTabWidget *tabWidget;
+		HexSpinBox *nodeAddr;
+		QDoubleSpinBox *transmitInterval;
+		QAction *readAction, *writeAction;
 	
-	int readByte(int addr);
-	int readWord(int addr);
+	private:
 };
 
 #endif
+
