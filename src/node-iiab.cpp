@@ -25,7 +25,6 @@ LICENSE:
 #include "node-iiab.h"
 #include "window.h"
 #include "hexspinbox.h"
-#include "avr.h"
 
 Node_IIAB::Node_IIAB()
 {
@@ -184,103 +183,60 @@ Node_IIAB::Node_IIAB()
 
 void Node_IIAB::write(void)
 {
-	uint8_t data[256];
-
-	data[0] = nodeAddr->value();
-	avrWriteEEPROM(0x00, data, 1);
-
-	data[0] = (int)((transmitInterval->value() * 10) / 256) & 0xFF;
-	data[1] = (int)(transmitInterval->value() * 10) & 0xFF;
-	avrWriteEEPROM(0x02, data, 2);
-
-	data[0] = timeout0->value();
-	data[1] = timeout1->value();
-	data[2] = timeout2->value();
-	data[3] = timeout3->value();
-	avrWriteEEPROM(EE_TIMEOUT_SECONDS, data, 4);
-
-	data[0] = lockout->value();
-	avrWriteEEPROM(EE_LOCKOUT_SECONDS, data, 1);
-
-	data[0] = timelock->value();
-	avrWriteEEPROM(EE_TIMELOCK_SECONDS, data, 1);
-
-	data[0] = debounce->value();
-	avrWriteEEPROM(EE_DEBOUNCE_SECONDS, data, 1);
-
-	data[0] = clockSource->value();
-	avrWriteEEPROM(EE_CLOCK_SOURCE_ADDRESS, data, 1);
-
-	data[0] = maxDeadReckoning->value() * 10;
-	avrWriteEEPROM(EE_MAX_DEAD_RECKONING, data, 1);
-
-	data[0] = simTrainWindow->value();
-	avrWriteEEPROM(EE_SIM_TRAIN_WINDOW, data, 1);
-
-	data[0] = blinky->value() * 10;
-	avrWriteEEPROM(EE_BLINKY_DECISECS, data, 1);
+	eeprom[MRBUS_EE_DEVICE_ADDR] = nodeAddr->value();
+	eeprom[MRBUS_EE_DEVICE_UPDATE_H] = (int)((transmitInterval->value() * 10) / 256) & 0xFF;
+	eeprom[MRBUS_EE_DEVICE_UPDATE_L] = (int)(transmitInterval->value() * 10) & 0xFF;
+	eeprom[EE_TIMEOUT_SECONDS+0] = timeout0->value();
+	eeprom[EE_TIMEOUT_SECONDS+1] = timeout1->value();
+	eeprom[EE_TIMEOUT_SECONDS+2] = timeout2->value();
+	eeprom[EE_TIMEOUT_SECONDS+3] = timeout3->value();
+	eeprom[EE_LOCKOUT_SECONDS] = lockout->value();
+	eeprom[EE_TIMELOCK_SECONDS] = timelock->value();
+	eeprom[EE_DEBOUNCE_SECONDS] = debounce->value();
+	eeprom[EE_CLOCK_SOURCE_ADDRESS] = clockSource->value();
+	eeprom[EE_MAX_DEAD_RECKONING] = maxDeadReckoning->value() * 10;
+	eeprom[EE_SIM_TRAIN_WINDOW] = simTrainWindow->value();
+	eeprom[EE_BLINKY_DECISECS] = blinky->value() * 10;
 
 	//FIXME: Add polarity0 write
 }
 
 void Node_IIAB::read(void)
 {
-	uint8_t data[256];
-	int index;
+	nodeAddr->setValue(eeprom[MRBUS_EE_DEVICE_ADDR]);
+	transmitInterval->setValue((eeprom[MRBUS_EE_DEVICE_UPDATE_H]*256 + eeprom[MRBUS_EE_DEVICE_UPDATE_L]) / 10.0);
+	timeout0->setValue(eeprom[EE_TIMEOUT_SECONDS+0]);
+	timeout1->setValue(eeprom[EE_TIMEOUT_SECONDS+1]);
+	timeout2->setValue(eeprom[EE_TIMEOUT_SECONDS+2]);
+	timeout3->setValue(eeprom[EE_TIMEOUT_SECONDS+3]);
+	lockout->setValue(eeprom[EE_LOCKOUT_SECONDS]);
+	timelock->setValue(eeprom[EE_TIMELOCK_SECONDS]);
+	debounce->setValue(eeprom[EE_DEBOUNCE_SECONDS]);
+	clockSource->setValue(eeprom[EE_CLOCK_SOURCE_ADDRESS]);
+	maxDeadReckoning->setValue(eeprom[EE_MAX_DEAD_RECKONING] / 10.0);
+	simTrainWindow->setValue(eeprom[EE_SIM_TRAIN_WINDOW]);
+	blinky->setValue(eeprom[EE_BLINKY_DECISECS] / 10.0);
 
-	avrReadEEPROM(MRBUS_EE_DEVICE_ADDR, data, 1);
-	nodeAddr->setValue(data[0]);
-
-	avrReadEEPROM(MRBUS_EE_DEVICE_UPDATE_H, &data[0], 1);
-	avrReadEEPROM(MRBUS_EE_DEVICE_UPDATE_L, &data[1], 1);
-	transmitInterval->setValue((data[0]*256 + data[1]) / 10.0);
-
-	avrReadEEPROM(EE_TIMEOUT_SECONDS, data, 4);
-	timeout0->setValue(data[0]);
-	timeout1->setValue(data[1]);
-	timeout2->setValue(data[2]);
-	timeout3->setValue(data[3]);
-
-	avrReadEEPROM(EE_LOCKOUT_SECONDS, data, 1);
-	lockout->setValue(data[0]);
-
-	avrReadEEPROM(EE_TIMELOCK_SECONDS, data, 1);
-	timelock->setValue(data[0]);
-
-	avrReadEEPROM(EE_DEBOUNCE_SECONDS, data, 1);
-	debounce->setValue(data[0]);
-
-	avrReadEEPROM(EE_CLOCK_SOURCE_ADDRESS, data, 1);
-	clockSource->setValue(data[0]);
-
-	avrReadEEPROM(EE_MAX_DEAD_RECKONING, data, 1);
-	maxDeadReckoning->setValue(data[0] / 10.0);
-
-	avrReadEEPROM(EE_SIM_TRAIN_WINDOW, data, 1);
-	simTrainWindow->setValue(data[0]);
-
-	avrReadEEPROM(EE_BLINKY_DECISECS, data, 1);
-	blinky->setValue(data[0] / 10.0);
-
-	avrReadEEPROM(EE_INPUT_POLARITY0, data, 1);
-	switch(data[0] & 0x7F)
-	{
-		case 0x7F:
-			index = detectorPolarity->findData(1);
-			break;
-		case 0x00:
-			index = detectorPolarity->findData(0);
-			break;
-		default:
-			index = -1;
-			break;
-	}
-	if(-1 != index)
-		detectorPolarity->setCurrentIndex(index);
-	else
-	{
-		// FIXME: Handle mixed cases
-	}
+// Fix polarity
+//	avrReadEEPROM(EE_INPUT_POLARITY0, data, 1);
+//	switch(data[0] & 0x7F)
+//	{
+//		case 0x7F:
+//			index = detectorPolarity->findData(1);
+//			break;
+//		case 0x00:
+//			index = detectorPolarity->findData(0);
+//			break;
+//		default:
+//			index = -1;
+//			break;
+//	}
+//	if(-1 != index)
+//		detectorPolarity->setCurrentIndex(index);
+//	else
+//	{
+//		// FIXME: Handle mixed cases
+//	}
 }
 
 /*
