@@ -179,6 +179,12 @@ Node_IIAB::Node_IIAB()
 	connect(writeButton, SIGNAL(clicked()), this, SLOT(write()));
 	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
 
+	// Initialize EEPROM array
+	unsigned int i;
+	for(i=0; i<sizeof(eeprom); i++)
+	{
+		eeprom[i] = 0;
+	}
 }
 
 void Node_IIAB::write(void)
