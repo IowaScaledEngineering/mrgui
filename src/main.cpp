@@ -28,7 +28,16 @@ LICENSE:
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    Node_IIAB window;
-    window.show();
-    return app.exec();
+	
+    NodeDialog nodeDialog;
+	if (QDialog::Accepted == nodeDialog.exec())
+	{
+	    Node_IIAB window;
+	    window.show();
+	    return app.exec();
+	}
+	else
+	{
+		app.quit();
+	}
 }

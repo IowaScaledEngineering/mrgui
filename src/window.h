@@ -24,6 +24,7 @@ LICENSE:
 #define WINDOW_H
 
 #include <QWidget>
+#include <QDialog>
 #include <QMainWindow>
 #include "hexspinbox.h"
 
@@ -43,6 +44,7 @@ class QRadioButton;
 class QComboBox;
 class QLabel;
 class QMenu;
+class QDialog;
 QT_END_NAMESPACE
 
 class Window : public QMainWindow
@@ -53,12 +55,22 @@ class Window : public QMainWindow
 	
 	public:
 		Window();
-		QPushButton *writeButton, *readButton, *firmwareButton;
+		QPushButton *writeButton, *readButton;
 		QTabWidget *tabWidget;
 		HexSpinBox *nodeAddr;
 		QDoubleSpinBox *transmitInterval;
 		QAction *readAction, *writeAction;
 	
+	private:
+};
+
+class NodeDialog : public QDialog
+{
+    Q_OBJECT
+	
+	public:
+		explicit NodeDialog();
+
 	private:
 };
 

@@ -33,8 +33,6 @@ Window::Window()
 	readButton = new QPushButton(tr("&Read"));
 	readButton->setFocusPolicy(Qt::NoFocus);
 
-	firmwareButton = new QPushButton(tr("&Update Firmware"));
-
 	QWidget *nodeWidgets = new QWidget();
 	QHBoxLayout *nodeLayout = new QHBoxLayout;
 	QLabel *nodeAddrLabel = new QLabel(tr("Node Address:"));
@@ -86,5 +84,21 @@ Window::Window()
 	widget->setLayout(layout);
 
 	setWindowTitle(tr("MRGui Programmer"));
+}
+
+
+NodeDialog::NodeDialog()
+{
+	QPushButton *okButton = new QPushButton(tr("&OK"));
+	QPushButton *cancelButton = new QPushButton(tr("&Cancel"));
+	connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
+	connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+
+	QHBoxLayout *layout = new QHBoxLayout;
+	layout->addWidget(okButton);
+	layout->addWidget(cancelButton);
+	
+	setLayout(layout);
+	setWindowTitle(tr("Select Node"));
 }
 
