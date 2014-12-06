@@ -94,9 +94,17 @@ NodeDialog::NodeDialog()
 	connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
 	connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
-	QHBoxLayout *layout = new QHBoxLayout;
-	layout->addWidget(okButton);
-	layout->addWidget(cancelButton);
+	nodeList = new QListWidget();
+	nodeList->addItem(tr("MRB-IIAB"));
+	nodeList->addItem(tr("MRB-ACSW"));
+	nodeList->addItem(tr("MRB-GIM2"));
+	nodeList->sortItems();
+	nodeList->insertItem(0, tr("Generic MRBus"));
+
+	QGridLayout *layout = new QGridLayout;
+	layout->addWidget(nodeList, 0, 0, 1, 2);
+	layout->addWidget(okButton, 1, 0);
+	layout->addWidget(cancelButton, 1, 1);
 	
 	setLayout(layout);
 	setWindowTitle(tr("Select Node"));

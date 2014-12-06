@@ -32,12 +32,27 @@ int main(int argc, char *argv[])
     NodeDialog nodeDialog;
 	if (QDialog::Accepted == nodeDialog.exec())
 	{
-	    Node_IIAB window;
-	    window.show();
-	    return app.exec();
+		QString selectedNode = nodeDialog.nodeList->currentItem()->text();
+		if(!selectedNode.compare("MRB-IIAB"))
+		{
+			Node_IIAB window;
+		    window.show();
+		    return app.exec();
+		}
+		else if(!selectedNode.compare("Generic MRBus"))
+		{
+			Window window;
+		    window.show();
+		    return app.exec();
+		}
+		else
+		{
+			app.quit();
+		}
 	}
 	else
 	{
 		app.quit();
 	}
 }
+

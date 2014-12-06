@@ -25,6 +25,7 @@ LICENSE:
 
 #include <QWidget>
 #include <QDialog>
+#include <QListWidget>
 #include <QMainWindow>
 #include "hexspinbox.h"
 
@@ -45,6 +46,7 @@ class QComboBox;
 class QLabel;
 class QMenu;
 class QDialog;
+class QListWidget;
 QT_END_NAMESPACE
 
 class Window : public QMainWindow
@@ -70,7 +72,8 @@ class NodeDialog : public QDialog
 	
 	public:
 		explicit NodeDialog();
-
+		QListWidget *nodeList;
+		
 	private:
 };
 
