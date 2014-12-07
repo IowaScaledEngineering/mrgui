@@ -65,7 +65,7 @@ class Node_IIAB : public Window
 		QDoubleSpinBox *blinky, *maxDeadReckoning;
 		QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *simTrainWindow;
 		QRadioButton *ledPolarityAnode, *ledPolarityCathode;
-		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8];
+		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8], *interchangePolarity;
 		
 		uint8_t eeprom[1024];
 };

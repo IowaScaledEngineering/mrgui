@@ -91,21 +91,33 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	interlockingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	interlockingGroup->setLayout(interlockingLayout);
 
-	QGroupBox *interchangeGroup = new QGroupBox(tr("Interchange"));
-	QFormLayout *interchangeLayout = new QFormLayout();
-	interchangeLayout->addRow(tr("Polarity:"), detectorPolarity[7]);
-	interchangeLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-	interchangeGroup->setLayout(interchangeLayout);
-
 	QGridLayout *detectorLayout = new QGridLayout;
-	detectorLayout->addWidget(westGroup, 0, 0);
-	detectorLayout->addWidget(eastGroup, 0, 1);
-	detectorLayout->addWidget(northGroup, 1, 0);
-	detectorLayout->addWidget(southGroup, 1, 1);
-	detectorLayout->addWidget(interlockingGroup, 2, 0);
-	detectorLayout->addWidget(interchangeGroup, 2, 1);
+//	detectorLayout->addWidget(westGroup, 0, 0);
+//	detectorLayout->addWidget(eastGroup, 0, 1);
+//	detectorLayout->addWidget(northGroup, 1, 0);
+//	detectorLayout->addWidget(southGroup, 1, 1);
+//	detectorLayout->addWidget(interlockingGroup, 2, 0);
+//	detectorLayout->addWidget(interchangeGroup, 2, 1);
+	detectorLayout->addWidget(westGroup, 1, 0);
+	detectorLayout->addWidget(eastGroup, 1, 2);
+	detectorLayout->addWidget(northGroup, 0, 1);
+	detectorLayout->addWidget(southGroup, 2, 1);
+	detectorLayout->addWidget(interlockingGroup, 1, 1);
 	detectorPage->setLayout(detectorLayout);
-	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; margin-top: 1ex; font-weight: bold;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 3px;}");
+	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; font-weight: bold; margin-top: 1ex; margin-bottom: 1ex;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 3px;}");
+
+
+
+	QWidget *interchangePage = new QWidget();
+	QFormLayout *interchangeLayout = new QFormLayout();
+	interchangeLayout->addRow(tr("Detector Polarity:"), detectorPolarity[7]);
+	interchangePolarity = new QComboBox;
+	interchangePolarity->addItem("High = Track Power Applied",0);
+	interchangePolarity->addItem("Low = Track Power Applied",1);
+	interchangeLayout->addRow(tr("Relay Polarity:"), interchangePolarity);
+	interchangeLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	interchangePage->setLayout(interchangeLayout);
+
 
 
 	QWidget *signalPage = new QWidget();
@@ -187,7 +199,8 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	tabWidget->insertTab(1, signalPage, "Signals");
 	tabWidget->insertTab(2, turnoutPage, "Turnouts");
 	tabWidget->insertTab(3, timingPage, "Timing");
-	tabWidget->insertTab(4, schedulePage, "Schedules");
+	tabWidget->insertTab(4, interchangePage, "Interchange");
+	tabWidget->insertTab(5, schedulePage, "Schedules");
 	tabWidget->setCurrentIndex(0);
 
 
