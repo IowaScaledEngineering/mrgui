@@ -25,6 +25,8 @@ LICENSE:
 Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 {
 	// Create widget layout
+	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; font-weight: bold; margin-top: 1ex; margin-bottom: 1ex;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 3px;}");
+
 	for(int i=0; i<8; i++)
 	{
 		detectorPolarity[i] = new QComboBox;
@@ -92,19 +94,12 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	interlockingGroup->setLayout(interlockingLayout);
 
 	QGridLayout *detectorLayout = new QGridLayout;
-//	detectorLayout->addWidget(westGroup, 0, 0);
-//	detectorLayout->addWidget(eastGroup, 0, 1);
-//	detectorLayout->addWidget(northGroup, 1, 0);
-//	detectorLayout->addWidget(southGroup, 1, 1);
-//	detectorLayout->addWidget(interlockingGroup, 2, 0);
-//	detectorLayout->addWidget(interchangeGroup, 2, 1);
 	detectorLayout->addWidget(westGroup, 1, 0);
 	detectorLayout->addWidget(eastGroup, 1, 2);
 	detectorLayout->addWidget(northGroup, 0, 1);
 	detectorLayout->addWidget(southGroup, 2, 1);
 	detectorLayout->addWidget(interlockingGroup, 1, 1);
 	detectorPage->setLayout(detectorLayout);
-	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; font-weight: bold; margin-top: 1ex; margin-bottom: 1ex;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 3px;}");
 
 
 
@@ -120,22 +115,48 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 
 
 
+	for(int i=0; i<8; i++)
+	{
+		signalPolarity[i] = new QComboBox;
+		signalPolarity[i]->addItem("Common Cathode",0);
+		signalPolarity[i]->addItem("Common Anode",7);
+	}
+
 	QWidget *signalPage = new QWidget();
-	QFormLayout *signalLayout = new QFormLayout;
-	QHBoxLayout *ledPolarityLayout = new QHBoxLayout;
-	ledPolarityAnode = new QRadioButton("Common Anode");
-	ledPolarityAnode->setChecked(true);
-	ledPolarityCathode = new QRadioButton("Common Cathode");
-	ledPolarityLayout->addWidget(ledPolarityAnode);
-	ledPolarityLayout->addWidget(ledPolarityCathode);
-	signalLayout->addRow(tr("LED Polarity:"), ledPolarityLayout);
-	blinky = new QDoubleSpinBox;
-	blinky->setRange(0, 25.5);
-	blinky->setSingleStep(0.1);
-	blinky->setDecimals(1);
-	blinky->setSuffix("s");
-	signalLayout->addRow(tr("Blink Period:"), blinky);
-	signalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+
+	QGroupBox *westSignalGroup = new QGroupBox(tr("West Direction"));
+	QFormLayout *westSignalLayout = new QFormLayout();
+	westSignalLayout->addRow(tr("Polarity (Main):"), signalPolarity[0]);
+	westSignalLayout->addRow(tr("Polarity (Siding):"), signalPolarity[1]);
+	westSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	westSignalGroup->setLayout(westSignalLayout);
+
+	QGroupBox *eastSignalGroup = new QGroupBox(tr("East Direction"));
+	QFormLayout *eastSignalLayout = new QFormLayout();
+	eastSignalLayout->addRow(tr("Polarity (Top):"), signalPolarity[2]);
+	eastSignalLayout->addRow(tr("Polarity (Bottom):"), signalPolarity[3]);
+	eastSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	eastSignalGroup->setLayout(eastSignalLayout);
+
+	QGroupBox *northSignalGroup = new QGroupBox(tr("North Direction"));
+	QFormLayout *northSignalLayout = new QFormLayout();
+	northSignalLayout->addRow(tr("Polarity (Main):"), signalPolarity[4]);
+	northSignalLayout->addRow(tr("Polarity (Siding):"), signalPolarity[5]);
+	northSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	northSignalGroup->setLayout(northSignalLayout);
+
+	QGroupBox *southSignalGroup = new QGroupBox(tr("South Direction"));
+	QFormLayout *southSignalLayout = new QFormLayout();
+	southSignalLayout->addRow(tr("Polarity (Top):"), signalPolarity[6]);
+	southSignalLayout->addRow(tr("Polarity (Bottom):"), signalPolarity[7]);
+	southSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	southSignalGroup->setLayout(southSignalLayout);
+
+	QGridLayout *signalLayout = new QGridLayout;
+	signalLayout->addWidget(westSignalGroup, 1, 0);
+	signalLayout->addWidget(eastSignalGroup, 1, 2);
+	signalLayout->addWidget(northSignalGroup, 0, 1);
+	signalLayout->addWidget(southSignalGroup, 2, 1);
 	signalPage->setLayout(signalLayout);
 
 
