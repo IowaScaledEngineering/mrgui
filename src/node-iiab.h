@@ -49,19 +49,6 @@ LICENSE:
 #define EE_MISC_CONFIG          0x30
 #define EE_SIM_TRAINS           0x40
 
-QT_BEGIN_NAMESPACE
-class QDateTimeEdit;
-class QSpinBox;
-class QDoubleSpinBox;
-class QGroupBox;
-class QCheckBox;
-class QPushButton;
-class QRadioButton;
-class QComboBox;
-class QLabel;
-class QMenu;
-QT_END_NAMESPACE
-
 class Node_IIAB : public Window
 {
     Q_OBJECT
@@ -78,7 +65,7 @@ class Node_IIAB : public Window
 		QDoubleSpinBox *blinky, *maxDeadReckoning;
 		QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *simTrainWindow;
 		QRadioButton *ledPolarityAnode, *ledPolarityCathode;
-		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity;
+		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8];
 		
 		uint8_t eeprom[1024];
 };

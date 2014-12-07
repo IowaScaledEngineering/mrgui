@@ -29,9 +29,9 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 	
-    NodeDialog nodeDialog;
-	if (QDialog::Accepted == nodeDialog.exec())
-	{
+//	NodeDialog nodeDialog;
+//	if (QDialog::Accepted == nodeDialog.exec())
+//	{
 //		QString selectedNode = nodeDialog.nodeList->currentItem()->text();
 //		if(!selectedNode.compare("MRB-IIAB"))
 //		{
@@ -49,10 +49,10 @@ int main(int argc, char *argv[])
 //		{
 //			app.quit();
 //		}
-	}
-	else
-	{
-		app.quit();
-	}
+//	}
+//	else
+//	{
+//		app.quit();
+//	}
 }
 

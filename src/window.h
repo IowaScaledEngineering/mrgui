@@ -33,21 +33,6 @@ LICENSE:
 #define MRBUS_EE_DEVICE_UPDATE_H     2
 #define MRBUS_EE_DEVICE_UPDATE_L     3
 
-QT_BEGIN_NAMESPACE
-class QDateTimeEdit;
-class QSpinBox;
-class QDoubleSpinBox;
-class QGroupBox;
-class QCheckBox;
-class QPushButton;
-class QRadioButton;
-class QComboBox;
-class QLabel;
-class QMenu;
-class QDialog;
-class QListWidget;
-QT_END_NAMESPACE
-
 class Window : public QMainWindow
 {
     Q_OBJECT

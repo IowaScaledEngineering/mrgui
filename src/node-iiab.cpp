@@ -25,66 +25,87 @@ LICENSE:
 Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 {
 	// Create widget layout
-	QWidget *detectorPage = new QWidget();
-	QGridLayout *detectorLayout = new QGridLayout;
-	QHBoxLayout *timeoutLayout = new QHBoxLayout;
-	QLabel *timeoutLabel = new QLabel(tr("Timeout:"));
+	for(int i=0; i<8; i++)
+	{
+		detectorPolarity[i] = new QComboBox;
+		detectorPolarity[i]->addItem("High = Train Present",0);
+		detectorPolarity[i]->addItem("Low = Train Present",1);
+	}
 
-	QLabel *timeout0Label = new QLabel(tr("West"));
+	QWidget *detectorPage = new QWidget();
+
+	QGroupBox *westGroup = new QGroupBox(tr("West Direction"));
+	QFormLayout *westLayout = new QFormLayout();
 	timeout0 = new QSpinBox;
 	timeout0->setRange(0, 255);
 	timeout0->setSingleStep(1);
 	timeout0->setSuffix("s");
-	timeoutLayout->addWidget(timeout0Label);
-	timeoutLayout->addWidget(timeout0);
-	timeoutLayout->addSpacing(10);
+	westLayout->addRow(tr("Timeout:"), timeout0);
+	westLayout->addRow(tr("Polarity (Main):"), detectorPolarity[0]);
+	westLayout->addRow(tr("Polarity (Siding):"), detectorPolarity[1]);
+	westLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	westGroup->setLayout(westLayout);
 
-	QLabel *timeout1Label = new QLabel(tr("East"));
-	timeout1 = new QSpinBox;
-	timeout1->setRange(0, 255);
-	timeout1->setSingleStep(1);
-	timeout1->setSuffix("s");
-	timeoutLayout->addWidget(timeout1Label);
-	timeoutLayout->addWidget(timeout1);
-	timeoutLayout->addSpacing(10);
+	QGroupBox *eastGroup = new QGroupBox(tr("East Direction"));
+	QFormLayout *eastLayout = new QFormLayout();
+	timeout0 = new QSpinBox;
+	timeout0->setRange(0, 255);
+	timeout0->setSingleStep(1);
+	timeout0->setSuffix("s");
+	eastLayout->addRow(tr("Timeout:"), timeout0);
+	eastLayout->addRow(tr("Polarity:"), detectorPolarity[2]);
+	eastLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	eastGroup->setLayout(eastLayout);
 
-	QLabel *timeout2Label = new QLabel(tr("North"));
-	timeout2 = new QSpinBox;
-	timeout2->setRange(0, 255);
-	timeout2->setSingleStep(1);
-	timeout2->setSuffix("s");
-	timeoutLayout->addWidget(timeout2Label);
-	timeoutLayout->addWidget(timeout2);
-	timeoutLayout->addSpacing(10);
+	QGroupBox *northGroup = new QGroupBox(tr("North Direction"));
+	QFormLayout *northLayout = new QFormLayout();
+	timeout0 = new QSpinBox;
+	timeout0->setRange(0, 255);
+	timeout0->setSingleStep(1);
+	timeout0->setSuffix("s");
+	northLayout->addRow(tr("Timeout:"), timeout0);
+	northLayout->addRow(tr("Polarity (Main):"), detectorPolarity[3]);
+	northLayout->addRow(tr("Polarity (Siding):"), detectorPolarity[4]);
+	northLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	northGroup->setLayout(northLayout);
 
-	QLabel *timeout3Label = new QLabel(tr("South"));
-	timeout3 = new QSpinBox;
-	timeout3->setRange(0, 255);
-	timeout3->setSingleStep(1);
-	timeout3->setSuffix("s");
-	timeoutLayout->addWidget(timeout3Label);
-	timeoutLayout->addWidget(timeout3);
-	timeoutLayout->addSpacing(10);
+	QGroupBox *southGroup = new QGroupBox(tr("South Direction"));
+	QFormLayout *southLayout = new QFormLayout();
+	timeout0 = new QSpinBox;
+	timeout0->setRange(0, 255);
+	timeout0->setSingleStep(1);
+	timeout0->setSuffix("s");
+	southLayout->addRow(tr("Timeout:"), timeout0);
+	southLayout->addRow(tr("Polarity:"), detectorPolarity[5]);
+	southLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	southGroup->setLayout(southLayout);
 
-	QLabel *debounceLabel = new QLabel(tr("Interlocking:"));
+	QGroupBox *interlockingGroup = new QGroupBox(tr("Interlocking"));
+	QFormLayout *interlockingLayout = new QFormLayout();
 	debounce = new QSpinBox;
 	debounce->setRange(0, 255);
 	debounce->setSingleStep(1);
 	debounce->setSuffix("s");
-	timeoutLayout->addWidget(debounceLabel);
-	timeoutLayout->addWidget(debounce);
-	detectorLayout->addWidget(timeoutLabel, 0, 0);
-	detectorLayout->addLayout(timeoutLayout, 0, 1, Qt::AlignLeft);
-	QLabel *detectorPolarityLabel = new QLabel(tr("Polarity:"));
-	detectorPolarity = new QComboBox();
-	detectorPolarity->addItem("High = Train Present",1);
-	detectorPolarity->addItem("Low = Train Present",0);
-	detectorLayout->addWidget(detectorPolarityLabel, 1, 0);
-	detectorLayout->addWidget(detectorPolarity, 1, 1, Qt::AlignLeft);
-	detectorLayout->setColumnStretch(0, 0);
-	detectorLayout->setColumnStretch(1, 1);
-	detectorPage->setLayout(detectorLayout);
+	interlockingLayout->addRow(tr("Timeout:"), debounce);
+	interlockingLayout->addRow(tr("Polarity:"), detectorPolarity[6]);
+	interlockingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	interlockingGroup->setLayout(interlockingLayout);
 
+	QGroupBox *interchangeGroup = new QGroupBox(tr("Interchange"));
+	QFormLayout *interchangeLayout = new QFormLayout();
+	interchangeLayout->addRow(tr("Polarity:"), detectorPolarity[7]);
+	interchangeLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	interchangeGroup->setLayout(interchangeLayout);
+
+	QGridLayout *detectorLayout = new QGridLayout;
+	detectorLayout->addWidget(westGroup, 0, 0);
+	detectorLayout->addWidget(eastGroup, 0, 1);
+	detectorLayout->addWidget(northGroup, 1, 0);
+	detectorLayout->addWidget(southGroup, 1, 1);
+	detectorLayout->addWidget(interlockingGroup, 2, 0);
+	detectorLayout->addWidget(interchangeGroup, 2, 1);
+	detectorPage->setLayout(detectorLayout);
+	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; margin-top: 1ex; font-weight: bold;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 3px;}");
 
 
 	QWidget *signalPage = new QWidget();
