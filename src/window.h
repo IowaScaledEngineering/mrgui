@@ -23,10 +23,9 @@ LICENSE:
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QWidget>
-#include <QDialog>
-#include <QListWidget>
-#include <QMainWindow>
+#include <stdint.h>
+
+#include <QtWidgets>
 #include "hexspinbox.h"
 
 #define MRBUS_EE_DEVICE_ADDR         0
@@ -56,13 +55,17 @@ class Window : public QMainWindow
 	public slots:
 	
 	public:
-		Window();
+		Window(const char*, int);
 		QPushButton *writeButton, *readButton;
 		QTabWidget *tabWidget;
 		HexSpinBox *nodeAddr;
 		QDoubleSpinBox *transmitInterval;
 		QAction *readAction, *writeAction;
-	
+		QTableWidget *eepromTable;
+		
+		char avrDevice[16];
+		uint32_t avrEepromSize;
+		
 	private:
 };
 

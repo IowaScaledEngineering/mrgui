@@ -20,13 +20,9 @@ LICENSE:
 
 *************************************************************************/
 
-#include <QtWidgets>
-
 #include "node-iiab.h"
-#include "window.h"
-#include "hexspinbox.h"
 
-Node_IIAB::Node_IIAB()
+Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 {
 	// Create widget layout
 	QWidget *detectorPage = new QWidget();
@@ -166,11 +162,12 @@ Node_IIAB::Node_IIAB()
 
 
 
-	tabWidget->addTab(detectorPage, "Detectors");
-	tabWidget->addTab(signalPage, "Signals");
-	tabWidget->addTab(turnoutPage, "Turnouts");
-	tabWidget->addTab(timingPage, "Timing");
-	tabWidget->addTab(schedulePage, "Schedules");
+	tabWidget->insertTab(0, detectorPage, "Detectors");
+	tabWidget->insertTab(1, signalPage, "Signals");
+	tabWidget->insertTab(2, turnoutPage, "Turnouts");
+	tabWidget->insertTab(3, timingPage, "Timing");
+	tabWidget->insertTab(4, schedulePage, "Schedules");
+	tabWidget->setCurrentIndex(0);
 
 
 	// Connect read/write functions

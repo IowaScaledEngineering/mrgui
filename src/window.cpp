@@ -20,13 +20,13 @@ LICENSE:
 
 *************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
-#include "hexspinbox.h"
 
-Window::Window()
+Window::Window(const char *device, int size)
 {
+	strncpy(avrDevice, device, sizeof(avrDevice));
+	avrEepromSize = size;
+	
 	writeButton = new QPushButton(tr("&Write"));
 	writeButton->setFocusPolicy(Qt::NoFocus);
 
@@ -58,6 +58,27 @@ Window::Window()
 	nodeWidgets->setLayout(nodeLayout);
 
 	tabWidget = new QTabWidget();
+
+	QWidget *eepromPage = new QWidget();
+	uint32_t rows = avrEepromSize / 16;
+	eepromTable = new QTableWidget(rows, 16);
+	eepromTable->horizontalHeader()->setDefaultSectionSize(30);
+	eepromTable->verticalHeader()->setDefaultSectionSize(20);
+	eepromTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+	eepromTable->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+	for(int c = 0; c < 16; c++)
+	{
+		QString header = QString::number(c, 16).toUpper();
+		eepromTable->setHorizontalHeaderItem(c, new QTableWidgetItem(header));
+	}
+	QTableWidgetItem * protoitem = new QTableWidgetItem();
+	protoitem->setTextAlignment(Qt::AlignCenter);
+	eepromTable->setItemPrototype(protoitem);
+
+	QVBoxLayout *eepromLayout = new QVBoxLayout;
+	eepromLayout->addWidget(eepromTable);
+	eepromPage->setLayout(eepromLayout);
+	tabWidget->addTab(eepromPage, "EEPROM");
 
 	QAction *openAction = new QAction(tr("&Open..."), this);
 	QAction *exitAction = new QAction(tr("E&xit"), this);
@@ -99,7 +120,8 @@ NodeDialog::NodeDialog()
 	nodeList->addItem(tr("MRB-ACSW"));
 	nodeList->addItem(tr("MRB-GIM2"));
 	nodeList->sortItems();
-	nodeList->insertItem(0, tr("Generic MRBus"));
+	nodeList->insertItem(0, tr("Generic (ATMega328)"));
+	nodeList->insertItem(1, tr("Generic (ATMega1284)"));
 
 	QGridLayout *layout = new QGridLayout;
 	layout->addWidget(nodeList, 0, 0, 1, 2);

@@ -23,8 +23,12 @@ LICENSE:
 #ifndef NODE_IIAB_H
 #define NODE_IIAB_H
 
-#include <window.h>
 #include <stdint.h>
+
+#include <QtWidgets>
+
+#include "window.h"
+#include "hexspinbox.h"
 
 #define EE_TIMEOUT_SECONDS      0x10
 // 0x10 - 0x13 = 4 sets of timeouts, one for each direction
@@ -67,7 +71,7 @@ class Node_IIAB : public Window
 		void read(void);
 	
 	public:
-		Node_IIAB();
+		Node_IIAB(const char*, int);
 	
 	private:
 		HexSpinBox *clockSource;
