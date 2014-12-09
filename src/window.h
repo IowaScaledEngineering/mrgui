@@ -26,6 +26,7 @@ LICENSE:
 #include <stdint.h>
 
 #include <QtWidgets>
+#include <QDebug>
 #include "hexspinbox.h"
 
 #define MRBUS_EE_DEVICE_ADDR         0
@@ -38,7 +39,8 @@ class Window : public QMainWindow
     Q_OBJECT
 
 	public slots:
-	
+		void tabChanged(void);
+		
 	public:
 		Window(const char*, int);
 		QPushButton *writeButton, *readButton;
@@ -46,12 +48,15 @@ class Window : public QMainWindow
 		HexSpinBox *nodeAddr;
 		QDoubleSpinBox *transmitInterval;
 		QAction *readAction, *writeAction;
-		QTableWidget *eepromTable;
+		QTextEdit *eepromTable;
+		QWidget *eepromPage;
 		
 		char avrDevice[16];
-		uint32_t avrEepromSize;
+		uint32_t eepromSize;
+		uint8_t *eeprom;
 		
 	private:
+		uint8_t eepromTabIndex;
 };
 
 class NodeDialog : public QDialog

@@ -25,7 +25,8 @@ LICENSE:
 Window::Window(const char *device, int size)
 {
 	strncpy(avrDevice, device, sizeof(avrDevice));
-	avrEepromSize = size;
+	eepromSize = size;
+	eeprom = (uint8_t*)malloc(eepromSize);
 	
 	writeButton = new QPushButton(tr("&Write"));
 	writeButton->setFocusPolicy(Qt::NoFocus);
@@ -59,26 +60,14 @@ Window::Window(const char *device, int size)
 
 	tabWidget = new QTabWidget();
 
-	QWidget *eepromPage = new QWidget();
-	uint32_t rows = avrEepromSize / 16;
-	eepromTable = new QTableWidget(rows, 16);
-	eepromTable->horizontalHeader()->setDefaultSectionSize(30);
-	eepromTable->verticalHeader()->setDefaultSectionSize(20);
-	eepromTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-	eepromTable->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-	for(int c = 0; c < 16; c++)
-	{
-		QString header = QString::number(c, 16).toUpper();
-		eepromTable->setHorizontalHeaderItem(c, new QTableWidgetItem(header));
-	}
-	QTableWidgetItem * protoitem = new QTableWidgetItem();
-	protoitem->setTextAlignment(Qt::AlignCenter);
-	eepromTable->setItemPrototype(protoitem);
-
+	eepromPage = new QWidget();
+	QTextEdit *eepromTable = new QTextEdit();
+	eepromTable->setReadOnly(true);
 	QVBoxLayout *eepromLayout = new QVBoxLayout;
 	eepromLayout->addWidget(eepromTable);
 	eepromPage->setLayout(eepromLayout);
 	tabWidget->addTab(eepromPage, "EEPROM");
+	connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChanged()));
 
 	QAction *openAction = new QAction(tr("&Open..."), this);
 	QAction *exitAction = new QAction(tr("E&xit"), this);
@@ -107,6 +96,28 @@ Window::Window(const char *device, int size)
 	setWindowTitle(tr("MRGui Programmer"));
 }
 
+void Window::tabChanged(void)
+{
+	qDebug("blah!\n");
+	if(eepromPage == tabWidget->currentWidget())
+	{
+		qDebug("blah! blah!\n");
+		// update eeprom variable with widget contents
+		uint32_t rows = eepromSize / 16;
+		QString eepromContents = QString();
+		for(uint8_t r = 0; r < rows; r++)
+		{
+			QString line = QString("%1: ").arg(r*16, 4, 16, QChar('0'));
+			for(uint8_t c = 0; c < 16; c++)
+			{
+				line.append(QString("%1 ").arg(eeprom[r*16 + c], 2, 16, QChar('0')));
+			}
+			eepromContents.append(line).append("\n");
+		}
+
+		eepromTable->setText("Blah!");
+	}
+}
 
 NodeDialog::NodeDialog()
 {
@@ -131,4 +142,5 @@ NodeDialog::NodeDialog()
 	setLayout(layout);
 	setWindowTitle(tr("Select Node"));
 }
+
 
