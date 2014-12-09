@@ -61,7 +61,7 @@ Window::Window(const char *device, int size)
 	tabWidget = new QTabWidget();
 
 	eepromPage = new QWidget();
-	QTextEdit *eepromTable = new QTextEdit();
+	eepromTable = new QTextEdit();
 	eepromTable->setReadOnly(true);
 	QVBoxLayout *eepromLayout = new QVBoxLayout;
 	eepromLayout->addWidget(eepromTable);
