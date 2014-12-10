@@ -40,6 +40,7 @@ class Window : public QMainWindow
 
 	public slots:
 		void tabChanged(void);
+		void updateEepromTable(void);
 		
 	public:
 		Window(const char*, int);
@@ -54,6 +55,12 @@ class Window : public QMainWindow
 		char avrDevice[16];
 		uint32_t eepromSize;
 		uint8_t *eeprom;
+		
+		void widgets2eeprom(void);
+		void eeprom2widgets(void);
+
+		virtual void node2eeprom(void) {};
+		virtual void eeprom2node(void) {};
 		
 	private:
 		uint8_t eepromTabIndex;

@@ -59,6 +59,9 @@ class Node_IIAB : public Window
 	
 	public:
 		Node_IIAB(const char*, int);
+		void node2eeprom(void);
+		void eeprom2node(void);
+
 	
 	private:
 		HexSpinBox *clockSource;

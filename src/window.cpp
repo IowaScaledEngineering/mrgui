@@ -27,6 +27,9 @@ Window::Window(const char *device, int size)
 	strncpy(avrDevice, device, sizeof(avrDevice));
 	eepromSize = size;
 	eeprom = (uint8_t*)malloc(eepromSize);
+	// Preset EEPROM
+	for(uint32_t i=0; i<eepromSize; i++)
+		eeprom[i] = 0xFF;
 	
 	writeButton = new QPushButton(tr("&Write"));
 	writeButton->setFocusPolicy(Qt::NoFocus);
@@ -57,12 +60,20 @@ Window::Window(const char *device, int size)
 	nodeLayout->addWidget(readButton);
 	nodeLayout->addWidget(writeButton);
 	nodeWidgets->setLayout(nodeLayout);
+	connect(nodeAddr, SIGNAL(valueChanged(int)), this, SLOT(updateEepromTable()));
+	connect(transmitInterval, SIGNAL(valueChanged(double)), this, SLOT(updateEepromTable()));
 
 	tabWidget = new QTabWidget();
 
 	eepromPage = new QWidget();
 	eepromTable = new QTextEdit();
 	eepromTable->setReadOnly(true);
+	QFont eepromTableFont;
+	eepromTableFont.setFamily("Courier");
+	eepromTableFont.setStyleHint(QFont::Monospace);
+	eepromTableFont.setFixedPitch(true);
+	eepromTableFont.setPointSize(10);
+	eepromTable->setFont(eepromTableFont);
 	QVBoxLayout *eepromLayout = new QVBoxLayout;
 	eepromLayout->addWidget(eepromTable);
 	eepromPage->setLayout(eepromLayout);
@@ -98,25 +109,45 @@ Window::Window(const char *device, int size)
 
 void Window::tabChanged(void)
 {
-	qDebug("blah!\n");
 	if(eepromPage == tabWidget->currentWidget())
 	{
-		qDebug("blah! blah!\n");
-		// update eeprom variable with widget contents
-		uint32_t rows = eepromSize / 16;
-		QString eepromContents = QString();
-		for(uint8_t r = 0; r < rows; r++)
-		{
-			QString line = QString("%1: ").arg(r*16, 4, 16, QChar('0'));
-			for(uint8_t c = 0; c < 16; c++)
-			{
-				line.append(QString("%1 ").arg(eeprom[r*16 + c], 2, 16, QChar('0')));
-			}
-			eepromContents.append(line).append("\n");
-		}
-
-		eepromTable->setText("Blah!");
+		updateEepromTable();
 	}
+}
+
+void Window::updateEepromTable(void)
+{
+	widgets2eeprom();
+	uint32_t rows = eepromSize / 16;
+	QString eepromContents = QString();
+	for(uint8_t r = 0; r < rows; r++)
+	{
+		QString line = QString("%1:  ").arg(r*16, 4, 16, QChar('0'));
+		for(uint8_t c = 0; c < 16; c++)
+		{
+			line.append(QString("%1 ").arg(eeprom[r*16 + c], 2, 16, QChar('0')));
+			if(7 == c)
+				line.append(" ");
+		}
+		eepromContents.append(line).append("\n");
+	}
+	eepromTable->setText(eepromContents);
+}
+
+void Window::widgets2eeprom(void)
+{
+	eeprom[MRBUS_EE_DEVICE_ADDR] = nodeAddr->value();
+	eeprom[MRBUS_EE_DEVICE_UPDATE_H] = (int)((transmitInterval->value() * 10) / 256) & 0xFF;
+	eeprom[MRBUS_EE_DEVICE_UPDATE_L] = (int)(transmitInterval->value() * 10) & 0xFF;
+	this->node2eeprom();
+}
+
+void Window::eeprom2widgets(void)
+{
+	nodeAddr->setValue(eeprom[MRBUS_EE_DEVICE_ADDR]);
+	transmitInterval->setValue((eeprom[MRBUS_EE_DEVICE_UPDATE_H]*256 + eeprom[MRBUS_EE_DEVICE_UPDATE_L]) / 10.0);
+	this->eeprom2node();
+	updateEepromTable();
 }
 
 NodeDialog::NodeDialog()

@@ -50,22 +50,22 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 
 	QGroupBox *eastGroup = new QGroupBox(tr("East Direction"));
 	QFormLayout *eastLayout = new QFormLayout();
-	timeout0 = new QSpinBox;
-	timeout0->setRange(0, 255);
-	timeout0->setSingleStep(1);
-	timeout0->setSuffix("s");
-	eastLayout->addRow(tr("Timeout:"), timeout0);
+	timeout1 = new QSpinBox;
+	timeout1->setRange(0, 255);
+	timeout1->setSingleStep(1);
+	timeout1->setSuffix("s");
+	eastLayout->addRow(tr("Timeout:"), timeout1);
 	eastLayout->addRow(tr("Polarity:"), detectorPolarity[2]);
 	eastLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	eastGroup->setLayout(eastLayout);
 
 	QGroupBox *northGroup = new QGroupBox(tr("North Direction"));
 	QFormLayout *northLayout = new QFormLayout();
-	timeout0 = new QSpinBox;
-	timeout0->setRange(0, 255);
-	timeout0->setSingleStep(1);
-	timeout0->setSuffix("s");
-	northLayout->addRow(tr("Timeout:"), timeout0);
+	timeout2 = new QSpinBox;
+	timeout2->setRange(0, 255);
+	timeout2->setSingleStep(1);
+	timeout2->setSuffix("s");
+	northLayout->addRow(tr("Timeout:"), timeout2);
 	northLayout->addRow(tr("Polarity (Main):"), detectorPolarity[3]);
 	northLayout->addRow(tr("Polarity (Siding):"), detectorPolarity[4]);
 	northLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
@@ -73,11 +73,11 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 
 	QGroupBox *southGroup = new QGroupBox(tr("South Direction"));
 	QFormLayout *southLayout = new QFormLayout();
-	timeout0 = new QSpinBox;
-	timeout0->setRange(0, 255);
-	timeout0->setSingleStep(1);
-	timeout0->setSuffix("s");
-	southLayout->addRow(tr("Timeout:"), timeout0);
+	timeout3 = new QSpinBox;
+	timeout3->setRange(0, 255);
+	timeout3->setSingleStep(1);
+	timeout3->setSuffix("s");
+	southLayout->addRow(tr("Timeout:"), timeout3);
 	southLayout->addRow(tr("Polarity:"), detectorPolarity[5]);
 	southLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	southGroup->setLayout(southLayout);
@@ -151,12 +151,25 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	southSignalLayout->addRow(tr("Polarity (Bottom):"), signalPolarity[7]);
 	southSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	southSignalGroup->setLayout(southSignalLayout);
+	
+	QWidget *blinkyWidget = new QWidget();
+	QFormLayout *blinkyLayout = new QFormLayout();
+	blinky = new QDoubleSpinBox;
+	blinky->setRange(0, 25.5);
+	blinky->setSingleStep(0.1);
+	blinky->setDecimals(1);
+	blinky->setSuffix("s");
+	blinkyLayout->addRow(tr("Blink Time:"), blinky);
+	blinkyLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	blinkyWidget->setLayout(blinkyLayout);
 
 	QGridLayout *signalLayout = new QGridLayout;
 	signalLayout->addWidget(westSignalGroup, 1, 0);
 	signalLayout->addWidget(eastSignalGroup, 1, 2);
 	signalLayout->addWidget(northSignalGroup, 0, 1);
 	signalLayout->addWidget(southSignalGroup, 2, 1);
+	signalLayout->addWidget(blinkyWidget, 1, 1);
+	signalLayout->setAlignment(blinkyWidget, Qt::AlignCenter);
 	signalPage->setLayout(signalLayout);
 
 
@@ -232,11 +245,8 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
 }
 
-void Node_IIAB::write(void)
+void Node_IIAB::node2eeprom(void)
 {
-	eeprom[MRBUS_EE_DEVICE_ADDR] = nodeAddr->value();
-	eeprom[MRBUS_EE_DEVICE_UPDATE_H] = (int)((transmitInterval->value() * 10) / 256) & 0xFF;
-	eeprom[MRBUS_EE_DEVICE_UPDATE_L] = (int)(transmitInterval->value() * 10) & 0xFF;
 	eeprom[EE_TIMEOUT_SECONDS+0] = timeout0->value();
 	eeprom[EE_TIMEOUT_SECONDS+1] = timeout1->value();
 	eeprom[EE_TIMEOUT_SECONDS+2] = timeout2->value();
@@ -248,14 +258,10 @@ void Node_IIAB::write(void)
 	eeprom[EE_MAX_DEAD_RECKONING] = maxDeadReckoning->value() * 10;
 	eeprom[EE_SIM_TRAIN_WINDOW] = simTrainWindow->value();
 	eeprom[EE_BLINKY_DECISECS] = blinky->value() * 10;
-
-	//FIXME: Add polarity0 write
 }
 
-void Node_IIAB::read(void)
+void Node_IIAB::eeprom2node(void)
 {
-	nodeAddr->setValue(eeprom[MRBUS_EE_DEVICE_ADDR]);
-	transmitInterval->setValue((eeprom[MRBUS_EE_DEVICE_UPDATE_H]*256 + eeprom[MRBUS_EE_DEVICE_UPDATE_L]) / 10.0);
 	timeout0->setValue(eeprom[EE_TIMEOUT_SECONDS+0]);
 	timeout1->setValue(eeprom[EE_TIMEOUT_SECONDS+1]);
 	timeout2->setValue(eeprom[EE_TIMEOUT_SECONDS+2]);
@@ -267,27 +273,6 @@ void Node_IIAB::read(void)
 	maxDeadReckoning->setValue(eeprom[EE_MAX_DEAD_RECKONING] / 10.0);
 	simTrainWindow->setValue(eeprom[EE_SIM_TRAIN_WINDOW]);
 	blinky->setValue(eeprom[EE_BLINKY_DECISECS] / 10.0);
-
-// Fix polarity
-//	avrReadEEPROM(EE_INPUT_POLARITY0, data, 1);
-//	switch(data[0] & 0x7F)
-//	{
-//		case 0x7F:
-//			index = detectorPolarity->findData(1);
-//			break;
-//		case 0x00:
-//			index = detectorPolarity->findData(0);
-//			break;
-//		default:
-//			index = -1;
-//			break;
-//	}
-//	if(-1 != index)
-//		detectorPolarity->setCurrentIndex(index);
-//	else
-//	{
-//		// FIXME: Handle mixed cases
-//	}
 }
 
 /*
@@ -301,5 +286,17 @@ void Node_IIAB::read(void)
 #define EE_MISC_CONFIG          0x30
 #define EE_SIM_TRAINS           0x40
 */
+
+void Node_IIAB::write(void)
+{
+	widgets2eeprom();
+	// FIXME: write
+}
+
+void Node_IIAB::read(void)
+{
+	// FIXME: read
+	eeprom2widgets();
+}
 
 
