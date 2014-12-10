@@ -300,7 +300,6 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
 }
 
-
 void Node_IIAB::detectorPolarityUpdated(void)
 {
 	for(int i=0; i<8; i++)
@@ -319,9 +318,12 @@ void Node_IIAB::detectorPolarityUpdated(void)
 
 void Node_IIAB::detectorPolaritySet(void)
 {
+	// Save a copy of the eeprom value since each widget update will trigger a rewrite of the eeprom
+	// This will wipe out any subsequent updates if the eeprom byte is not saved.
+	uint8_t polarity = eeprom[EE_INPUT_POLARITY0];
 	for(int i=0; i<8; i++)
 	{
-		if(eeprom[EE_INPUT_POLARITY0] & (1 << i))
+		if(polarity & (1 << i))
 		{
 			detectorPolarity[i]->setCurrentIndex(detectorPolarity[i]->findData(1));
 		}
