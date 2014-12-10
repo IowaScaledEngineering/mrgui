@@ -39,7 +39,8 @@ class Window : public QMainWindow
     Q_OBJECT
 
 	public slots:
-		void tabChanged(void);
+		void nodeAddrUpdated(void);
+		void transmitIntervalUpdated(void);
 		void updateEepromTable(void);
 		
 	public:
@@ -51,12 +52,11 @@ class Window : public QMainWindow
 		QAction *readAction, *writeAction;
 		QTextEdit *eepromTable;
 		QWidget *eepromPage;
-		
+
 		char avrDevice[16];
 		uint32_t eepromSize;
 		uint8_t *eeprom;
 		
-		void widgets2eeprom(void);
 		void eeprom2widgets(void);
 
 		virtual void node2eeprom(void) {};

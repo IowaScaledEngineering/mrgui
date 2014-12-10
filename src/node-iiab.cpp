@@ -32,7 +32,12 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 		detectorPolarity[i] = new QComboBox;
 		detectorPolarity[i]->addItem("High = Train Present",0);
 		detectorPolarity[i]->addItem("Low = Train Present",1);
+		// Connect signals
+		connect(detectorPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(detectorPolarityUpdated()));
+		// Set defaults
+		detectorPolarity[i]->setCurrentIndex(0);
 	}
+	detectorPolarityUpdated();  // Force update for initial value, even if value not changed
 
 	QWidget *detectorPage = new QWidget();
 
@@ -47,6 +52,11 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	westLayout->addRow(tr("Polarity (Siding):"), detectorPolarity[1]);
 	westLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	westGroup->setLayout(westLayout);
+	// Connect signals
+	connect(timeout0, SIGNAL(valueChanged(int)), this, SLOT(timeout0Updated()));
+	// Set defaults
+	timeout0->setValue(2);
+	timeout0Updated();  // Force update for initial value, even if value not changed
 
 	QGroupBox *eastGroup = new QGroupBox(tr("East Direction"));
 	QFormLayout *eastLayout = new QFormLayout();
@@ -58,6 +68,11 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	eastLayout->addRow(tr("Polarity:"), detectorPolarity[2]);
 	eastLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	eastGroup->setLayout(eastLayout);
+	// Connect signals
+	connect(timeout1, SIGNAL(valueChanged(int)), this, SLOT(timeout1Updated()));
+	// Set defaults
+	timeout1->setValue(2);
+	timeout1Updated();  // Force update for initial value, even if value not changed
 
 	QGroupBox *northGroup = new QGroupBox(tr("North Direction"));
 	QFormLayout *northLayout = new QFormLayout();
@@ -81,6 +96,11 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	southLayout->addRow(tr("Polarity:"), detectorPolarity[5]);
 	southLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	southGroup->setLayout(southLayout);
+	// Connect signals
+	connect(timeout2, SIGNAL(valueChanged(int)), this, SLOT(timeout2Updated()));
+	// Set defaults
+	timeout2->setValue(2);
+	timeout2Updated();  // Force update for initial value, even if value not changed
 
 	QGroupBox *interlockingGroup = new QGroupBox(tr("Interlocking"));
 	QFormLayout *interlockingLayout = new QFormLayout();
@@ -92,6 +112,11 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	interlockingLayout->addRow(tr("Polarity:"), detectorPolarity[6]);
 	interlockingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	interlockingGroup->setLayout(interlockingLayout);
+	// Connect signals
+	connect(timeout3, SIGNAL(valueChanged(int)), this, SLOT(timeout3Updated()));
+	// Set defaults
+	timeout3->setValue(2);
+	timeout3Updated();  // Force update for initial value, even if value not changed
 
 	QGridLayout *detectorLayout = new QGridLayout;
 	detectorLayout->addWidget(westGroup, 1, 0);
@@ -245,6 +270,48 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
 }
 
+
+void Node_IIAB::detectorPolarityUpdated(void)
+{
+	for(int i=0; i<8; i++)
+	{
+		if(detectorPolarity[i]->itemData(detectorPolarity[i]->currentIndex()).toBool())
+		{
+			eeprom[EE_INPUT_POLARITY0] |= (1 << i);
+		}
+		else
+		{
+			eeprom[EE_INPUT_POLARITY0] &= ~(1 << i);
+		}
+	}
+	updateEepromTable();
+}
+
+void Node_IIAB::timeout0Updated(void)
+{
+	eeprom[EE_TIMEOUT_SECONDS+0] = timeout0->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::timeout1Updated(void)
+{
+	eeprom[EE_TIMEOUT_SECONDS+1] = timeout1->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::timeout2Updated(void)
+{
+	eeprom[EE_TIMEOUT_SECONDS+2] = timeout2->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::timeout3Updated(void)
+{
+	eeprom[EE_TIMEOUT_SECONDS+3] = timeout3->value();
+	updateEepromTable();
+}
+
+
 void Node_IIAB::node2eeprom(void)
 {
 	eeprom[EE_TIMEOUT_SECONDS+0] = timeout0->value();
@@ -289,14 +356,12 @@ void Node_IIAB::eeprom2node(void)
 
 void Node_IIAB::write(void)
 {
-	widgets2eeprom();
 	// FIXME: write
 }
 
 void Node_IIAB::read(void)
 {
 	// FIXME: read
-	eeprom2widgets();
 }
 
 

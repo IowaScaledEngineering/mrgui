@@ -62,7 +62,13 @@ class Node_IIAB : public Window
 		void node2eeprom(void);
 		void eeprom2node(void);
 
-	
+	private slots:
+		void detectorPolarityUpdated(void);
+		void timeout0Updated(void);
+		void timeout1Updated(void);
+		void timeout2Updated(void);
+		void timeout3Updated(void);
+
 	private:
 		HexSpinBox *clockSource;
 		QDoubleSpinBox *blinky, *maxDeadReckoning;

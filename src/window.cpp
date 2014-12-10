@@ -37,11 +37,20 @@ Window::Window(const char *device, int size)
 	readButton = new QPushButton(tr("&Read"));
 	readButton->setFocusPolicy(Qt::NoFocus);
 
+	// eepromTable must be declared before setting any defaults so updateEepromTable() can update it
+	eepromTable = new QTextEdit();
+	eepromTable->setReadOnly(true);
+	QFont eepromTableFont;
+	eepromTableFont.setFamily("Courier");
+	eepromTableFont.setStyleHint(QFont::Monospace);
+	eepromTableFont.setFixedPitch(true);
+	eepromTableFont.setPointSize(10);
+	eepromTable->setFont(eepromTableFont);
+
 	QWidget *nodeWidgets = new QWidget();
 	QHBoxLayout *nodeLayout = new QHBoxLayout;
 	QLabel *nodeAddrLabel = new QLabel(tr("Node Address:"));
 	nodeAddr = new HexSpinBox;
-	nodeAddr->setValue(0);
 	nodeAddr->setRange(1,254);
 	nodeAddr->setPrefix("0x");
 	nodeLayout->addWidget(nodeAddrLabel, 0);
@@ -52,7 +61,6 @@ Window::Window(const char *device, int size)
 	transmitInterval->setRange(0.0, 6553.5);
 	transmitInterval->setSingleStep(1.0);
 	transmitInterval->setDecimals(1);
-	transmitInterval->setValue(5.0);
 	transmitInterval->setSuffix("s");
 	nodeLayout->addWidget(transmitIntervalLabel, 0);
 	nodeLayout->addWidget(transmitInterval, 0);
@@ -60,25 +68,24 @@ Window::Window(const char *device, int size)
 	nodeLayout->addWidget(readButton);
 	nodeLayout->addWidget(writeButton);
 	nodeWidgets->setLayout(nodeLayout);
-	connect(nodeAddr, SIGNAL(valueChanged(int)), this, SLOT(updateEepromTable()));
-	connect(transmitInterval, SIGNAL(valueChanged(double)), this, SLOT(updateEepromTable()));
+
+	// Connect signals
+	connect(nodeAddr, SIGNAL(valueChanged(int)), this, SLOT(nodeAddrUpdated()));
+	connect(transmitInterval, SIGNAL(valueChanged(double)), this, SLOT(transmitIntervalUpdated()));
+	
+	// Set defaults
+	nodeAddr->setValue(0x01);
+	nodeAddrUpdated();  // Force update for initial value, even if value not changed
+	transmitInterval->setValue(5.0);
+	transmitIntervalUpdated();  // Force update for initial value, even if value not changed
 
 	tabWidget = new QTabWidget();
 
 	eepromPage = new QWidget();
-	eepromTable = new QTextEdit();
-	eepromTable->setReadOnly(true);
-	QFont eepromTableFont;
-	eepromTableFont.setFamily("Courier");
-	eepromTableFont.setStyleHint(QFont::Monospace);
-	eepromTableFont.setFixedPitch(true);
-	eepromTableFont.setPointSize(10);
-	eepromTable->setFont(eepromTableFont);
 	QVBoxLayout *eepromLayout = new QVBoxLayout;
 	eepromLayout->addWidget(eepromTable);
 	eepromPage->setLayout(eepromLayout);
 	tabWidget->addTab(eepromPage, "EEPROM");
-	connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChanged()));
 
 	QAction *openAction = new QAction(tr("&Open..."), this);
 	QAction *exitAction = new QAction(tr("E&xit"), this);
@@ -107,17 +114,8 @@ Window::Window(const char *device, int size)
 	setWindowTitle(tr("MRGui Programmer"));
 }
 
-void Window::tabChanged(void)
-{
-	if(eepromPage == tabWidget->currentWidget())
-	{
-		updateEepromTable();
-	}
-}
-
 void Window::updateEepromTable(void)
 {
-	widgets2eeprom();
 	uint32_t rows = eepromSize / 16;
 	QString eepromContents = QString();
 	for(uint8_t r = 0; r < rows; r++)
@@ -134,12 +132,17 @@ void Window::updateEepromTable(void)
 	eepromTable->setText(eepromContents);
 }
 
-void Window::widgets2eeprom(void)
+void Window::nodeAddrUpdated(void)
 {
 	eeprom[MRBUS_EE_DEVICE_ADDR] = nodeAddr->value();
+	updateEepromTable();
+}
+
+void Window::transmitIntervalUpdated(void)
+{
 	eeprom[MRBUS_EE_DEVICE_UPDATE_H] = (int)((transmitInterval->value() * 10) / 256) & 0xFF;
 	eeprom[MRBUS_EE_DEVICE_UPDATE_L] = (int)(transmitInterval->value() * 10) & 0xFF;
-	this->node2eeprom();
+	updateEepromTable();
 }
 
 void Window::eeprom2widgets(void)
