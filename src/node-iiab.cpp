@@ -22,7 +22,7 @@ LICENSE:
 
 #include "node-iiab.h"
 
-Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
+Node_IIAB::Node_IIAB(const char *device) : Window(device)
 {
 	// Create widget layout
 	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; font-weight: bold; margin-top: 1ex; margin-bottom: 1ex;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 3px;}");
@@ -34,6 +34,7 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 		detectorPolarity[i]->addItem("Low = Train Present",1);
 		// Connect signals
 		connect(detectorPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(detectorPolarityUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(detectorPolaritySet()));
 		// Set defaults
 		detectorPolarity[i]->setCurrentIndex(0);
 	}
@@ -54,6 +55,7 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	westGroup->setLayout(westLayout);
 	// Connect signals
 	connect(timeout0, SIGNAL(valueChanged(int)), this, SLOT(timeout0Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout0Set()));
 	// Set defaults
 	timeout0->setValue(2);
 	timeout0Updated();  // Force update for initial value, even if value not changed
@@ -70,6 +72,7 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	eastGroup->setLayout(eastLayout);
 	// Connect signals
 	connect(timeout1, SIGNAL(valueChanged(int)), this, SLOT(timeout1Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout1Set()));
 	// Set defaults
 	timeout1->setValue(2);
 	timeout1Updated();  // Force update for initial value, even if value not changed
@@ -85,6 +88,12 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	northLayout->addRow(tr("Polarity (Siding):"), detectorPolarity[4]);
 	northLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	northGroup->setLayout(northLayout);
+	// Connect signals
+	connect(timeout2, SIGNAL(valueChanged(int)), this, SLOT(timeout2Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout2Set()));
+	// Set defaults
+	timeout2->setValue(2);
+	timeout2Updated();  // Force update for initial value, even if value not changed
 
 	QGroupBox *southGroup = new QGroupBox(tr("South Direction"));
 	QFormLayout *southLayout = new QFormLayout();
@@ -97,10 +106,11 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	southLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	southGroup->setLayout(southLayout);
 	// Connect signals
-	connect(timeout2, SIGNAL(valueChanged(int)), this, SLOT(timeout2Updated()));
+	connect(timeout3, SIGNAL(valueChanged(int)), this, SLOT(timeout3Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout3Set()));
 	// Set defaults
-	timeout2->setValue(2);
-	timeout2Updated();  // Force update for initial value, even if value not changed
+	timeout3->setValue(2);
+	timeout3Updated();  // Force update for initial value, even if value not changed
 
 	QGroupBox *interlockingGroup = new QGroupBox(tr("Interlocking"));
 	QFormLayout *interlockingLayout = new QFormLayout();
@@ -113,10 +123,11 @@ Node_IIAB::Node_IIAB(const char *device, int size) : Window(device, size)
 	interlockingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	interlockingGroup->setLayout(interlockingLayout);
 	// Connect signals
-	connect(timeout3, SIGNAL(valueChanged(int)), this, SLOT(timeout3Updated()));
+	connect(debounce, SIGNAL(valueChanged(int)), this, SLOT(debounceUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(debounceSet()));
 	// Set defaults
-	timeout3->setValue(2);
-	timeout3Updated();  // Force update for initial value, even if value not changed
+	debounce->setValue(3);
+	debounceUpdated();  // Force update for initial value, even if value not changed
 
 	QGridLayout *detectorLayout = new QGridLayout;
 	detectorLayout->addWidget(westGroup, 1, 0);
@@ -287,9 +298,31 @@ void Node_IIAB::detectorPolarityUpdated(void)
 	updateEepromTable();
 }
 
+void Node_IIAB::detectorPolaritySet(void)
+{
+	for(int i=0; i<8; i++)
+	{
+		if(eeprom[EE_INPUT_POLARITY0] & (1 << i))
+		{
+			detectorPolarity[i]->setCurrentIndex(detectorPolarity[i]->findData(1));
+		}
+		else
+		{
+			detectorPolarity[i]->setCurrentIndex(detectorPolarity[i]->findData(0));
+		}
+	}
+	updateEepromTable();
+}
+
 void Node_IIAB::timeout0Updated(void)
 {
 	eeprom[EE_TIMEOUT_SECONDS+0] = timeout0->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::timeout0Set(void)
+{
+	timeout0->setValue(eeprom[EE_TIMEOUT_SECONDS+0]);
 	updateEepromTable();
 }
 
@@ -299,9 +332,21 @@ void Node_IIAB::timeout1Updated(void)
 	updateEepromTable();
 }
 
+void Node_IIAB::timeout1Set(void)
+{
+	timeout1->setValue(eeprom[EE_TIMEOUT_SECONDS+1]);
+	updateEepromTable();
+}
+
 void Node_IIAB::timeout2Updated(void)
 {
 	eeprom[EE_TIMEOUT_SECONDS+2] = timeout2->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::timeout2Set(void)
+{
+	timeout2->setValue(eeprom[EE_TIMEOUT_SECONDS+2]);
 	updateEepromTable();
 }
 
@@ -311,13 +356,31 @@ void Node_IIAB::timeout3Updated(void)
 	updateEepromTable();
 }
 
+void Node_IIAB::timeout3Set(void)
+{
+	timeout3->setValue(eeprom[EE_TIMEOUT_SECONDS+3]);
+	updateEepromTable();
+}
+
+void Node_IIAB::debounceUpdated(void)
+{
+	eeprom[EE_DEBOUNCE_SECONDS] = debounce->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::debounceSet(void)
+{
+	debounce->setValue(eeprom[EE_DEBOUNCE_SECONDS]);
+	updateEepromTable();
+}
+
+
 
 /*
 void Node_IIAB::node2eeprom(void)
 {
 	eeprom[EE_LOCKOUT_SECONDS] = lockout->value();
 	eeprom[EE_TIMELOCK_SECONDS] = timelock->value();
-	eeprom[EE_DEBOUNCE_SECONDS] = debounce->value();
 	eeprom[EE_CLOCK_SOURCE_ADDRESS] = clockSource->value();
 	eeprom[EE_MAX_DEAD_RECKONING] = maxDeadReckoning->value() * 10;
 	eeprom[EE_SIM_TRAIN_WINDOW] = simTrainWindow->value();
@@ -326,13 +389,8 @@ void Node_IIAB::node2eeprom(void)
 
 void Node_IIAB::eeprom2node(void)
 {
-	timeout0->setValue(eeprom[EE_TIMEOUT_SECONDS+0]);
-	timeout1->setValue(eeprom[EE_TIMEOUT_SECONDS+1]);
-	timeout2->setValue(eeprom[EE_TIMEOUT_SECONDS+2]);
-	timeout3->setValue(eeprom[EE_TIMEOUT_SECONDS+3]);
 	lockout->setValue(eeprom[EE_LOCKOUT_SECONDS]);
 	timelock->setValue(eeprom[EE_TIMELOCK_SECONDS]);
-	debounce->setValue(eeprom[EE_DEBOUNCE_SECONDS]);
 	clockSource->setValue(eeprom[EE_CLOCK_SOURCE_ADDRESS]);
 	maxDeadReckoning->setValue(eeprom[EE_MAX_DEAD_RECKONING] / 10.0);
 	simTrainWindow->setValue(eeprom[EE_SIM_TRAIN_WINDOW]);
@@ -354,12 +412,13 @@ void Node_IIAB::eeprom2node(void)
 
 void Node_IIAB::write(void)
 {
-	// FIXME: write
+	// FIXME: write, move to window.cpp
 }
 
 void Node_IIAB::read(void)
 {
-	// FIXME: read
+	// FIXME: read, move to window.cpp
+	eeprom[EE_INPUT_POLARITY0] = 0xAA;
 	emit eepromUpdated();
 }
 

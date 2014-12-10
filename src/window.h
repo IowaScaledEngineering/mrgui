@@ -27,6 +27,7 @@ LICENSE:
 
 #include <QtWidgets>
 #include <QDebug>
+#include "avrinfo.h"
 #include "hexspinbox.h"
 
 #define MRBUS_EE_DEVICE_ADDR         0
@@ -39,21 +40,21 @@ class Window : public QMainWindow
     Q_OBJECT
 
 	public:
-		Window(const char*, int);
+		Window(const char*);
 		QPushButton *writeButton, *readButton;
 		QTabWidget *tabWidget;
 		HexSpinBox *nodeAddr;
 		QDoubleSpinBox *transmitInterval;
 		QAction *readAction, *writeAction;
 		QTextEdit *eepromTable;
-		QWidget *eepromPage;
+		QDialog *eepromDialog;
 
 		char avrDevice[16];
 		uint32_t eepromSize;
 		uint8_t *eeprom;
+		const AVRInfo* getAVRInfo(const char*);
 		
 	private:
-		uint8_t eepromTabIndex;
 
 	signals:
 		void eepromUpdated();

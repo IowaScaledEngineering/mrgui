@@ -21,11 +21,12 @@ LICENSE:
 *************************************************************************/
 
 #include "window.h"
+#include "avrinfo.h"
 
-Window::Window(const char *device, int size)
+Window::Window(const char *device)
 {
 	strncpy(avrDevice, device, sizeof(avrDevice));
-	eepromSize = size;
+	eepromSize = getAVRInfo(device)->eeprom_size;
 	eeprom = (uint8_t*)malloc(eepromSize);
 	// Preset EEPROM
 	for(uint32_t i=0; i<eepromSize; i++)
@@ -40,6 +41,7 @@ Window::Window(const char *device, int size)
 	// eepromTable must be declared before setting any defaults so updateEepromTable() can update it
 	eepromTable = new QTextEdit();
 	eepromTable->setReadOnly(true);
+	eepromTable->setLineWrapMode(QTextEdit::NoWrap);
 	QFont eepromTableFont;
 	eepromTableFont.setFamily("Courier");
 	eepromTableFont.setStyleHint(QFont::Monospace);
@@ -83,17 +85,32 @@ Window::Window(const char *device, int size)
 
 	tabWidget = new QTabWidget();
 
-	eepromPage = new QWidget();
+
+
+	eepromDialog = new QDialog();
 	QVBoxLayout *eepromLayout = new QVBoxLayout;
 	eepromLayout->addWidget(eepromTable);
-	eepromPage->setLayout(eepromLayout);
-	tabWidget->addTab(eepromPage, "EEPROM");
+	eepromDialog->setLayout(eepromLayout);
+	eepromDialog->setWindowTitle("MRGui EEPROM Viewer");
+
+	// From https://bugreports.qt-project.org/browse/QTBUG-15809
+	eepromTable->document()->adjustSize();
+	eepromTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	int eepromDialogSize;
+	eepromDialogSize = eepromTable->minimumSizeHint().width(); // should get correct value, but really - not.
+	eepromDialogSize -= eepromTable->verticalScrollBar()->sizeHint().width(); //subtracting incorrect value.
+	eepromDialogSize += eepromTable->document()->size().width();
+	eepromTable->setMinimumWidth(eepromDialogSize);
+//	tabWidget->addTab(eepromPage, "EEPROM");
+
+
 
 	QAction *openAction = new QAction(tr("&Open..."), this);
 	QAction *exitAction = new QAction(tr("E&xit"), this);
 	readAction = new QAction(tr("&Read EEPROM"), this);
 	writeAction = new QAction(tr("&Write EEPROM"), this);
 	QAction *updateAction = new QAction(tr("&Update Firmware..."), this);
+	QAction *eepromAction = new QAction(tr("&EEPROM Editor..."), this);
 
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(openAction);
@@ -105,15 +122,31 @@ Window::Window(const char *device, int size)
 	configMenu->addAction(writeAction);
 	configMenu->addAction(updateAction);
 
+	QMenu *advancedMenu = menuBar()->addMenu(tr("&Advanced"));
+	advancedMenu->addAction(eepromAction);
+	connect(eepromAction, SIGNAL(triggered()), eepromDialog, SLOT(show()));
+
 	QVBoxLayout *layout = new QVBoxLayout;
 	layout->addWidget(tabWidget);
 	layout->addWidget(nodeWidgets);
+
+
 
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
 	widget->setLayout(layout);
 
 	setWindowTitle(tr("MRGui Programmer"));
+}
+
+const AVRInfo* Window::getAVRInfo(const char* part_name)
+{
+	for(uint32_t i=0; i<sizeof(avrinfo)/sizeof(AVRInfo); i++)
+	{
+		if (0 == strcmp(part_name, avrinfo[i].part_name))
+			return(&avrinfo[i]);
+	}
+	return(NULL);
 }
 
 void Window::updateEepromTable(void)

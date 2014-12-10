@@ -54,7 +54,7 @@ class Node_IIAB : public Window
     Q_OBJECT
 
 	public:
-		Node_IIAB(const char*, int);
+		Node_IIAB(const char*);
 
 	private:
 		HexSpinBox *clockSource;
@@ -69,10 +69,17 @@ class Node_IIAB : public Window
 	
 	private slots:
 		void detectorPolarityUpdated(void);
+		void detectorPolaritySet(void);
 		void timeout0Updated(void);
+		void timeout0Set(void);
 		void timeout1Updated(void);
+		void timeout1Set(void);
 		void timeout2Updated(void);
+		void timeout2Set(void);
 		void timeout3Updated(void);
+		void timeout3Set(void);
+		void debounceUpdated(void);
+		void debounceSet(void);
 };
 
 #endif
