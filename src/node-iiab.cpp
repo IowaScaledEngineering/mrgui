@@ -22,7 +22,7 @@ LICENSE:
 
 #include "node-iiab.h"
 
-Node_IIAB::Node_IIAB(const char *device) : Window(device)
+Node_IIAB::Node_IIAB(void) : Window("atmega328")
 {
 	// Create widget layout
 	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; font-weight: bold; margin-top: 1ex; margin-bottom: 1ex;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 3px;}");
@@ -32,13 +32,7 @@ Node_IIAB::Node_IIAB(const char *device) : Window(device)
 		detectorPolarity[i] = new QComboBox;
 		detectorPolarity[i]->addItem("High = Train Present",0);
 		detectorPolarity[i]->addItem("Low = Train Present",1);
-		// Connect signals
-		connect(detectorPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(detectorPolarityUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(detectorPolaritySet()));
-		// Set defaults
-		detectorPolarity[i]->setCurrentIndex(0);
 	}
-	detectorPolarityUpdated();  // Force update for initial value, even if value not changed
 
 	QWidget *detectorPage = new QWidget();
 
@@ -53,12 +47,6 @@ Node_IIAB::Node_IIAB(const char *device) : Window(device)
 	westLayout->addRow(tr("Polarity (Siding):"), detectorPolarity[1]);
 	westLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	westGroup->setLayout(westLayout);
-	// Connect signals
-	connect(timeout0, SIGNAL(valueChanged(int)), this, SLOT(timeout0Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout0Set()));
-	// Set defaults
-	timeout0->setValue(2);
-	timeout0Updated();  // Force update for initial value, even if value not changed
 
 	QGroupBox *eastGroup = new QGroupBox(tr("East Direction"));
 	QFormLayout *eastLayout = new QFormLayout();
@@ -70,12 +58,6 @@ Node_IIAB::Node_IIAB(const char *device) : Window(device)
 	eastLayout->addRow(tr("Polarity:"), detectorPolarity[2]);
 	eastLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	eastGroup->setLayout(eastLayout);
-	// Connect signals
-	connect(timeout1, SIGNAL(valueChanged(int)), this, SLOT(timeout1Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout1Set()));
-	// Set defaults
-	timeout1->setValue(2);
-	timeout1Updated();  // Force update for initial value, even if value not changed
 
 	QGroupBox *northGroup = new QGroupBox(tr("North Direction"));
 	QFormLayout *northLayout = new QFormLayout();
@@ -88,12 +70,6 @@ Node_IIAB::Node_IIAB(const char *device) : Window(device)
 	northLayout->addRow(tr("Polarity (Siding):"), detectorPolarity[4]);
 	northLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	northGroup->setLayout(northLayout);
-	// Connect signals
-	connect(timeout2, SIGNAL(valueChanged(int)), this, SLOT(timeout2Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout2Set()));
-	// Set defaults
-	timeout2->setValue(2);
-	timeout2Updated();  // Force update for initial value, even if value not changed
 
 	QGroupBox *southGroup = new QGroupBox(tr("South Direction"));
 	QFormLayout *southLayout = new QFormLayout();
@@ -105,12 +81,6 @@ Node_IIAB::Node_IIAB(const char *device) : Window(device)
 	southLayout->addRow(tr("Polarity:"), detectorPolarity[5]);
 	southLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	southGroup->setLayout(southLayout);
-	// Connect signals
-	connect(timeout3, SIGNAL(valueChanged(int)), this, SLOT(timeout3Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout3Set()));
-	// Set defaults
-	timeout3->setValue(2);
-	timeout3Updated();  // Force update for initial value, even if value not changed
 
 	QGroupBox *interlockingGroup = new QGroupBox(tr("Interlocking"));
 	QFormLayout *interlockingLayout = new QFormLayout();
@@ -122,12 +92,6 @@ Node_IIAB::Node_IIAB(const char *device) : Window(device)
 	interlockingLayout->addRow(tr("Polarity:"), detectorPolarity[6]);
 	interlockingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	interlockingGroup->setLayout(interlockingLayout);
-	// Connect signals
-	connect(debounce, SIGNAL(valueChanged(int)), this, SLOT(debounceUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(debounceSet()));
-	// Set defaults
-	debounce->setValue(3);
-	debounceUpdated();  // Force update for initial value, even if value not changed
 
 	QGridLayout *detectorLayout = new QGridLayout;
 	detectorLayout->addWidget(westGroup, 1, 0);
@@ -136,18 +100,6 @@ Node_IIAB::Node_IIAB(const char *device) : Window(device)
 	detectorLayout->addWidget(southGroup, 2, 1);
 	detectorLayout->addWidget(interlockingGroup, 1, 1);
 	detectorPage->setLayout(detectorLayout);
-
-
-
-	QWidget *interchangePage = new QWidget();
-	QFormLayout *interchangeLayout = new QFormLayout();
-	interchangeLayout->addRow(tr("Detector Polarity:"), detectorPolarity[7]);
-	interchangePolarity = new QComboBox;
-	interchangePolarity->addItem("High = Track Power Applied",0);
-	interchangePolarity->addItem("Low = Track Power Applied",1);
-	interchangeLayout->addRow(tr("Relay Polarity:"), interchangePolarity);
-	interchangeLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-	interchangePage->setLayout(interchangeLayout);
 
 
 
@@ -242,6 +194,18 @@ Node_IIAB::Node_IIAB(const char *device) : Window(device)
 
 
 
+	QWidget *interchangePage = new QWidget();
+	QFormLayout *interchangeLayout = new QFormLayout();
+	interchangeLayout->addRow(tr("Detector Polarity:"), detectorPolarity[7]);
+	interchangePolarity = new QComboBox;
+	interchangePolarity->addItem("High = Track Power Applied",0);
+	interchangePolarity->addItem("Low = Track Power Applied",1);
+	interchangeLayout->addRow(tr("Relay Polarity:"), interchangePolarity);
+	interchangeLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	interchangePage->setLayout(interchangeLayout);
+
+
+
 	QWidget *schedulePage = new QWidget();
 	QFormLayout *scheduleLayout = new QFormLayout;
 	clockSource = new HexSpinBox;
@@ -272,6 +236,61 @@ Node_IIAB::Node_IIAB(const char *device) : Window(device)
 	tabWidget->insertTab(4, interchangePage, "Interchange");
 	tabWidget->insertTab(5, schedulePage, "Schedules");
 	tabWidget->setCurrentIndex(0);
+
+
+	// Connect signals
+	for(int i=0; i<8; i++)
+	{
+		// Connect signals
+		connect(detectorPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(detectorPolarityUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(detectorPolaritySet()));
+	}
+	connect(timeout0, SIGNAL(valueChanged(int)), this, SLOT(timeout0Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout0Set()));
+	connect(timeout1, SIGNAL(valueChanged(int)), this, SLOT(timeout1Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout1Set()));
+	connect(timeout2, SIGNAL(valueChanged(int)), this, SLOT(timeout2Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout2Set()));
+	connect(timeout3, SIGNAL(valueChanged(int)), this, SLOT(timeout3Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout3Set()));
+	connect(debounce, SIGNAL(valueChanged(int)), this, SLOT(debounceUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(debounceSet()));
+	//FIXME: signal polarity
+	connect(blinky, SIGNAL(valueChanged(double)), this, SLOT(blinkyUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(blinkySet()));
+	//FIXME: turnout polarity
+	connect(lockout, SIGNAL(valueChanged(int)), this, SLOT(lockoutUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(lockoutSet()));
+	connect(timelock, SIGNAL(valueChanged(int)), this, SLOT(timelockUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timelockSet()));
+	//FIXME: interchange polarity
+
+	// Set defaults
+	for(int i=0; i<8; i++)
+	{
+		detectorPolarity[i]->setCurrentIndex(0);
+	}
+	detectorPolarityUpdated();  // Force update for initial value, even if value not changed
+	timeout0->setValue(15);
+	timeout0Updated();
+	timeout1->setValue(15);
+	timeout1Updated();
+	timeout2->setValue(15);
+	timeout2Updated();
+	timeout3->setValue(15);
+	timeout3Updated();
+	debounce->setValue(3);
+	debounceUpdated();
+	//FIXME: signal polarity
+	blinky->setValue(0.5);
+	blinkyUpdated();
+	//FIXME: turnout polarity
+	lockout->setValue(12);
+	lockoutUpdated();
+	timelock->setValue(30);
+	timelockUpdated();
+	//FIXME: interchange polarity
+
 
 
 	// Connect read/write functions
@@ -374,27 +393,58 @@ void Node_IIAB::debounceSet(void)
 	updateEepromTable();
 }
 
+void Node_IIAB::blinkyUpdated(void)
+{
+	eeprom[EE_BLINKY_DECISECS] = blinky->value() * 10;
+	updateEepromTable();
+}
+
+void Node_IIAB::blinkySet(void)
+{
+	blinky->setValue(eeprom[EE_BLINKY_DECISECS] / 10.0);
+	updateEepromTable();
+}
+
+void Node_IIAB::lockoutUpdated(void)
+{
+	eeprom[EE_LOCKOUT_SECONDS] = lockout->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::lockoutSet(void)
+{
+	lockout->setValue(eeprom[EE_LOCKOUT_SECONDS]);
+	updateEepromTable();
+}
+
+void Node_IIAB::timelockUpdated(void)
+{
+	eeprom[EE_TIMELOCK_SECONDS] = timelock->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::timelockSet(void)
+{
+	timelock->setValue(eeprom[EE_TIMELOCK_SECONDS]);
+	updateEepromTable();
+}
+
+
 
 
 /*
 void Node_IIAB::node2eeprom(void)
 {
-	eeprom[EE_LOCKOUT_SECONDS] = lockout->value();
-	eeprom[EE_TIMELOCK_SECONDS] = timelock->value();
 	eeprom[EE_CLOCK_SOURCE_ADDRESS] = clockSource->value();
 	eeprom[EE_MAX_DEAD_RECKONING] = maxDeadReckoning->value() * 10;
 	eeprom[EE_SIM_TRAIN_WINDOW] = simTrainWindow->value();
-	eeprom[EE_BLINKY_DECISECS] = blinky->value() * 10;
 }
 
 void Node_IIAB::eeprom2node(void)
 {
-	lockout->setValue(eeprom[EE_LOCKOUT_SECONDS]);
-	timelock->setValue(eeprom[EE_TIMELOCK_SECONDS]);
 	clockSource->setValue(eeprom[EE_CLOCK_SOURCE_ADDRESS]);
 	maxDeadReckoning->setValue(eeprom[EE_MAX_DEAD_RECKONING] / 10.0);
 	simTrainWindow->setValue(eeprom[EE_SIM_TRAIN_WINDOW]);
-	blinky->setValue(eeprom[EE_BLINKY_DECISECS] / 10.0);
 }
 */
 

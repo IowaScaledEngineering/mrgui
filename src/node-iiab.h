@@ -54,7 +54,7 @@ class Node_IIAB : public Window
     Q_OBJECT
 
 	public:
-		Node_IIAB(const char*);
+		Node_IIAB(void);
 
 	private:
 		HexSpinBox *clockSource;
@@ -80,6 +80,12 @@ class Node_IIAB : public Window
 		void timeout3Set(void);
 		void debounceUpdated(void);
 		void debounceSet(void);
+		void blinkyUpdated(void);
+		void blinkySet(void);
+		void lockoutUpdated(void);
+		void lockoutSet(void);
+		void timelockUpdated(void);
+		void timelockSet(void);
 };
 
 #endif

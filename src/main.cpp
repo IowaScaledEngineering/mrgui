@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 //		QString selectedNode = nodeDialog.nodeList->currentItem()->text();
 //		if(!selectedNode.compare("MRB-IIAB"))
 //		{
-			Node_IIAB window("atmega328");
+			Node_IIAB window;
 		    window.show();
 		    return app.exec();
 //		}
