@@ -53,21 +53,8 @@ class Node_IIAB : public Window
 {
     Q_OBJECT
 
-	public slots:
-		void write(void);
-		void read(void);
-	
 	public:
 		Node_IIAB(const char*, int);
-		void node2eeprom(void);
-		void eeprom2node(void);
-
-	private slots:
-		void detectorPolarityUpdated(void);
-		void timeout0Updated(void);
-		void timeout1Updated(void);
-		void timeout2Updated(void);
-		void timeout3Updated(void);
 
 	private:
 		HexSpinBox *clockSource;
@@ -75,6 +62,17 @@ class Node_IIAB : public Window
 		QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *simTrainWindow;
 		QRadioButton *ledPolarityAnode, *ledPolarityCathode;
 		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8], *interchangePolarity, *signalPolarity[8];
+
+	public slots:
+		void write(void);
+		void read(void);
+	
+	private slots:
+		void detectorPolarityUpdated(void);
+		void timeout0Updated(void);
+		void timeout1Updated(void);
+		void timeout2Updated(void);
+		void timeout3Updated(void);
 };
 
 #endif

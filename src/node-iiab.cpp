@@ -312,12 +312,9 @@ void Node_IIAB::timeout3Updated(void)
 }
 
 
+/*
 void Node_IIAB::node2eeprom(void)
 {
-	eeprom[EE_TIMEOUT_SECONDS+0] = timeout0->value();
-	eeprom[EE_TIMEOUT_SECONDS+1] = timeout1->value();
-	eeprom[EE_TIMEOUT_SECONDS+2] = timeout2->value();
-	eeprom[EE_TIMEOUT_SECONDS+3] = timeout3->value();
 	eeprom[EE_LOCKOUT_SECONDS] = lockout->value();
 	eeprom[EE_TIMELOCK_SECONDS] = timelock->value();
 	eeprom[EE_DEBOUNCE_SECONDS] = debounce->value();
@@ -341,6 +338,7 @@ void Node_IIAB::eeprom2node(void)
 	simTrainWindow->setValue(eeprom[EE_SIM_TRAIN_WINDOW]);
 	blinky->setValue(eeprom[EE_BLINKY_DECISECS] / 10.0);
 }
+*/
 
 /*
 #define EE_INPUT_POLARITY0      0x20
@@ -362,6 +360,7 @@ void Node_IIAB::write(void)
 void Node_IIAB::read(void)
 {
 	// FIXME: read
+	emit eepromUpdated();
 }
 
 

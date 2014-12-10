@@ -38,11 +38,6 @@ class Window : public QMainWindow
 {
     Q_OBJECT
 
-	public slots:
-		void nodeAddrUpdated(void);
-		void transmitIntervalUpdated(void);
-		void updateEepromTable(void);
-		
 	public:
 		Window(const char*, int);
 		QPushButton *writeButton, *readButton;
@@ -57,13 +52,20 @@ class Window : public QMainWindow
 		uint32_t eepromSize;
 		uint8_t *eeprom;
 		
-		void eeprom2widgets(void);
-
-		virtual void node2eeprom(void) {};
-		virtual void eeprom2node(void) {};
-		
 	private:
 		uint8_t eepromTabIndex;
+
+	signals:
+		void eepromUpdated();
+
+	public slots:
+		void updateEepromTable(void);
+		
+	private slots:
+		void nodeAddrUpdated(void);
+		void nodeAddrSet(void);
+		void transmitIntervalUpdated(void);
+		void transmitIntervalSet(void);
 };
 
 class NodeDialog : public QDialog

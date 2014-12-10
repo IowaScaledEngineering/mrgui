@@ -71,7 +71,9 @@ Window::Window(const char *device, int size)
 
 	// Connect signals
 	connect(nodeAddr, SIGNAL(valueChanged(int)), this, SLOT(nodeAddrUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(nodeAddrSet()));
 	connect(transmitInterval, SIGNAL(valueChanged(double)), this, SLOT(transmitIntervalUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(transmitIntervalSet()));
 	
 	// Set defaults
 	nodeAddr->setValue(0x01);
@@ -138,6 +140,11 @@ void Window::nodeAddrUpdated(void)
 	updateEepromTable();
 }
 
+void Window::nodeAddrSet(void)
+{
+	nodeAddr->setValue(eeprom[MRBUS_EE_DEVICE_ADDR]);
+}
+
 void Window::transmitIntervalUpdated(void)
 {
 	eeprom[MRBUS_EE_DEVICE_UPDATE_H] = (int)((transmitInterval->value() * 10) / 256) & 0xFF;
@@ -145,12 +152,9 @@ void Window::transmitIntervalUpdated(void)
 	updateEepromTable();
 }
 
-void Window::eeprom2widgets(void)
+void Window::transmitIntervalSet(void)
 {
-	nodeAddr->setValue(eeprom[MRBUS_EE_DEVICE_ADDR]);
 	transmitInterval->setValue((eeprom[MRBUS_EE_DEVICE_UPDATE_H]*256 + eeprom[MRBUS_EE_DEVICE_UPDATE_L]) / 10.0);
-	this->eeprom2node();
-	updateEepromTable();
 }
 
 NodeDialog::NodeDialog()
