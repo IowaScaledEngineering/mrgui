@@ -66,6 +66,7 @@ Window::Window(const char *device)
 	eepromControlsLayout->addStretch(1);  // Add sacrificial stretch space to middle
 	eepromControlsLayout->addWidget(eepromReadButton);
 	eepromControls->setLayout(eepromControlsLayout);
+	connect(eepromAddr, SIGNAL(valueChanged(int)), this, SLOT(eepromAddrUpdated()));
 	connect(eepromReadButton, SIGNAL(clicked()), this, SLOT(read()));
 	connect(eepromWriteButton, SIGNAL(clicked()), this, SLOT(updateByte()));
 
@@ -191,7 +192,7 @@ void Window::read(void)
 {
 	// FIXME: read eeprom from AVR
 
-	IntelHexMemory eepromMem;
+	IntelHexMemory eepromMem(16);
 //	FILE* ihexInfile = fopen("mrgui.hex", "r");
 //	eepromMem.read_ihex(ihexInfile);
 //	fclose(ihexInfile);	
@@ -202,6 +203,11 @@ void Window::read(void)
 	}
 
 	emit eepromUpdated();
+}
+
+void Window::eepromAddrUpdated(void)
+{
+	updateEepromTable();
 }
 
 void Window::updateByte(void)
@@ -220,11 +226,14 @@ void Window::updateEepromTable(void)
 		QString line = QString("%1:  ").arg(r*16, 4, 16, QChar('0'));
 		for(uint8_t c = 0; c < 16; c++)
 		{
-			line.append(QString("%1 ").arg(eeprom[r*16 + c], 2, 16, QChar('0')));
+			if(r*16+c == eepromAddr->value())
+				line.append(QString("<font style=\"color: black; background-color: #ccccff\">%1</font> ").arg(eeprom[r*16 + c], 2, 16, QChar('0')));
+			else
+				line.append(QString("%1 ").arg(eeprom[r*16 + c], 2, 16, QChar('0')));
 			if(7 == c)
 				line.append(" ");
 		}
-		eepromContents.append(line).append("\n");
+		eepromContents.append(line).append("<br>\n");
 	}
 	eepromTable->setText(eepromContents);
 	eepromTable->verticalScrollBar()->setValue(scrollPosition);

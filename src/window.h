@@ -63,6 +63,7 @@ class Window : public QMainWindow
 	private slots:
 		void write(void);
 		void read(void);
+		void eepromAddrUpdated(void);
 		void updateByte(void);
 		void nodeAddrUpdated(void);
 		void nodeAddrSet(void);
