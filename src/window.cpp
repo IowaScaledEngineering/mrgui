@@ -32,12 +32,6 @@ Window::Window(const char *device)
 	for(uint32_t i=0; i<eepromSize; i++)
 		eeprom[i] = 0xFF;
 	
-	writeButton = new QPushButton(tr("&Write"));
-	writeButton->setFocusPolicy(Qt::NoFocus);
-
-	readButton = new QPushButton(tr("&Read"));
-	readButton->setFocusPolicy(Qt::NoFocus);
-
 	// eepromTable must be declared before setting any defaults so updateEepromTable() can update it
 	eepromTable = new QTextEdit();
 	eepromTable->setReadOnly(true);
@@ -48,6 +42,52 @@ Window::Window(const char *device)
 	eepromTableFont.setFixedPitch(true);
 	eepromTableFont.setPointSize(10);
 	eepromTable->setFont(eepromTableFont);
+
+	// From https://bugreports.qt-project.org/browse/QTBUG-15809
+	updateEepromTable();  // Force update to get some data in the table
+	eepromTable->document()->adjustSize();
+	eepromTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	int eepromDialogSize;
+	eepromDialogSize = eepromTable->minimumSizeHint().width(); // should get correct value, but really - not.
+	eepromDialogSize -= eepromTable->verticalScrollBar()->sizeHint().width(); //subtracting incorrect value.
+	eepromDialogSize += eepromTable->document()->size().width();
+	eepromTable->setMinimumWidth(eepromDialogSize);
+
+	QWidget *eepromControls = new QWidget();
+	QHBoxLayout *eepromControlsLayout = new QHBoxLayout;
+	QLabel *eepromAddrLabel = new QLabel(tr("Address:"));
+	eepromAddr = new HexSpinBox;
+	eepromAddr->setRange(0,eepromSize-1);
+	eepromAddr->setPrefix("0x");
+	eepromControlsLayout->addWidget(eepromAddrLabel, 0);
+	eepromControlsLayout->addWidget(eepromAddr, 0);
+	eepromControlsLayout->addSpacing(10);
+	QLabel *eepromDataLabel = new QLabel(tr("Data:"));
+	eepromData = new HexSpinBox;
+	eepromData->setRange(0,255);
+	eepromData->setPrefix("0x");
+	eepromWriteButton = new QPushButton(tr("&Change Byte"));
+	eepromWriteButton->setFocusPolicy(Qt::NoFocus);
+	eepromReadButton = new QPushButton(tr("&Read EEPROM"));
+	eepromReadButton->setFocusPolicy(Qt::NoFocus);
+	eepromControlsLayout->addWidget(eepromDataLabel, 0);
+	eepromControlsLayout->addWidget(eepromData, 0);
+	eepromControlsLayout->addWidget(eepromWriteButton);
+	eepromControlsLayout->addStretch(1);  // Add sacrificial stretch space to middle
+	eepromControlsLayout->addWidget(eepromReadButton);
+	eepromControls->setLayout(eepromControlsLayout);
+	connect(eepromReadButton, SIGNAL(clicked()), this, SLOT(read()));
+	connect(eepromWriteButton, SIGNAL(clicked()), this, SLOT(updateByte()));
+
+
+
+	// Create buttons
+	writeButton = new QPushButton(tr("&Write EEPROM"));
+	writeButton->setFocusPolicy(Qt::NoFocus);
+	readButton = new QPushButton(tr("&Read EEPROM"));
+	readButton->setFocusPolicy(Qt::NoFocus);
+	connect(readButton, SIGNAL(clicked()), this, SLOT(read()));
+	connect(writeButton, SIGNAL(clicked()), this, SLOT(write()));
 
 	QWidget *nodeWidgets = new QWidget();
 	QHBoxLayout *nodeLayout = new QHBoxLayout;
@@ -90,32 +130,25 @@ Window::Window(const char *device)
 	eepromDialog = new QDialog();
 	QVBoxLayout *eepromLayout = new QVBoxLayout;
 	eepromLayout->addWidget(eepromTable);
+	eepromLayout->addWidget(eepromControls);
 	eepromDialog->setLayout(eepromLayout);
 	eepromDialog->setWindowTitle("MRGui EEPROM Viewer");
-
-	// From https://bugreports.qt-project.org/browse/QTBUG-15809
-	eepromTable->document()->adjustSize();
-	eepromTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	int eepromDialogSize;
-	eepromDialogSize = eepromTable->minimumSizeHint().width(); // should get correct value, but really - not.
-	eepromDialogSize -= eepromTable->verticalScrollBar()->sizeHint().width(); //subtracting incorrect value.
-	eepromDialogSize += eepromTable->document()->size().width();
-	eepromTable->setMinimumWidth(eepromDialogSize);
-//	tabWidget->addTab(eepromPage, "EEPROM");
 
 
 
 	QAction *openAction = new QAction(tr("&Open..."), this);
 	QAction *exitAction = new QAction(tr("E&xit"), this);
-	readAction = new QAction(tr("&Read EEPROM"), this);
-	writeAction = new QAction(tr("&Write EEPROM"), this);
+	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
+	QAction *readAction = new QAction(tr("&Read EEPROM"), this);
+	connect(readAction, SIGNAL(triggered()), this, SLOT(read()));
+	QAction *writeAction = new QAction(tr("&Write EEPROM"), this);
+	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
 	QAction *updateAction = new QAction(tr("&Update Firmware..."), this);
 	QAction *eepromAction = new QAction(tr("&EEPROM Editor..."), this);
 
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(openAction);
 	fileMenu->addAction(exitAction);
-	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
 
 	QMenu *configMenu = menuBar()->addMenu(tr("&Program"));
 	configMenu->addAction(readAction);
@@ -149,6 +182,23 @@ const AVRInfo* Window::getAVRInfo(const char* part_name)
 	return(NULL);
 }
 
+void Window::write(void)
+{
+	// FIXME: write eeprom to AVR
+}
+
+void Window::read(void)
+{
+	// FIXME: read eeprom from AVR
+	emit eepromUpdated();
+}
+
+void Window::updateByte(void)
+{
+	eeprom[eepromAddr->value()] = eepromData->value();
+	emit eepromUpdated();
+}
+
 void Window::updateEepromTable(void)
 {
 	uint32_t rows = eepromSize / 16;
@@ -164,7 +214,9 @@ void Window::updateEepromTable(void)
 		}
 		eepromContents.append(line).append("\n");
 	}
+	int scrollPosition = eepromTable->verticalScrollBar()->value();
 	eepromTable->setText(eepromContents);
+	eepromTable->verticalScrollBar()->setValue(scrollPosition);
 }
 
 void Window::nodeAddrUpdated(void)

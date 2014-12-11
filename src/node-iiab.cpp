@@ -290,14 +290,6 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	timelock->setValue(30);
 	timelockUpdated();
 	//FIXME: interchange polarity
-
-
-
-	// Connect read/write functions
-	connect(readButton, SIGNAL(clicked()), this, SLOT(read()));
-	connect(readAction, SIGNAL(triggered()), this, SLOT(read()));
-	connect(writeButton, SIGNAL(clicked()), this, SLOT(write()));
-	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
 }
 
 void Node_IIAB::detectorPolarityUpdated(void)
@@ -461,17 +453,5 @@ void Node_IIAB::eeprom2node(void)
 #define EE_MISC_CONFIG          0x30
 #define EE_SIM_TRAINS           0x40
 */
-
-void Node_IIAB::write(void)
-{
-	// FIXME: write, move to window.cpp
-}
-
-void Node_IIAB::read(void)
-{
-	// FIXME: read, move to window.cpp
-	eeprom[EE_INPUT_POLARITY0] = 0xAA;
-	emit eepromUpdated();
-}
 
 

@@ -64,8 +64,6 @@ class Node_IIAB : public Window
 		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8], *interchangePolarity, *signalPolarity[8];
 
 	public slots:
-		void write(void);
-		void read(void);
 	
 	private slots:
 		void detectorPolarityUpdated(void);

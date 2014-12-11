@@ -41,17 +41,16 @@ class Window : public QMainWindow
 
 	public:
 		Window(const char*);
-		QPushButton *writeButton, *readButton;
+		QPushButton *writeButton, *readButton, *eepromWriteButton, *eepromReadButton;
 		QTabWidget *tabWidget;
-		HexSpinBox *nodeAddr;
+		HexSpinBox *nodeAddr, *eepromAddr, *eepromData;
 		QDoubleSpinBox *transmitInterval;
-		QAction *readAction, *writeAction;
 		QTextEdit *eepromTable;
 		QDialog *eepromDialog;
 
 		char avrDevice[16];
-		uint32_t eepromSize;
 		uint8_t *eeprom;
+		uint32_t eepromSize;
 		const AVRInfo* getAVRInfo(const char*);
 		
 	private:
@@ -63,6 +62,9 @@ class Window : public QMainWindow
 		void updateEepromTable(void);
 		
 	private slots:
+		void write(void);
+		void read(void);
+		void updateByte(void);
 		void nodeAddrUpdated(void);
 		void nodeAddrSet(void);
 		void transmitIntervalUpdated(void);
