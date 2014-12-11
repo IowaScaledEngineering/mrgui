@@ -56,10 +56,11 @@ int IntelHexMemory::resize(uint32_t newSize)
 	}
 	this->mem = newMem;
 	this->memSz = newSize;
-
+	
+	return(0);
 }
 
-void IntelHexMemory::fillByteSet(uint8_t fileByte)
+void IntelHexMemory::fillByteSet(uint8_t fillByte)
 {
 	this->fillByte = fillByte;
 }
@@ -79,7 +80,7 @@ uint8_t IntelHexMemory::read_uint8(uint32_t address)
 
 uint32_t IntelHexMemory::read_multibyte_be(uint32_t address, uint8_t sz)
 {
-	uint32_t retval;
+	uint32_t retval = 0;
 	if (address+(sz-1) >= this->memSz)
 		return(0);
 	
@@ -106,7 +107,7 @@ uint32_t IntelHexMemory::read_multibyte_be(uint32_t address, uint8_t sz)
 
 uint32_t IntelHexMemory::read_multibyte_le(uint32_t address, uint8_t sz)
 {
-	uint32_t retval;
+	uint32_t retval = 0;
 	if (address+(sz-1) >= this->memSz)
 		return(0);
 	
@@ -137,7 +138,7 @@ int IntelHexMemory::write_multibyte_be(uint32_t address, uint32_t value, uint8_t
 	if (address+(sz-1) >= this->memSz)
 		this->resize(address+sz);
 
-	if (sz != 4 && value >= (1<<(8*sz)))
+	if (sz != 4 && value >= (uint32_t)(1<<(8*sz)))
 		return(-2);
 	
 	switch(sz)
@@ -161,7 +162,7 @@ int IntelHexMemory::write_multibyte_le(uint32_t address, uint32_t value, uint8_t
 	if (address+(sz-1) >= this->memSz)
 		this->resize(address+sz);
 	
-	if (sz != 4 && value >= (1<<(8*sz)))
+	if (sz != 4 && value >= (uint32_t)(1<<(8*sz)))
 		return(-2);
 
 	address += sz-1;
@@ -255,14 +256,14 @@ void IntelHexMemory::bytesPerLineSet(uint8_t bytesPerLine)
 		this->bytesPerLine = bytesPerLine;
 }
 
-int IntelHexMemory::write_ihex(FILE* outFile)
+void IntelHexMemory::write_ihex(FILE* outFile)
 {
-	int i, j;
+	uint32_t i, j;
 	rewind(outFile);
 	
 	for(i=0; i<this->memSz;)
 	{
-		int recSize = this->memSz - i;
+		uint32_t recSize = this->memSz - i;
 		uint8_t checksum = 0;
 		
 		if (recSize > this->bytesPerLine)
@@ -289,10 +290,10 @@ int IntelHexMemory::write_ihex(FILE* outFile)
 
 void IntelHexMemory::text_dump(FILE* outFile)
 {
-	int i, j;
+	uint32_t i, j;
 	for(i=0; i<this->memSz;)
 	{
-		int recSize = this->memSz - i;
+		uint32_t recSize = this->memSz - i;
 		
 		if (recSize > this->bytesPerLine)
 			recSize = this->bytesPerLine;
@@ -384,7 +385,7 @@ int IntelHexMemory::read_ihex(FILE* inFile)
 				break;
 
 			case 0x00: // Data line
-				for (int i=0; i<byteCount; i++)
+				for (uint32_t i=0; i<byteCount; i++)
 				{
 					uint8_t byteValue;
 					byteValue = (uint8_t)hexread(lineBuffer + 9 + i*2, 2);

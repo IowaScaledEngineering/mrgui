@@ -9,7 +9,7 @@ INCLUDEPATH += .
 QT += widgets
 
 # Input
-HEADERS += hexspinbox.h window.h avrinfo.h node-iiab.h
-SOURCES += hexspinbox.cpp main.cpp window.cpp node-iiab.cpp
+HEADERS += hexspinbox.h window.h intelhexmem.h avrinfo.h node-iiab.h
+SOURCES += hexspinbox.cpp main.cpp window.cpp intelhexmem.cpp node-iiab.cpp
 
 macx { QMAKE_MAC_SDK = macosx10.9 }

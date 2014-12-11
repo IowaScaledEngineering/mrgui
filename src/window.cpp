@@ -22,14 +22,14 @@ LICENSE:
 
 #include "window.h"
 #include "avrinfo.h"
+#include "intelhexmem.h"
 
 Window::Window(const char *device)
 {
-	strncpy(avrDevice, device, sizeof(avrDevice));
-	eepromSize = getAVRInfo(device)->eeprom_size;
-	eeprom = (uint8_t*)malloc(eepromSize);
+	avrDevice = device;
+	eeprom = (uint8_t*)malloc(getAVRInfo(avrDevice)->eeprom_size);
 	// Preset EEPROM
-	for(uint32_t i=0; i<eepromSize; i++)
+	for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
 		eeprom[i] = 0xFF;
 	
 	// eepromTable must be declared before setting any defaults so updateEepromTable() can update it
@@ -57,7 +57,7 @@ Window::Window(const char *device)
 	QHBoxLayout *eepromControlsLayout = new QHBoxLayout;
 	QLabel *eepromAddrLabel = new QLabel(tr("Address:"));
 	eepromAddr = new HexSpinBox;
-	eepromAddr->setRange(0,eepromSize-1);
+	eepromAddr->setRange(0,(getAVRInfo(avrDevice)->eeprom_size)-1);
 	eepromAddr->setPrefix("0x");
 	eepromControlsLayout->addWidget(eepromAddrLabel, 0);
 	eepromControlsLayout->addWidget(eepromAddr, 0);
@@ -93,7 +93,7 @@ Window::Window(const char *device)
 	QHBoxLayout *nodeLayout = new QHBoxLayout;
 	QLabel *nodeAddrLabel = new QLabel(tr("Node Address:"));
 	nodeAddr = new HexSpinBox;
-	nodeAddr->setRange(1,254);
+	nodeAddr->setRange(0,255);
 	nodeAddr->setPrefix("0x");
 	nodeLayout->addWidget(nodeAddrLabel, 0);
 	nodeLayout->addWidget(nodeAddr, 0);
@@ -190,6 +190,17 @@ void Window::write(void)
 void Window::read(void)
 {
 	// FIXME: read eeprom from AVR
+
+	IntelHexMemory eepromMem();
+//	FILE* ihexInfile = fopen("mrgui.hex", "r");
+//	eepromMem.read_ihex(ihexInfile);
+//	fclose(ihexInfile);	
+
+	for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+	{
+		eeprom[i] = eepromMem.read_uint8(i);
+	}
+
 	emit eepromUpdated();
 }
 
@@ -201,7 +212,7 @@ void Window::updateByte(void)
 
 void Window::updateEepromTable(void)
 {
-	uint32_t rows = eepromSize / 16;
+	uint32_t rows = (getAVRInfo(avrDevice)->eeprom_size) / 16;
 	QString eepromContents = QString();
 	for(uint8_t r = 0; r < rows; r++)
 	{

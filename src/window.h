@@ -48,9 +48,8 @@ class Window : public QMainWindow
 		QTextEdit *eepromTable;
 		QDialog *eepromDialog;
 
-		char avrDevice[16];
+		const char *avrDevice;
 		uint8_t *eeprom;
-		uint32_t eepromSize;
 		const AVRInfo* getAVRInfo(const char*);
 		
 	private:

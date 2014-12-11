@@ -41,7 +41,7 @@ class IntelHexMemory
 		
 		void text_dump(FILE* outFile);
 		int read_ihex(FILE* inFile);
-		int write_ihex(FILE* outFile);
+		void write_ihex(FILE* outFile);
 		uint32_t size_get();		
 		int resize(uint32_t newSize);
 		void bytesPerLineSet(uint8_t bytesPerLine);
