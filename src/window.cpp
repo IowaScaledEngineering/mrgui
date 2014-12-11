@@ -43,16 +43,6 @@ Window::Window(const char *device)
 	eepromTableFont.setPointSize(10);
 	eepromTable->setFont(eepromTableFont);
 
-	// From https://bugreports.qt-project.org/browse/QTBUG-15809
-	updateEepromTable();  // Force update to get some data in the table
-	eepromTable->document()->adjustSize();
-	eepromTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	int eepromDialogSize;
-	eepromDialogSize = eepromTable->minimumSizeHint().width(); // should get correct value, but really - not.
-	eepromDialogSize -= eepromTable->verticalScrollBar()->sizeHint().width(); //subtracting incorrect value.
-	eepromDialogSize += eepromTable->document()->size().width();
-	eepromTable->setMinimumWidth(eepromDialogSize);
-
 	QWidget *eepromControls = new QWidget();
 	QHBoxLayout *eepromControlsLayout = new QHBoxLayout;
 	QLabel *eepromAddrLabel = new QLabel(tr("Address:"));
@@ -78,6 +68,16 @@ Window::Window(const char *device)
 	eepromControls->setLayout(eepromControlsLayout);
 	connect(eepromReadButton, SIGNAL(clicked()), this, SLOT(read()));
 	connect(eepromWriteButton, SIGNAL(clicked()), this, SLOT(updateByte()));
+
+	// From https://bugreports.qt-project.org/browse/QTBUG-15809
+	updateEepromTable();  // Force update to get some data in the table
+	eepromTable->document()->adjustSize();
+	eepromTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	int eepromDialogSize;
+	eepromDialogSize = eepromTable->minimumSizeHint().width(); // should get correct value, but really - not.
+	eepromDialogSize -= eepromTable->verticalScrollBar()->sizeHint().width(); //subtracting incorrect value.
+	eepromDialogSize += eepromTable->document()->size().width();
+	eepromTable->setMinimumWidth(eepromDialogSize);
 
 
 
@@ -118,7 +118,7 @@ Window::Window(const char *device)
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(transmitIntervalSet()));
 	
 	// Set defaults
-	nodeAddr->setValue(0x01);
+	nodeAddr->setValue(0x20);
 	nodeAddrUpdated();  // Force update for initial value, even if value not changed
 	transmitInterval->setValue(5.0);
 	transmitIntervalUpdated();  // Force update for initial value, even if value not changed
@@ -191,7 +191,7 @@ void Window::read(void)
 {
 	// FIXME: read eeprom from AVR
 
-	IntelHexMemory eepromMem();
+	IntelHexMemory eepromMem;
 //	FILE* ihexInfile = fopen("mrgui.hex", "r");
 //	eepromMem.read_ihex(ihexInfile);
 //	fclose(ihexInfile);	
@@ -213,6 +213,7 @@ void Window::updateByte(void)
 void Window::updateEepromTable(void)
 {
 	uint32_t rows = (getAVRInfo(avrDevice)->eeprom_size) / 16;
+	int scrollPosition = eepromTable->verticalScrollBar()->value();
 	QString eepromContents = QString();
 	for(uint8_t r = 0; r < rows; r++)
 	{
@@ -225,7 +226,6 @@ void Window::updateEepromTable(void)
 		}
 		eepromContents.append(line).append("\n");
 	}
-	int scrollPosition = eepromTable->verticalScrollBar()->value();
 	eepromTable->setText(eepromContents);
 	eepromTable->verticalScrollBar()->setValue(scrollPosition);
 }
