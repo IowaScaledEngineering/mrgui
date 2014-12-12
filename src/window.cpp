@@ -356,6 +356,7 @@ void Window::updateFirmware(void)
 
 void Window::eepromAddrUpdated(void)
 {
+	eepromData->setValue(eeprom[eepromAddr->value()]);
 	updateEepromTable();
 }
 
