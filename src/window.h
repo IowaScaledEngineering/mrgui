@@ -49,11 +49,13 @@ class Window : public QMainWindow
 		QDialog *eepromDialog;
 		QActionGroup *programmerGroup;
 		QAction *programmerAction[sizeof(proginfo)/sizeof(proginfo[0])];
-
+		
 		const char *avrDevice;
 		uint8_t *eeprom;
 		const AVRInfo* getAVRInfo(const char*);
 		
+		char avrdudePath[256];
+
 	private:
 
 	signals:
@@ -63,6 +65,7 @@ class Window : public QMainWindow
 		void updateEepromTable(void);
 		
 	private slots:
+		void avrdude(void);
 		void write(void);
 		void read(void);
 		void eepromAddrUpdated(void);

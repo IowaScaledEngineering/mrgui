@@ -26,6 +26,8 @@ LICENSE:
 
 Window::Window(const char *device)
 {
+	strncpy(avrdudePath, "./avrdude/avrdude", sizeof(avrdudePath));
+
 	avrDevice = device;
 	eeprom = (uint8_t*)malloc(getAVRInfo(avrDevice)->eeprom_size);
 	// Preset EEPROM
@@ -138,6 +140,8 @@ Window::Window(const char *device)
 
 
 	QAction *openAction = new QAction(tr("&Open..."), this);
+	QAction *avrdudeAction = new QAction(tr("&Avrdude..."), this);
+	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(avrdude()));
 	QAction *exitAction = new QAction(tr("E&xit"), this);
 	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
 	QAction *readAction = new QAction(tr("&Read EEPROM"), this);
@@ -149,6 +153,9 @@ Window::Window(const char *device)
 
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(openAction);
+	fileMenu->addSeparator();
+	fileMenu->addAction(avrdudeAction);
+	fileMenu->addSeparator();
 	fileMenu->addAction(exitAction);
 
 	QMenu *programMenu = menuBar()->addMenu(tr("&Program"));
@@ -194,6 +201,12 @@ const AVRInfo* Window::getAVRInfo(const char* part_name)
 	return(NULL);
 }
 
+void Window::avrdude(void)
+{
+	QString path = QFileDialog::getOpenFileName(this, tr("Select Avrdude Path"));
+	strncpy(avrdudePath, path.toLocal8Bit().data(), sizeof(avrdudePath));
+}
+
 void Window::write(void)
 {
 	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
@@ -219,11 +232,11 @@ void Window::write(void)
 	QTextEdit *consoleText = new QTextEdit();
 	consoleText->setReadOnly(true);
 	consoleText->setLineWrapMode(QTextEdit::NoWrap);
-	consoleText->setTextColor(Qt::green);
+	consoleText->setMinimumWidth(600);
 	QPalette p = consoleText->palette();
 	p.setColor(QPalette::Base, QColor(0, 0, 0));
+	p.setColor(QPalette::Text, QColor(0, 255, 0));
 	consoleText->setPalette(p);
-//	consoleText->setTextBackgroundColor(Qt::black);
 	QFont consoleFont;
 	consoleFont.setFamily("Courier");
 	consoleFont.setStyleHint(QFont::Monospace);
@@ -234,12 +247,13 @@ void Window::write(void)
 	QVBoxLayout *consoleLayout = new QVBoxLayout;
 	consoleLayout->addWidget(consoleText);
 	consoleLayout->addWidget(closeButton);
+	consoleLayout->setAlignment(closeButton, Qt::AlignCenter);
 	consoleDialog->setLayout(consoleLayout);
 	consoleDialog->setWindowTitle("Console");
 	consoleDialog->show();
 	connect(closeButton, SIGNAL(clicked()), consoleDialog, SLOT(accept()));
 
-	sprintf(cmdline, "./avrdude -c %s -p %s -U eeprom:w:mrgui.hex:i", proginfo[i].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	sprintf(cmdline, "%s -c %s -p %s -U eeprom:w:mrgui.hex:i 2>&1", avrdudePath, proginfo[i].avrdude_name, getAVRInfo(avrDevice)->part_name);
 	consoleText->append(cmdline);
 	FILE* fp = popen(cmdline, "r");
 	
@@ -247,7 +261,8 @@ void Window::write(void)
 	{
 		while (fgets(buffer, sizeof(buffer), fp) != NULL)
 		{
-			consoleText->append(buffer);
+			consoleText->insertPlainText(buffer);
+			consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
 		}
 	}
 	fclose(fp);
