@@ -279,7 +279,7 @@ void IntelHexMemory::write_ihex(FILE* outFile)
 			checksum += this->mem[i+j];
 		}
 
-		fprintf(outFile, "%02X\n", (~(uint8_t)checksum)+1);
+		fprintf(outFile, "%02X\n", (uint8_t)(~checksum)+1);
 	
 		i+=recSize;
 	}
