@@ -27,14 +27,12 @@ typedef struct
 {
 	const char* part_name;
 	const uint32_t eeprom_size;
-	const char* avrdude_cmd;
-
 } AVRInfo;
 
 const AVRInfo avrinfo[] = 
 {
-	{"atmega328", 1024, "some_command_here"},
-	{"atmega48", 256, "some_command_here2"},
+	{"atmega328p", 1024},
+	{"atmega48", 256},
 };
 
 #endif

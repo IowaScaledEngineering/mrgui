@@ -47,6 +47,7 @@ class Window : public QMainWindow
 		QDoubleSpinBox *transmitInterval;
 		QTextEdit *eepromTable;
 		QDialog *eepromDialog;
+		QRadioButton *programmer[2];
 
 		const char *avrDevice;
 		uint8_t *eeprom;

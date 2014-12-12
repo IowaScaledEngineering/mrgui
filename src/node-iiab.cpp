@@ -22,7 +22,7 @@ LICENSE:
 
 #include "node-iiab.h"
 
-Node_IIAB::Node_IIAB(void) : Window("atmega328")
+Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 {
 	// Create widget layout
 	setStyleSheet("QGroupBox{border: 1px solid gray; border-radius:5px; font-weight: bold; margin-top: 1ex; margin-bottom: 1ex;} QGroupBox::title{subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 3px;}");

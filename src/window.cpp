@@ -137,6 +137,15 @@ Window::Window(const char *device)
 
 
 
+	QButtonGroup *programmerGroup = new QButtonGroup();
+	programmer[0] = new QRadioButton("usbtiny");
+	programmer[1] = new QRadioButton("ferrets");
+	programmer[0]->setChecked(true);
+	for(uint8_t i=0; i<(sizeof(programmer)/sizeof(programmer[0])); i++)
+		programmerGroup->addButton(programmer[i]);
+
+
+
 	QAction *openAction = new QAction(tr("&Open..."), this);
 	QAction *exitAction = new QAction(tr("E&xit"), this);
 	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
@@ -151,10 +160,11 @@ Window::Window(const char *device)
 	fileMenu->addAction(openAction);
 	fileMenu->addAction(exitAction);
 
-	QMenu *configMenu = menuBar()->addMenu(tr("&Program"));
-	configMenu->addAction(readAction);
-	configMenu->addAction(writeAction);
-	configMenu->addAction(updateAction);
+	QMenu *programMenu = menuBar()->addMenu(tr("&Program"));
+	programMenu->addAction(readAction);
+	programMenu->addAction(writeAction);
+	programMenu->addAction(updateAction);
+	programMenu->addSeparator();
 
 	QMenu *advancedMenu = menuBar()->addMenu(tr("&Advanced"));
 	advancedMenu->addAction(eepromAction);
@@ -185,17 +195,41 @@ const AVRInfo* Window::getAVRInfo(const char* part_name)
 
 void Window::write(void)
 {
-	// FIXME: write eeprom to AVR
+	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
+
+	for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+	{
+		eepromMem.write_uint8(i, eeprom[i]);
+	}
+
+	FILE* ihexOutfile = fopen("mrgui.hex", "w");
+	eepromMem.write_ihex(ihexOutfile);
+	fclose(ihexOutfile);
+
+	char cmdline[256], buffer[256];
+	// FIXME: add programmer selection
+	sprintf(cmdline, "./avrdude -c usbtiny -p %s -U eeprom:w:mrgui.hex:i", getAVRInfo(avrDevice)->part_name);
+	FILE* fp = popen(cmdline, "r");
+	
+	if(fp != NULL)
+	{
+		while (fgets(buffer, sizeof(buffer), fp) != NULL)
+		{
+			// FIXME: print output
+		}
+	}
+	fclose(fp);
 }
 
 void Window::read(void)
 {
+	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
+
 	// FIXME: read eeprom from AVR
 
-	IntelHexMemory eepromMem(16);
-//	FILE* ihexInfile = fopen("mrgui.hex", "r");
-//	eepromMem.read_ihex(ihexInfile);
-//	fclose(ihexInfile);	
+	FILE* ihexInfile = fopen("mrgui.hex", "r");
+	eepromMem.read_ihex(ihexInfile);
+	fclose(ihexInfile);	
 
 	for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
 	{
