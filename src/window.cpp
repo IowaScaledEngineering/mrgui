@@ -266,7 +266,8 @@ void Window::avrdudeDone(void)
 void Window::getAvrdudePath(void)
 {
 	QString path = QFileDialog::getOpenFileName(this, tr("Select Avrdude Path"));
-	strncpy(avrdudePath, path.toLocal8Bit().data(), sizeof(avrdudePath));
+	if(strcmp(path.toLocal8Bit().data(), ""))
+		strncpy(avrdudePath, path.toLocal8Bit().data(), sizeof(avrdudePath));
 }
 
 void Window::cleanupConsole(void)
