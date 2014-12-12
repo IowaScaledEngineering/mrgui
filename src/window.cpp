@@ -136,12 +136,47 @@ Window::Window(const char *device)
 	eepromLayout->addWidget(eepromControls);
 	eepromDialog->setLayout(eepromLayout);
 	eepromDialog->setWindowTitle("MRGui EEPROM Viewer");
+	
+	
+	
+	consoleCloseButton = new QPushButton(tr("Close"));
+	consoleText = new QTextEdit();
+	consoleText->setReadOnly(true);
+	consoleText->setLineWrapMode(QTextEdit::NoWrap);
+	consoleText->setMinimumWidth(600);
+	QPalette p = consoleText->palette();
+	p.setColor(QPalette::Base, QColor(0, 0, 0));
+	p.setColor(QPalette::Text, QColor(0, 255, 0));
+	consoleText->setPalette(p);
+	QFont consoleFont;
+	consoleFont.setFamily("Courier");
+	consoleFont.setStyleHint(QFont::Monospace);
+	consoleFont.setFixedPitch(true);
+	consoleFont.setPointSize(8);
+	consoleText->setFont(consoleFont);
+
+	consoleDialog = new QDialog();
+	QVBoxLayout *consoleLayout = new QVBoxLayout;
+	consoleLayout->addWidget(consoleText);
+	consoleLayout->addWidget(consoleCloseButton);
+	consoleLayout->setAlignment(consoleCloseButton, Qt::AlignCenter);
+	consoleDialog->setLayout(consoleLayout);
+	consoleDialog->setWindowTitle("Console");
+	consoleDialog->setModal(true);
+	connect(consoleCloseButton, SIGNAL(clicked()), consoleDialog, SLOT(accept()));
+	connect(consoleDialog, SIGNAL(finished(int)), this, SLOT(cleanupConsole()));
+	
+	
+	
+	avrdudeProcess = new QProcess(this);
+	connect(avrdudeProcess, SIGNAL(readyReadStandardError()), this, SLOT(readStderr()));
+	connect(avrdudeProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(avrdudeDone(void)));
 
 
 
 	QAction *openAction = new QAction(tr("&Open..."), this);
 	QAction *avrdudeAction = new QAction(tr("&Avrdude..."), this);
-	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(avrdude()));
+	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(getAvrdudePath()));
 	QAction *exitAction = new QAction(tr("E&xit"), this);
 	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
 	QAction *readAction = new QAction(tr("&Read EEPROM"), this);
@@ -201,10 +236,45 @@ const AVRInfo* Window::getAVRInfo(const char* part_name)
 	return(NULL);
 }
 
-void Window::avrdude(void)
+void Window::readStderr(void)
+{
+	consoleText->insertPlainText(avrdudeProcess->readAllStandardError());
+	consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
+}
+
+void Window::avrdudeDone(void)
+{
+	consoleCloseButton->setEnabled(true);
+	
+	// (Re-)read hex file.  Needed for a read.  Redundant for a write.
+	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
+	FILE* ihexInfile = fopen("mrgui.hex", "r");
+	if(ihexInfile != NULL)
+	{
+		eepromMem.read_ihex(ihexInfile);
+		fclose(ihexInfile);	
+		for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+		{
+			eeprom[i] = eepromMem.read_uint8(i);
+		}
+		emit eepromUpdated();
+	}
+	
+	remove("mrgui.hex");
+}
+
+void Window::getAvrdudePath(void)
 {
 	QString path = QFileDialog::getOpenFileName(this, tr("Select Avrdude Path"));
 	strncpy(avrdudePath, path.toLocal8Bit().data(), sizeof(avrdudePath));
+}
+
+void Window::cleanupConsole(void)
+{
+	if(QProcess::NotRunning != avrdudeProcess->state())
+	{
+		avrdudeProcess->close();
+	}
 }
 
 void Window::write(void)
@@ -220,70 +290,34 @@ void Window::write(void)
 	eepromMem.write_ihex(ihexOutfile);
 	fclose(ihexOutfile);
 
-	char cmdline[256], buffer[256];
-	uint8_t i;
-	for(i=0; i<(sizeof(proginfo)/sizeof(proginfo[0])); i++)
+	uint8_t programmerIndex;
+	for(programmerIndex=0; programmerIndex<(sizeof(proginfo)/sizeof(proginfo[0])); programmerIndex++)
 	{
-		if(programmerGroup->checkedAction() == programmerAction[i])
+		if(programmerGroup->checkedAction() == programmerAction[programmerIndex])
 			break;
 	}
 
-	QPushButton *closeButton = new QPushButton(tr("Close"));
-	QTextEdit *consoleText = new QTextEdit();
-	consoleText->setReadOnly(true);
-	consoleText->setLineWrapMode(QTextEdit::NoWrap);
-	consoleText->setMinimumWidth(600);
-	QPalette p = consoleText->palette();
-	p.setColor(QPalette::Base, QColor(0, 0, 0));
-	p.setColor(QPalette::Text, QColor(0, 255, 0));
-	consoleText->setPalette(p);
-	QFont consoleFont;
-	consoleFont.setFamily("Courier");
-	consoleFont.setStyleHint(QFont::Monospace);
-	consoleFont.setFixedPitch(true);
-	consoleFont.setPointSize(8);
-	consoleText->setFont(consoleFont);
-	QDialog *consoleDialog = new QDialog();
-	QVBoxLayout *consoleLayout = new QVBoxLayout;
-	consoleLayout->addWidget(consoleText);
-	consoleLayout->addWidget(closeButton);
-	consoleLayout->setAlignment(closeButton, Qt::AlignCenter);
-	consoleDialog->setLayout(consoleLayout);
-	consoleDialog->setWindowTitle("Console");
+	consoleCloseButton->setEnabled(false);
 	consoleDialog->show();
-	connect(closeButton, SIGNAL(clicked()), consoleDialog, SLOT(accept()));
-
-	sprintf(cmdline, "%s -c %s -p %s -U eeprom:w:mrgui.hex:i 2>&1", avrdudePath, proginfo[i].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:w:mrgui.hex:i 2>&1").arg(avrdudePath, proginfo[programmerIndex].avrdude_name, getAVRInfo(avrDevice)->part_name);
 	consoleText->append(cmdline);
-	FILE* fp = popen(cmdline, "r");
-	
-	if(fp != NULL)
-	{
-		while (fgets(buffer, sizeof(buffer), fp) != NULL)
-		{
-			consoleText->insertPlainText(buffer);
-			consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
-		}
-	}
-	fclose(fp);
+	avrdudeProcess->start(cmdline);
 }
 
 void Window::read(void)
 {
-	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
-
-	// FIXME: read eeprom from AVR
-
-	FILE* ihexInfile = fopen("mrgui.hex", "r");
-	eepromMem.read_ihex(ihexInfile);
-	fclose(ihexInfile);	
-
-	for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+	uint8_t programmerIndex;
+	for(programmerIndex=0; programmerIndex<(sizeof(proginfo)/sizeof(proginfo[0])); programmerIndex++)
 	{
-		eeprom[i] = eepromMem.read_uint8(i);
+		if(programmerGroup->checkedAction() == programmerAction[programmerIndex])
+			break;
 	}
 
-	emit eepromUpdated();
+	consoleCloseButton->setEnabled(false);
+	consoleDialog->show();
+	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:r:mrgui.hex:i 2>&1").arg(avrdudePath, proginfo[programmerIndex].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	consoleText->append(cmdline);
+	avrdudeProcess->start(cmdline);
 }
 
 void Window::eepromAddrUpdated(void)

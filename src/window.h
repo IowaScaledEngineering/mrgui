@@ -41,12 +41,12 @@ class Window : public QMainWindow
 
 	public:
 		Window(const char*);
-		QPushButton *writeButton, *readButton, *eepromWriteButton, *eepromReadButton;
+		QPushButton *writeButton, *readButton, *eepromWriteButton, *eepromReadButton, *consoleCloseButton;
 		QTabWidget *tabWidget;
 		HexSpinBox *nodeAddr, *eepromAddr, *eepromData;
 		QDoubleSpinBox *transmitInterval;
-		QTextEdit *eepromTable;
-		QDialog *eepromDialog;
+		QTextEdit *eepromTable, *consoleText;
+		QDialog *eepromDialog, *consoleDialog;
 		QActionGroup *programmerGroup;
 		QAction *programmerAction[sizeof(proginfo)/sizeof(proginfo[0])];
 		
@@ -57,6 +57,7 @@ class Window : public QMainWindow
 		char avrdudePath[256];
 
 	private:
+		QProcess *avrdudeProcess;
 
 	signals:
 		void eepromUpdated();
@@ -65,7 +66,10 @@ class Window : public QMainWindow
 		void updateEepromTable(void);
 		
 	private slots:
-		void avrdude(void);
+		void readStderr(void);
+		void avrdudeDone(void);
+		void getAvrdudePath(void);
+		void cleanupConsole(void);
 		void write(void);
 		void read(void);
 		void eepromAddrUpdated(void);
