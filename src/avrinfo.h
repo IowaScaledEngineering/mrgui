@@ -35,5 +35,18 @@ const AVRInfo avrinfo[] =
 	{"atmega48", 256},
 };
 
+typedef struct
+{
+	const char* nice_name;
+	const char* avrdude_name;
+} AVRProgrammerInfo;
+
+const AVRProgrammerInfo proginfo[] = 
+{
+	{"USBtinyISP", "usbtiny"},
+	{"Ferrets", "ferrets"},
+};
+
+
 #endif
 

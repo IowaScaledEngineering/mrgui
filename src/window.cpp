@@ -137,15 +137,6 @@ Window::Window(const char *device)
 
 
 
-	QButtonGroup *programmerGroup = new QButtonGroup();
-	programmer[0] = new QRadioButton("usbtiny");
-	programmer[1] = new QRadioButton("ferrets");
-	programmer[0]->setChecked(true);
-	for(uint8_t i=0; i<(sizeof(programmer)/sizeof(programmer[0])); i++)
-		programmerGroup->addButton(programmer[i]);
-
-
-
 	QAction *openAction = new QAction(tr("&Open..."), this);
 	QAction *exitAction = new QAction(tr("E&xit"), this);
 	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
@@ -165,6 +156,16 @@ Window::Window(const char *device)
 	programMenu->addAction(writeAction);
 	programMenu->addAction(updateAction);
 	programMenu->addSeparator();
+
+	programmerGroup = new QActionGroup(this);
+	for(uint8_t i=0; i<(sizeof(proginfo)/sizeof(proginfo[0])); i++)
+	{
+		programmerAction[i] = new QAction(tr(proginfo[i].nice_name), this);
+		programmerAction[i]->setCheckable(true);
+		programmerGroup->addAction(programmerAction[i]);
+		programMenu->addAction(programmerAction[i]);
+	}
+	programmerAction[0]->setChecked(true);
 
 	QMenu *advancedMenu = menuBar()->addMenu(tr("&Advanced"));
 	advancedMenu->addAction(eepromAction);
@@ -207,15 +208,46 @@ void Window::write(void)
 	fclose(ihexOutfile);
 
 	char cmdline[256], buffer[256];
-	// FIXME: add programmer selection
-	sprintf(cmdline, "./avrdude -c usbtiny -p %s -U eeprom:w:mrgui.hex:i", getAVRInfo(avrDevice)->part_name);
+	uint8_t i;
+	for(i=0; i<(sizeof(proginfo)/sizeof(proginfo[0])); i++)
+	{
+		if(programmerGroup->checkedAction() == programmerAction[i])
+			break;
+	}
+
+	QPushButton *closeButton = new QPushButton(tr("Close"));
+	QTextEdit *consoleText = new QTextEdit();
+	consoleText->setReadOnly(true);
+	consoleText->setLineWrapMode(QTextEdit::NoWrap);
+	consoleText->setTextColor(Qt::green);
+	QPalette p = consoleText->palette();
+	p.setColor(QPalette::Base, QColor(0, 0, 0));
+	consoleText->setPalette(p);
+//	consoleText->setTextBackgroundColor(Qt::black);
+	QFont consoleFont;
+	consoleFont.setFamily("Courier");
+	consoleFont.setStyleHint(QFont::Monospace);
+	consoleFont.setFixedPitch(true);
+	consoleFont.setPointSize(8);
+	consoleText->setFont(consoleFont);
+	QDialog *consoleDialog = new QDialog();
+	QVBoxLayout *consoleLayout = new QVBoxLayout;
+	consoleLayout->addWidget(consoleText);
+	consoleLayout->addWidget(closeButton);
+	consoleDialog->setLayout(consoleLayout);
+	consoleDialog->setWindowTitle("Console");
+	consoleDialog->show();
+	connect(closeButton, SIGNAL(clicked()), consoleDialog, SLOT(accept()));
+
+	sprintf(cmdline, "./avrdude -c %s -p %s -U eeprom:w:mrgui.hex:i", proginfo[i].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	consoleText->append(cmdline);
 	FILE* fp = popen(cmdline, "r");
 	
 	if(fp != NULL)
 	{
 		while (fgets(buffer, sizeof(buffer), fp) != NULL)
 		{
-			// FIXME: print output
+			consoleText->append(buffer);
 		}
 	}
 	fclose(fp);
