@@ -58,6 +58,14 @@ class Window : public QMainWindow
 
 	private:
 		QProcess *avrdudeProcess;
+		QString firmwarePath;
+		typedef enum
+		{
+			READ_EEPROM,
+			WRITE_EEPROM,
+			UPDATE_FIRMWARE,
+		} AvrdudeAction;
+		AvrdudeAction avrdudeAction;
 
 	signals:
 		void eepromUpdated();
@@ -70,8 +78,10 @@ class Window : public QMainWindow
 		void avrdudeDone(void);
 		void getAvrdudePath(void);
 		void cleanupConsole(void);
+		uint8_t findProgrammerIndex(void);
 		void write(void);
 		void read(void);
+		void updateFirmware(void);
 		void eepromAddrUpdated(void);
 		void updateByte(void);
 		void nodeAddrUpdated(void);

@@ -27,7 +27,7 @@ LICENSE:
 Window::Window(const char *device)
 {
 	strncpy(avrdudePath, "./avrdude/avrdude", sizeof(avrdudePath));
-
+	
 	avrDevice = device;
 	eeprom = (uint8_t*)malloc(getAVRInfo(avrDevice)->eeprom_size);
 	// Preset EEPROM
@@ -143,7 +143,9 @@ Window::Window(const char *device)
 	consoleText = new QTextEdit();
 	consoleText->setReadOnly(true);
 	consoleText->setLineWrapMode(QTextEdit::NoWrap);
-	consoleText->setMinimumWidth(600);
+	consoleText->setMinimumWidth(500);
+	consoleText->setMinimumHeight(400);
+	consoleText->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	QPalette p = consoleText->palette();
 	p.setColor(QPalette::Base, QColor(0, 0, 0));
 	p.setColor(QPalette::Text, QColor(0, 255, 0));
@@ -175,7 +177,7 @@ Window::Window(const char *device)
 
 
 	QAction *openAction = new QAction(tr("&Open..."), this);
-	QAction *avrdudeAction = new QAction(tr("&Avrdude..."), this);
+	QAction *avrdudeAction = new QAction(tr("Set &Avrdude Path..."), this);
 	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(getAvrdudePath()));
 	QAction *exitAction = new QAction(tr("E&xit"), this);
 	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
@@ -184,6 +186,7 @@ Window::Window(const char *device)
 	QAction *writeAction = new QAction(tr("&Write EEPROM"), this);
 	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
 	QAction *updateAction = new QAction(tr("&Update Firmware..."), this);
+	connect(updateAction, SIGNAL(triggered()), this, SLOT(updateFirmware()));
 	QAction *eepromAction = new QAction(tr("&EEPROM Editor..."), this);
 
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -244,29 +247,41 @@ void Window::readStderr(void)
 
 void Window::avrdudeDone(void)
 {
+	FILE* ihexInfile;
+	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
+
 	consoleCloseButton->setEnabled(true);
 	
-	// (Re-)read hex file.  Needed for a read.  Redundant for a write.
-	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
-	FILE* ihexInfile = fopen("mrgui.hex", "r");
-	if(ihexInfile != NULL)
+	switch(avrdudeAction)
 	{
-		eepromMem.read_ihex(ihexInfile);
-		fclose(ihexInfile);	
-		for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
-		{
-			eeprom[i] = eepromMem.read_uint8(i);
-		}
-		emit eepromUpdated();
+		case READ_EEPROM:
+			ihexInfile = fopen("mrgui.eeprom", "r");
+			if(ihexInfile != NULL)
+			{
+				eepromMem.read_ihex(ihexInfile);
+				for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+				{
+					eeprom[i] = eepromMem.read_uint8(i);
+				}
+				fclose(ihexInfile);	
+				emit eepromUpdated();
+			}
+			remove("mrgui.eeprom");
+			break;
+
+		case WRITE_EEPROM:
+			remove("mrgui.eeprom");
+			break;
+
+		case UPDATE_FIRMWARE:
+			break;
 	}
-	
-	remove("mrgui.hex");
 }
 
 void Window::getAvrdudePath(void)
 {
 	QString path = QFileDialog::getOpenFileName(this, tr("Select Avrdude Path"));
-	if(strcmp(path.toLocal8Bit().data(), ""))
+	if(!path.isNull())
 		strncpy(avrdudePath, path.toLocal8Bit().data(), sizeof(avrdudePath));
 }
 
@@ -278,6 +293,17 @@ void Window::cleanupConsole(void)
 	}
 }
 
+uint8_t Window::findProgrammerIndex(void)
+{
+	uint8_t programmerIndex;
+	for(programmerIndex=0; programmerIndex<(sizeof(proginfo)/sizeof(proginfo[0])); programmerIndex++)
+	{
+		if(programmerGroup->checkedAction() == programmerAction[programmerIndex])
+			break;
+	}
+	return(programmerIndex);
+}
+
 void Window::write(void)
 {
 	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
@@ -287,38 +313,45 @@ void Window::write(void)
 		eepromMem.write_uint8(i, eeprom[i]);
 	}
 
-	FILE* ihexOutfile = fopen("mrgui.hex", "w");
+	FILE* ihexOutfile = fopen("mrgui.eeprom", "w");
 	eepromMem.write_ihex(ihexOutfile);
 	fclose(ihexOutfile);
 
-	uint8_t programmerIndex;
-	for(programmerIndex=0; programmerIndex<(sizeof(proginfo)/sizeof(proginfo[0])); programmerIndex++)
-	{
-		if(programmerGroup->checkedAction() == programmerAction[programmerIndex])
-			break;
-	}
-
 	consoleCloseButton->setEnabled(false);
+	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:w:mrgui.hex:i 2>&1").arg(avrdudePath, proginfo[programmerIndex].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:w:mrgui.eeprom:i 2>&1").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
 	consoleText->append(cmdline);
+	avrdudeAction = WRITE_EEPROM;
 	avrdudeProcess->start(cmdline);
 }
 
 void Window::read(void)
 {
-	uint8_t programmerIndex;
-	for(programmerIndex=0; programmerIndex<(sizeof(proginfo)/sizeof(proginfo[0])); programmerIndex++)
-	{
-		if(programmerGroup->checkedAction() == programmerAction[programmerIndex])
-			break;
-	}
-
 	consoleCloseButton->setEnabled(false);
+	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:r:mrgui.hex:i 2>&1").arg(avrdudePath, proginfo[programmerIndex].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:r:mrgui.eeprom:i 2>&1").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
 	consoleText->append(cmdline);
+	avrdudeAction = READ_EEPROM;
 	avrdudeProcess->start(cmdline);
+}
+
+void Window::updateFirmware(void)
+{
+	QString path = QFileDialog::getOpenFileName(this, tr("Select Firmware File"), firmwarePath, "HEX Files (*.hex)");
+	if(!path.isNull())
+	{
+		firmwarePath = QFileInfo(path).path();
+	
+		consoleCloseButton->setEnabled(false);
+		consoleText->clear();
+		consoleDialog->show();
+		QString cmdline = QString("%1 -c %2 -p %3 -B1 -U flash:w:%4:i 2>&1").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, path);
+		consoleText->append(cmdline);
+		avrdudeAction = UPDATE_FIRMWARE;
+		avrdudeProcess->start(cmdline);
+	}
 }
 
 void Window::eepromAddrUpdated(void)
