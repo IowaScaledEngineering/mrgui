@@ -20,6 +20,11 @@ LICENSE:
 
 *************************************************************************/
 
+#include <stdint.h>
+
+#include <QtWidgets>
+#include <QDebug>
+
 #include "window.h"
 #include "avrinfo.h"
 #include "intelhexmem.h"

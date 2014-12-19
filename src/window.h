@@ -23,10 +23,8 @@ LICENSE:
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <stdint.h>
-
 #include <QtWidgets>
-#include <QDebug>
+
 #include "avrinfo.h"
 #include "hexspinbox.h"
 

@@ -20,6 +20,8 @@ LICENSE:
 
 *************************************************************************/
 
+#include <stdint.h>
+
 #include "node-iiab.h"
 
 Node_IIAB::Node_IIAB(void) : Window("atmega328p")

@@ -23,6 +23,8 @@ LICENSE:
 #ifndef AVRINFO_H
 #define AVRINFO_H
 
+#include <stdint.h>
+
 typedef struct
 {
 	const char* part_name;

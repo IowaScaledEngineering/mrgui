@@ -23,8 +23,6 @@ LICENSE:
 #ifndef NODE_IIAB_H
 #define NODE_IIAB_H
 
-#include <stdint.h>
-
 #include <QtWidgets>
 
 #include "window.h"
