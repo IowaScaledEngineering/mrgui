@@ -2,11 +2,6 @@
 #define _INTELHEXMEM_H_
 
 #include <stdio.h>
-#if defined(__APPLE__) || defined(__FreeBSD__)
-#include <malloc/malloc.h> 
-#else
-#include <malloc.h>
-#endif
 #include <stdint.h>
 
 class IntelHexMemory
