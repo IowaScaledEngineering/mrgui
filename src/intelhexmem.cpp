@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <string.h>
-#include <malloc.h>
 #include "intelhexmem.h"
 
 IntelHexMemory::IntelHexMemory()
