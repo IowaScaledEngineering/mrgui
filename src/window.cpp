@@ -63,19 +63,20 @@ Window::Window(const char *device)
 	eepromData = new HexSpinBox;
 	eepromData->setRange(0,255);
 	eepromData->setPrefix("0x");
-	eepromWriteButton = new QPushButton(tr("&Change Byte"));
-	eepromWriteButton->setFocusPolicy(Qt::NoFocus);
+	eepromDataBinary = new QLabel(tr(""));
+	eepromDataBinary->setFont(eepromTableFont);
 	eepromReadButton = new QPushButton(tr("&Read EEPROM"));
 	eepromReadButton->setFocusPolicy(Qt::NoFocus);
 	eepromControlsLayout->addWidget(eepromDataLabel, 0);
 	eepromControlsLayout->addWidget(eepromData, 0);
-	eepromControlsLayout->addWidget(eepromWriteButton);
+	eepromControlsLayout->addSpacing(10);
+	eepromControlsLayout->addWidget(eepromDataBinary, 0);
 	eepromControlsLayout->addStretch(1);  // Add sacrificial stretch space to middle
 	eepromControlsLayout->addWidget(eepromReadButton);
 	eepromControls->setLayout(eepromControlsLayout);
-	connect(eepromAddr, SIGNAL(valueChanged(int)), this, SLOT(eepromAddrUpdated()));
+	connect(eepromAddr, SIGNAL(valueChanged(int)), this, SLOT(updateEepromTable()));
+	connect(eepromData, SIGNAL(valueChanged(int)), this, SLOT(updateByte()));
 	connect(eepromReadButton, SIGNAL(clicked()), this, SLOT(read()));
-	connect(eepromWriteButton, SIGNAL(clicked()), this, SLOT(updateByte()));
 
 	// From https://bugreports.qt-project.org/browse/QTBUG-15809
 	updateEepromTable();  // Force update to get some data in the table
@@ -359,12 +360,6 @@ void Window::updateFirmware(void)
 	}
 }
 
-void Window::eepromAddrUpdated(void)
-{
-	eepromData->setValue(eeprom[eepromAddr->value()]);
-	updateEepromTable();
-}
-
 void Window::updateByte(void)
 {
 	eeprom[eepromAddr->value()] = eepromData->value();
@@ -392,6 +387,9 @@ void Window::updateEepromTable(void)
 	}
 	eepromTable->setText(eepromContents);
 	eepromTable->verticalScrollBar()->setValue(scrollPosition);
+
+	eepromData->setValue(eeprom[eepromAddr->value()]);
+	eepromDataBinary->setText(QString("%1 %2").arg((eepromData->value() >> 4) & 0xF, 4, 2, QChar('0')).arg(eepromData->value() & 0xF, 4, 2, QChar('0')));
 }
 
 void Window::nodeAddrUpdated(void)

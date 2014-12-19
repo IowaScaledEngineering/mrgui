@@ -39,7 +39,8 @@ class Window : public QMainWindow
 
 	public:
 		Window(const char*);
-		QPushButton *writeButton, *readButton, *eepromWriteButton, *eepromReadButton, *consoleCloseButton;
+		QLabel *eepromDataBinary;
+		QPushButton *writeButton, *readButton, *eepromReadButton, *consoleCloseButton;
 		QTabWidget *tabWidget;
 		HexSpinBox *nodeAddr, *eepromAddr, *eepromData;
 		QDoubleSpinBox *transmitInterval;
@@ -80,7 +81,6 @@ class Window : public QMainWindow
 		void write(void);
 		void read(void);
 		void updateFirmware(void);
-		void eepromAddrUpdated(void);
 		void updateByte(void);
 		void nodeAddrUpdated(void);
 		void nodeAddrSet(void);
