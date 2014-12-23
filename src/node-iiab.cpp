@@ -167,12 +167,12 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	QWidget *turnoutPage = new QWidget();
 	QFormLayout *turnoutLayout = new QFormLayout;
 	turnoutPolarity0 = new QComboBox();
-	turnoutPolarity0->addItem(tr("Low = Main, High = Siding"));
-	turnoutPolarity0->addItem(tr("High = Main, Low = Siding"));
+	turnoutPolarity0->addItem(tr("Low = Main, High = Siding"),0);
+	turnoutPolarity0->addItem(tr("High = Main, Low = Siding"),1);
 	turnoutLayout->addRow(tr("West Polarity:"), turnoutPolarity0);
 	turnoutPolarity2 = new QComboBox();
-	turnoutPolarity2->addItem(tr("Low = Main, High = Siding"));
-	turnoutPolarity2->addItem(tr("High = Main, Low = Siding"));
+	turnoutPolarity2->addItem(tr("Low = Main, High = Siding"),0);
+	turnoutPolarity2->addItem(tr("High = Main, Low = Siding"),1);
 	turnoutLayout->addRow(tr("North Polarity:"), turnoutPolarity2);
 	turnoutLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	turnoutPage->setLayout(turnoutLayout);
@@ -257,17 +257,32 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout3Set()));
 	connect(debounce, SIGNAL(valueChanged(int)), this, SLOT(debounceUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(debounceSet()));
-	//FIXME: signal polarity
+	for(int i=0; i<8; i++)
+	{
+		// Connect signals
+		connect(signalPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(signalPolarityUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(signalPolaritySet()));
+	}
 	connect(blinky, SIGNAL(valueChanged(double)), this, SLOT(blinkyUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(blinkySet()));
-	//FIXME: turnout polarity
+	connect(turnoutPolarity0, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
+	connect(turnoutPolarity2, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(turnoutPolaritySet()));
 	connect(lockout, SIGNAL(valueChanged(int)), this, SLOT(lockoutUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(lockoutSet()));
 	connect(timelock, SIGNAL(valueChanged(int)), this, SLOT(timelockUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timelockSet()));
-	//FIXME: interchange polarity
+	connect(interchangePolarity, SIGNAL(currentIndexChanged(int)), this, SLOT(interchangePolarityUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(interchangePolaritySet()));
 
 	// Set defaults
+	eeprom[EE_INPUT_POLARITY0] = 0;  // Set to zero so unused bits are zero
+	eeprom[EE_INPUT_POLARITY1] = 0;
+	eeprom[EE_OUTPUT_POLARITY0] = 0;
+	eeprom[EE_OUTPUT_POLARITY1] = 0;
+	eeprom[EE_OUTPUT_POLARITY2] = 0;
+	eeprom[EE_OUTPUT_POLARITY3] = 0;
+	eeprom[EE_OUTPUT_POLARITY4] = 0;
 	for(int i=0; i<8; i++)
 	{
 		detectorPolarity[i]->setCurrentIndex(0);
@@ -283,15 +298,19 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	timeout3Updated();
 	debounce->setValue(3);
 	debounceUpdated();
-	//FIXME: signal polarity
+	for(int i=0; i<8; i++)
+	{
+		signalPolarity[i]->setCurrentIndex(0);
+	}
 	blinky->setValue(0.5);
 	blinkyUpdated();
-	//FIXME: turnout polarity
+	turnoutPolarity0->setCurrentIndex(0);
+	turnoutPolarity2->setCurrentIndex(0);
 	lockout->setValue(12);
 	lockoutUpdated();
 	timelock->setValue(30);
 	timelockUpdated();
-	//FIXME: interchange polarity
+	interchangePolarity->setCurrentIndex(0);
 }
 
 void Node_IIAB::detectorPolarityUpdated(void)
@@ -312,7 +331,7 @@ void Node_IIAB::detectorPolarityUpdated(void)
 
 void Node_IIAB::detectorPolaritySet(void)
 {
-	// Save a copy of the eeprom value since each widget update will trigger a rewrite of the eeprom
+	// Save a copy of the eeprom value since each widget update will trigger a rewrite of the eeprom with current values from not-yet-updated widgets
 	// This will wipe out any subsequent updates if the eeprom byte is not saved.
 	uint8_t polarity = eeprom[EE_INPUT_POLARITY0];
 	for(int i=0; i<8; i++)
@@ -326,7 +345,104 @@ void Node_IIAB::detectorPolaritySet(void)
 			detectorPolarity[i]->setCurrentIndex(detectorPolarity[i]->findData(0));
 		}
 	}
+}
+
+void Node_IIAB::turnoutPolarityUpdated(void)
+{
+	if(turnoutPolarity0->itemData(turnoutPolarity0->currentIndex()).toBool())
+	{
+		eeprom[EE_INPUT_POLARITY1] |= 0x01;
+	}
+	else
+	{
+		eeprom[EE_INPUT_POLARITY1] &= ~(0x01);
+	}
+
+	if(turnoutPolarity2->itemData(turnoutPolarity2->currentIndex()).toBool())
+	{
+		eeprom[EE_INPUT_POLARITY1] |= 0x04;
+	}
+	else
+	{
+		eeprom[EE_INPUT_POLARITY1] &= ~(0x04);
+	}
+	
 	updateEepromTable();
+}
+
+void Node_IIAB::turnoutPolaritySet(void)
+{
+	// Save a copy of the eeprom value since each widget update will trigger a rewrite of the eeprom with current values from not-yet-updated widgets
+	// This will wipe out any subsequent updates if the eeprom byte is not saved.
+	uint8_t polarity = eeprom[EE_INPUT_POLARITY1];
+	if(polarity & 0x01)
+	{
+		turnoutPolarity0->setCurrentIndex(turnoutPolarity0->findData(1));
+	}
+	else
+	{
+		turnoutPolarity0->setCurrentIndex(turnoutPolarity0->findData(0));
+	}
+
+	if(polarity & 0x04)
+	{
+		turnoutPolarity2->setCurrentIndex(turnoutPolarity2->findData(1));
+	}
+	else
+	{
+		turnoutPolarity2->setCurrentIndex(turnoutPolarity2->findData(0));
+	}
+}
+
+void Node_IIAB::interchangePolarityUpdated(void)
+{
+	if(interchangePolarity->itemData(interchangePolarity->currentIndex()).toBool())
+	{
+		eeprom[EE_OUTPUT_POLARITY4] |= 0x20;
+	}
+	else
+	{
+		eeprom[EE_OUTPUT_POLARITY4] &= ~(0x20);
+	}
+
+	updateEepromTable();
+}
+
+void Node_IIAB::interchangePolaritySet(void)
+{
+	if(eeprom[EE_OUTPUT_POLARITY4] & 0x20)
+	{
+		interchangePolarity->setCurrentIndex(interchangePolarity->findData(1));
+	}
+	else
+	{
+		interchangePolarity->setCurrentIndex(interchangePolarity->findData(0));
+	}
+}
+
+void Node_IIAB::signalPolarityUpdated(void)
+{
+	uint32_t polarity = 0;
+	for(int i=0; i<8; i++)
+	{
+		polarity |= (signalPolarity[i]->itemData(signalPolarity[i]->currentIndex()).toInt()) << (3*i);
+	}
+	eeprom[EE_OUTPUT_POLARITY0] = (polarity >>  0) & 0xFF;
+	eeprom[EE_OUTPUT_POLARITY1] = (polarity >>  8) & 0xFF;
+	eeprom[EE_OUTPUT_POLARITY2] = (polarity >> 16) & 0xFF;
+	updateEepromTable();
+}
+
+void Node_IIAB::signalPolaritySet(void)
+{
+	// Save a copy of the eeprom value since each widget update will trigger a rewrite of the eeprom with current values from not-yet-updated widgets
+	// This will wipe out any subsequent updates if the eeprom byte is not saved.
+	uint32_t polarity = (eeprom[EE_OUTPUT_POLARITY2] << 16) + (eeprom[EE_OUTPUT_POLARITY1] << 8) + (eeprom[EE_OUTPUT_POLARITY0]);
+	for(int i=0; i<8; i++)
+	{
+		uint8_t bits = (polarity >> (3*i)) & 0x07;
+		signalPolarity[i]->setCurrentIndex(signalPolarity[i]->findData(bits));
+	}
 }
 
 void Node_IIAB::timeout0Updated(void)
@@ -338,7 +454,6 @@ void Node_IIAB::timeout0Updated(void)
 void Node_IIAB::timeout0Set(void)
 {
 	timeout0->setValue(eeprom[EE_TIMEOUT_SECONDS+0]);
-	updateEepromTable();
 }
 
 void Node_IIAB::timeout1Updated(void)
@@ -350,7 +465,6 @@ void Node_IIAB::timeout1Updated(void)
 void Node_IIAB::timeout1Set(void)
 {
 	timeout1->setValue(eeprom[EE_TIMEOUT_SECONDS+1]);
-	updateEepromTable();
 }
 
 void Node_IIAB::timeout2Updated(void)
@@ -362,7 +476,6 @@ void Node_IIAB::timeout2Updated(void)
 void Node_IIAB::timeout2Set(void)
 {
 	timeout2->setValue(eeprom[EE_TIMEOUT_SECONDS+2]);
-	updateEepromTable();
 }
 
 void Node_IIAB::timeout3Updated(void)
@@ -374,7 +487,6 @@ void Node_IIAB::timeout3Updated(void)
 void Node_IIAB::timeout3Set(void)
 {
 	timeout3->setValue(eeprom[EE_TIMEOUT_SECONDS+3]);
-	updateEepromTable();
 }
 
 void Node_IIAB::debounceUpdated(void)
@@ -386,7 +498,6 @@ void Node_IIAB::debounceUpdated(void)
 void Node_IIAB::debounceSet(void)
 {
 	debounce->setValue(eeprom[EE_DEBOUNCE_SECONDS]);
-	updateEepromTable();
 }
 
 void Node_IIAB::blinkyUpdated(void)
@@ -398,7 +509,6 @@ void Node_IIAB::blinkyUpdated(void)
 void Node_IIAB::blinkySet(void)
 {
 	blinky->setValue(eeprom[EE_BLINKY_DECISECS] / 10.0);
-	updateEepromTable();
 }
 
 void Node_IIAB::lockoutUpdated(void)
@@ -410,7 +520,6 @@ void Node_IIAB::lockoutUpdated(void)
 void Node_IIAB::lockoutSet(void)
 {
 	lockout->setValue(eeprom[EE_LOCKOUT_SECONDS]);
-	updateEepromTable();
 }
 
 void Node_IIAB::timelockUpdated(void)
@@ -422,38 +531,5 @@ void Node_IIAB::timelockUpdated(void)
 void Node_IIAB::timelockSet(void)
 {
 	timelock->setValue(eeprom[EE_TIMELOCK_SECONDS]);
-	updateEepromTable();
 }
-
-
-
-
-/*
-void Node_IIAB::node2eeprom(void)
-{
-	eeprom[EE_CLOCK_SOURCE_ADDRESS] = clockSource->value();
-	eeprom[EE_MAX_DEAD_RECKONING] = maxDeadReckoning->value() * 10;
-	eeprom[EE_SIM_TRAIN_WINDOW] = simTrainWindow->value();
-}
-
-void Node_IIAB::eeprom2node(void)
-{
-	clockSource->setValue(eeprom[EE_CLOCK_SOURCE_ADDRESS]);
-	maxDeadReckoning->setValue(eeprom[EE_MAX_DEAD_RECKONING] / 10.0);
-	simTrainWindow->setValue(eeprom[EE_SIM_TRAIN_WINDOW]);
-}
-*/
-
-/*
-#define EE_INPUT_POLARITY0      0x20
-#define EE_INPUT_POLARITY1      0x21
-#define EE_OUTPUT_POLARITY0     0x22
-#define EE_OUTPUT_POLARITY1     0x23
-#define EE_OUTPUT_POLARITY2     0x24
-#define EE_OUTPUT_POLARITY3     0x25
-#define EE_OUTPUT_POLARITY4     0x26
-#define EE_MISC_CONFIG          0x30
-#define EE_SIM_TRAINS           0x40
-*/
-
 

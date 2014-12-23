@@ -66,6 +66,12 @@ class Node_IIAB : public Window
 	private slots:
 		void detectorPolarityUpdated(void);
 		void detectorPolaritySet(void);
+		void turnoutPolarityUpdated(void);
+		void turnoutPolaritySet(void);
+		void interchangePolarityUpdated(void);
+		void interchangePolaritySet(void);
+		void signalPolarityUpdated(void);
+		void signalPolaritySet(void);
 		void timeout0Updated(void);
 		void timeout0Set(void);
 		void timeout1Updated(void);
