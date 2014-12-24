@@ -226,6 +226,83 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	simTrainWindow->setSingleStep(1);
 	simTrainWindow->setSuffix("min");
 	scheduleLayout->addRow(tr("Trigger Window:"), simTrainWindow);
+
+	// Build Simulated Train table
+	int columns = 7;
+	QTableWidget *simTrainSchedule = new QTableWidget(NUM_SIM_TRAINS, columns);
+	QStringList simTrainHeader;
+	simTrainHeader << "Enable" << "Direction" << "Start Time" << "Duration" << "Approach" << "Sound Trigger" << "Interchange";
+	simTrainSchedule->setHorizontalHeaderLabels(simTrainHeader);
+	simTrainSchedule->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	simTrainSchedule->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	simTrainSchedule->setSelectionMode(QAbstractItemView::NoSelection);
+	QWidget *simTrainEnableWidget[NUM_SIM_TRAINS], *simTrainInterchangeWidget[NUM_SIM_TRAINS];
+	QHBoxLayout *simTrainEnableLayout[NUM_SIM_TRAINS], *simTrainInterchangeLayout[NUM_SIM_TRAINS];
+	for (int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainEnable[i] = new QCheckBox;
+		simTrainEnableWidget[i] = new QWidget;
+		simTrainEnableLayout[i] = new QHBoxLayout;
+		simTrainEnableLayout[i]->addWidget(simTrainEnable[i]);
+		simTrainEnableLayout[i]->setAlignment(Qt::AlignCenter);
+		simTrainEnableLayout[i]->setContentsMargins(0,0,0,0);
+		simTrainEnableWidget[i]->setLayout(simTrainEnableLayout[i]);
+		simTrainSchedule->setCellWidget(i, 0, simTrainEnableWidget[i]);
+		
+		simTrainDirection[i] = new QComboBox;
+		simTrainDirection[i]->addItem("West",0);
+		simTrainDirection[i]->addItem("East",1);
+		simTrainDirection[i]->addItem("North",2);
+		simTrainDirection[i]->addItem("South",3);
+		simTrainSchedule->setCellWidget(i, 1, simTrainDirection[i]);
+		
+		simTrainTime[i] = new QDateTimeEdit;
+		simTrainTime[i]->setDisplayFormat("hh:mm");
+		simTrainTime[i]->setAlignment(Qt::AlignHCenter);
+		simTrainSchedule->setCellWidget(i, 2, simTrainTime[i]);
+
+		simTrainTotal[i] = new QSpinBox;
+		simTrainTotal[i]->setRange(0, 255);
+		simTrainTotal[i]->setSingleStep(1);
+		simTrainTotal[i]->setSuffix("s");
+		simTrainTotal[i]->setAlignment(Qt::AlignHCenter);
+		simTrainSchedule->setCellWidget(i, 3, simTrainTotal[i]);
+
+		simTrainApproach[i] = new QSpinBox;
+		simTrainApproach[i]->setRange(0, 255);
+		simTrainApproach[i]->setSingleStep(1);
+		simTrainApproach[i]->setSuffix("s");
+		simTrainApproach[i]->setAlignment(Qt::AlignHCenter);
+		simTrainSchedule->setCellWidget(i, 4, simTrainApproach[i]);
+
+		simTrainSound[i] = new QComboBox;
+		simTrainSound[i]->addItem("None",0);
+		simTrainSound[i]->addItem("Sound 0",1);
+		simTrainSound[i]->addItem("Sound 1",2);
+		simTrainSound[i]->addItem("Both",3);
+		simTrainSchedule->setCellWidget(i, 5, simTrainSound[i]);
+		
+		simTrainInterchange[i] = new QCheckBox;
+		simTrainInterchangeWidget[i] = new QWidget;
+		simTrainInterchangeLayout[i] = new QHBoxLayout;
+		simTrainInterchangeLayout[i]->addWidget(simTrainInterchange[i]);
+		simTrainInterchangeLayout[i]->setAlignment(Qt::AlignCenter);
+		simTrainInterchangeLayout[i]->setContentsMargins(0,0,0,0);
+		simTrainInterchangeWidget[i]->setLayout(simTrainInterchangeLayout[i]);
+		simTrainSchedule->setCellWidget(i, 6, simTrainInterchangeWidget[i]);
+		
+	}
+	int width = 0;
+	for(int i=0; i<columns; i++)
+	{
+		width += simTrainSchedule->columnWidth(i);
+	}
+	width += simTrainSchedule->verticalHeader()->sectionSize(0);  // Add width of one section of the header
+	width += simTrainSchedule->verticalScrollBar()->sizeHint().width();
+	width += 2;
+	simTrainSchedule->setMinimumWidth(width);
+	
+	scheduleLayout->addRow(tr("Simulated Trains:"), simTrainSchedule);
 	scheduleLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	schedulePage->setLayout(scheduleLayout);
 

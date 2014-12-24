@@ -47,6 +47,8 @@ LICENSE:
 #define EE_MISC_CONFIG          0x30
 #define EE_SIM_TRAINS           0x40
 
+#define NUM_SIM_TRAINS   32
+
 class Node_IIAB : public Window
 {
     Q_OBJECT
@@ -57,9 +59,11 @@ class Node_IIAB : public Window
 	private:
 		HexSpinBox *clockSource;
 		QDoubleSpinBox *blinky, *maxDeadReckoning;
-		QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *simTrainWindow;
+		QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *simTrainWindow, *simTrainTotal[NUM_SIM_TRAINS], *simTrainApproach[NUM_SIM_TRAINS];
 		QRadioButton *ledPolarityAnode, *ledPolarityCathode;
-		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8], *interchangePolarity, *signalPolarity[8];
+		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8], *interchangePolarity, *signalPolarity[8], *simTrainDirection[NUM_SIM_TRAINS], *simTrainSound[NUM_SIM_TRAINS];
+		QCheckBox *simTrainEnable[NUM_SIM_TRAINS], *simTrainInterchange[NUM_SIM_TRAINS];
+		QDateTimeEdit *simTrainTime[NUM_SIM_TRAINS];
 
 	public slots:
 	
