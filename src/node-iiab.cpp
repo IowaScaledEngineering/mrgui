@@ -290,7 +290,6 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 		simTrainInterchangeLayout[i]->setContentsMargins(0,0,0,0);
 		simTrainInterchangeWidget[i]->setLayout(simTrainInterchangeLayout[i]);
 		simTrainSchedule->setCellWidget(i, 6, simTrainInterchangeWidget[i]);
-		
 	}
 	int width = 0;
 	for(int i=0; i<columns; i++)
@@ -316,50 +315,21 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	tabWidget->insertTab(5, schedulePage, "Schedules");
 	tabWidget->setCurrentIndex(0);
 
-
-	// Connect signals
-	for(int i=0; i<8; i++)
-	{
-		// Connect signals
-		connect(detectorPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(detectorPolarityUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(detectorPolaritySet()));
-	}
-	connect(timeout0, SIGNAL(valueChanged(int)), this, SLOT(timeout0Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout0Set()));
-	connect(timeout1, SIGNAL(valueChanged(int)), this, SLOT(timeout1Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout1Set()));
-	connect(timeout2, SIGNAL(valueChanged(int)), this, SLOT(timeout2Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout2Set()));
-	connect(timeout3, SIGNAL(valueChanged(int)), this, SLOT(timeout3Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout3Set()));
-	connect(debounce, SIGNAL(valueChanged(int)), this, SLOT(debounceUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(debounceSet()));
-	for(int i=0; i<8; i++)
-	{
-		// Connect signals
-		connect(signalPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(signalPolarityUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(signalPolaritySet()));
-	}
-	connect(blinky, SIGNAL(valueChanged(double)), this, SLOT(blinkyUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(blinkySet()));
-	connect(turnoutPolarity0, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
-	connect(turnoutPolarity2, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(turnoutPolaritySet()));
-	connect(lockout, SIGNAL(valueChanged(int)), this, SLOT(lockoutUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(lockoutSet()));
-	connect(timelock, SIGNAL(valueChanged(int)), this, SLOT(timelockUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timelockSet()));
-	connect(interchangePolarity, SIGNAL(currentIndexChanged(int)), this, SLOT(interchangePolarityUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(interchangePolaritySet()));
-
-	// Set defaults
-	eeprom[EE_INPUT_POLARITY0] = 0;  // Set to zero so unused bits are zero
+	// Set unused bits to zero
+	eeprom[EE_INPUT_POLARITY0] = 0;
 	eeprom[EE_INPUT_POLARITY1] = 0;
 	eeprom[EE_OUTPUT_POLARITY0] = 0;
 	eeprom[EE_OUTPUT_POLARITY1] = 0;
 	eeprom[EE_OUTPUT_POLARITY2] = 0;
 	eeprom[EE_OUTPUT_POLARITY3] = 0;
 	eeprom[EE_OUTPUT_POLARITY4] = 0;
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] = 0;
+		eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_DIRECTION] = 0;
+	}
+
+	// Set defaults
 	for(int i=0; i<8; i++)
 	{
 		detectorPolarity[i]->setCurrentIndex(0);
@@ -379,6 +349,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	{
 		signalPolarity[i]->setCurrentIndex(0);
 	}
+	signalPolarityUpdated();
 	blinky->setValue(0.5);
 	blinkyUpdated();
 	turnoutPolarity0->setCurrentIndex(0);
@@ -388,7 +359,82 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	timelock->setValue(30);
 	timelockUpdated();
 	interchangePolarity->setCurrentIndex(0);
+	interchangePolarityUpdated();
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainEnable[i]->setChecked(false);
+		simTrainDirection[i]->setCurrentIndex(0);
+		simTrainTime[i]->setTime(QTime(0,0));
+		simTrainTotal[i]->setValue(30);
+		simTrainApproach[i]->setValue(10);
+		simTrainSound[i]->setCurrentIndex(0);
+		simTrainInterchange[i]->setChecked(false);
+	}
+	simTrainEnableUpdated();
+	simTrainDirectionUpdated();
+	simTrainTimeUpdated();
+	simTrainTotalUpdated();
+	simTrainApproachUpdated();
+	simTrainSoundUpdated();
+	simTrainInterchangeUpdated();
+
+	// Connect signals (after defaults set to avoid excess calls)
+	for(int i=0; i<8; i++)
+	{
+		connect(detectorPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(detectorPolarityUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(detectorPolaritySet()));
+	}
+	connect(timeout0, SIGNAL(valueChanged(int)), this, SLOT(timeout0Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout0Set()));
+	connect(timeout1, SIGNAL(valueChanged(int)), this, SLOT(timeout1Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout1Set()));
+	connect(timeout2, SIGNAL(valueChanged(int)), this, SLOT(timeout2Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout2Set()));
+	connect(timeout3, SIGNAL(valueChanged(int)), this, SLOT(timeout3Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout3Set()));
+	connect(debounce, SIGNAL(valueChanged(int)), this, SLOT(debounceUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(debounceSet()));
+	for(int i=0; i<8; i++)
+	{
+		connect(signalPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(signalPolarityUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(signalPolaritySet()));
+	}
+	connect(blinky, SIGNAL(valueChanged(double)), this, SLOT(blinkyUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(blinkySet()));
+	connect(turnoutPolarity0, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
+	connect(turnoutPolarity2, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(turnoutPolaritySet()));
+	connect(lockout, SIGNAL(valueChanged(int)), this, SLOT(lockoutUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(lockoutSet()));
+	connect(timelock, SIGNAL(valueChanged(int)), this, SLOT(timelockUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timelockSet()));
+	connect(interchangePolarity, SIGNAL(currentIndexChanged(int)), this, SLOT(interchangePolarityUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(interchangePolaritySet()));
+	for (int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		connect(simTrainEnable[i], SIGNAL(stateChanged(int)), this, SLOT(simTrainEnableUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainEnableSet()));
+		
+		connect(simTrainDirection[i], SIGNAL(currentIndexChanged(int)), this, SLOT(simTrainDirectionUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainDirectionSet()));
+		
+		connect(simTrainTime[i], SIGNAL(timeChanged(QTime)), this, SLOT(simTrainTimeUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainTimeSet()));
+
+		connect(simTrainTotal[i], SIGNAL(valueChanged(int)), this, SLOT(simTrainTotalUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainTotalSet()));
+
+		connect(simTrainApproach[i], SIGNAL(valueChanged(int)), this, SLOT(simTrainApproachUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainApproachSet()));
+
+		connect(simTrainSound[i], SIGNAL(currentIndexChanged(int)), this, SLOT(simTrainSoundUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainSoundSet()));
+		
+		connect(simTrainInterchange[i], SIGNAL(stateChanged(int)), this, SLOT(simTrainInterchangeUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainInterchangeSet()));
+	}
 }
+
 
 void Node_IIAB::detectorPolarityUpdated(void)
 {
@@ -609,4 +655,156 @@ void Node_IIAB::timelockSet(void)
 {
 	timelock->setValue(eeprom[EE_TIMELOCK_SECONDS]);
 }
+
+void Node_IIAB::simTrainEnableUpdated(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		if(simTrainEnable[i]->isChecked())
+			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] |= SIM_TRAIN_ENABLE_BITMASK;
+		else
+			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] &= ~SIM_TRAIN_ENABLE_BITMASK;
+	}
+	updateEepromTable();
+}
+
+void Node_IIAB::simTrainEnableSet(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		if(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_ENABLE_BITMASK)
+			simTrainEnable[i]->setChecked(true);
+		else
+			simTrainEnable[i]->setChecked(false);
+	}
+}
+
+void Node_IIAB::simTrainDirectionUpdated(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		uint8_t direction = eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_DIRECTION];
+		direction &= ~SIM_TRAIN_DIRECTION_BITMASK;
+		direction |= simTrainDirection[i]->itemData(simTrainDirection[i]->currentIndex()).toInt();
+		eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_DIRECTION] = direction;
+	}
+	updateEepromTable();
+}
+
+void Node_IIAB::simTrainDirectionSet(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		uint8_t direction = eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_DIRECTION] & SIM_TRAIN_DIRECTION_BITMASK;
+		simTrainDirection[i]->setCurrentIndex(simTrainDirection[i]->findData(direction));
+	}
+}
+
+void Node_IIAB::simTrainTimeUpdated(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		uint8_t hours = simTrainTime[i]->time().hour();
+		uint8_t minutes = simTrainTime[i]->time().minute();
+		uint16_t time = (hours * 60) + minutes;
+		eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TIME + 0] = (time >> 8) & 0xFF;
+		eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TIME + 1] = (time) & 0xFF;
+	}
+	updateEepromTable();
+}
+
+void Node_IIAB::simTrainTimeSet(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		uint16_t time = (eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TIME + 0] << 8) + eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TIME + 1];
+		if(time > (23*60 + 59))
+		{
+			time = 1439;
+		}
+		uint8_t hours = time / 60;
+		uint8_t minutes = time % 60;
+		// FIXME: handle invalud cases
+		simTrainTime[i]->setTime(QTime(hours, minutes));
+	}
+}
+
+void Node_IIAB::simTrainTotalUpdated(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TOTAL] = simTrainTotal[i]->value();
+	}
+	updateEepromTable();
+}
+
+void Node_IIAB::simTrainTotalSet(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainTotal[i]->setValue(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TOTAL]);
+	}
+}
+
+void Node_IIAB::simTrainApproachUpdated(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_APPROACH] = simTrainApproach[i]->value();
+	}
+	updateEepromTable();
+}
+
+void Node_IIAB::simTrainApproachSet(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainApproach[i]->setValue(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_APPROACH]);
+	}
+}
+
+void Node_IIAB::simTrainSoundUpdated(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		uint8_t flags = eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS];
+		flags &= ~SIM_TRAIN_SOUND_BITMASK;
+		flags |= simTrainSound[i]->itemData(simTrainSound[i]->currentIndex()).toInt();
+		eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] = flags;
+	}
+	updateEepromTable();
+}
+
+void Node_IIAB::simTrainSoundSet(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainSound[i]->setCurrentIndex(simTrainSound[i]->findData(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_SOUND_BITMASK));
+	}
+}
+
+void Node_IIAB::simTrainInterchangeUpdated(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		if(simTrainInterchange[i]->isChecked())
+			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] |= SIM_TRAIN_INTERCHANGE_BITMASK;
+		else
+			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] &= ~SIM_TRAIN_INTERCHANGE_BITMASK;
+	}
+	updateEepromTable();
+}
+
+void Node_IIAB::simTrainInterchangeSet(void)
+{
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		if(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_INTERCHANGE_BITMASK)
+			simTrainInterchange[i]->setChecked(true);
+		else
+			simTrainInterchange[i]->setChecked(false);
+	}
+}
+
+
 

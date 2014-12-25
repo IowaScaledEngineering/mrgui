@@ -49,6 +49,18 @@ LICENSE:
 
 #define NUM_SIM_TRAINS   32
 
+#define SIM_TRAIN_FLAGS       0
+#define SIM_TRAIN_DIRECTION   1
+#define SIM_TRAIN_TIME        2
+#define SIM_TRAIN_TOTAL       4
+#define SIM_TRAIN_APPROACH    5
+
+#define SIM_TRAIN_SOUND_BITMASK         0x03
+#define SIM_TRAIN_INTERCHANGE_BITMASK   0x04
+#define SIM_TRAIN_ENABLE_BITMASK        0x80
+
+#define SIM_TRAIN_DIRECTION_BITMASK     0x03
+
 class Node_IIAB : public Window
 {
     Q_OBJECT
@@ -92,6 +104,20 @@ class Node_IIAB : public Window
 		void lockoutSet(void);
 		void timelockUpdated(void);
 		void timelockSet(void);
+		void simTrainEnableUpdated(void);
+		void simTrainEnableSet(void);
+		void simTrainDirectionUpdated(void);
+		void simTrainDirectionSet(void);
+		void simTrainTimeUpdated(void);
+		void simTrainTimeSet(void);
+		void simTrainTotalUpdated(void);
+		void simTrainTotalSet(void);
+		void simTrainApproachUpdated(void);
+		void simTrainApproachSet(void);
+		void simTrainSoundUpdated(void);
+		void simTrainSoundSet(void);
+		void simTrainInterchangeUpdated(void);
+		void simTrainInterchangeSet(void);
 };
 
 #endif

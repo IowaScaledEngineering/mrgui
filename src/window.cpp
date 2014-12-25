@@ -125,6 +125,7 @@ Window::Window(const char *device)
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(nodeAddrSet()));
 	connect(transmitInterval, SIGNAL(valueChanged(double)), this, SLOT(transmitIntervalUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(transmitIntervalSet()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(updateEepromTable()));
 	
 	// Set defaults
 	nodeAddr->setValue(0x20);
