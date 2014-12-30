@@ -74,6 +74,7 @@ class Window : public QMainWindow
 		void updateEepromTable(void);
 		
 	private slots:
+		void readStdout(void);
 		void readStderr(void);
 		void avrdudeDone(void);
 		void getAvrdudePath(void);

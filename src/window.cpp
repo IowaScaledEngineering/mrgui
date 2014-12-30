@@ -184,6 +184,7 @@ Window::Window(const char *device)
 	
 	
 	avrdudeProcess = new QProcess(this);
+	connect(avrdudeProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readStdout()));
 	connect(avrdudeProcess, SIGNAL(readyReadStandardError()), this, SLOT(readStderr()));
 	connect(avrdudeProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(avrdudeDone(void)));
 
@@ -250,6 +251,12 @@ const AVRInfo* Window::getAVRInfo(const char* part_name)
 			return(&avrinfo[i]);
 	}
 	return(NULL);
+}
+
+void Window::readStdout(void)
+{
+	consoleText->insertPlainText(avrdudeProcess->readAllStandardError());
+	consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
 }
 
 void Window::readStderr(void)
