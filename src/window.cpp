@@ -31,8 +31,14 @@ LICENSE:
 
 Window::Window(const char *device)
 {
-	strncpy(avrdudePath, "./avrdude/avrdude", sizeof(avrdudePath));
-	
+#if defined(__APPLE__)
+	strncpy(avrdudePath, "./bin/mac/avrdude", sizeof(avrdudePath));
+#else
+	strncpy(avrdudePath, "./bin/linux/avrdude", sizeof(avrdudePath));
+#endif
+
+	strncpy(avrdudeConfPath, "./bin/avrdude.conf", sizeof(avrdudeConfPath));
+
 	avrDevice = device;
 	eeprom = (uint8_t*)malloc(getAVRInfo(avrDevice)->eeprom_size);
 	// Preset EEPROM
@@ -327,7 +333,7 @@ void Window::write(void)
 	consoleCloseButton->setEnabled(false);
 	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:w:mrgui.eeprom:i").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U eeprom:w:mrgui.eeprom:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
 	consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
 	avrdudeAction = WRITE_EEPROM;
 	avrdudeProcess->start(cmdline);
@@ -338,7 +344,7 @@ void Window::read(void)
 	consoleCloseButton->setEnabled(false);
 	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:r:mrgui.eeprom:i").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U eeprom:r:mrgui.eeprom:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
 	consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
 	avrdudeAction = READ_EEPROM;
 	avrdudeProcess->start(cmdline);
@@ -354,7 +360,7 @@ void Window::updateFirmware(void)
 		consoleCloseButton->setEnabled(false);
 		consoleText->clear();
 		consoleDialog->show();
-		QString cmdline = QString("%1 -c %2 -p %3 -B1 -U flash:w:%4:i").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, path);
+		QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U flash:w:%4:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, path);
 		consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
 		avrdudeAction = UPDATE_FIRMWARE;
 		avrdudeProcess->start(cmdline);

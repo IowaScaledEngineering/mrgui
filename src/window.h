@@ -54,6 +54,7 @@ class Window : public QMainWindow
 		const AVRInfo* getAVRInfo(const char*);
 		
 		char avrdudePath[256];
+		char avrdudeConfPath[256];
 
 	private:
 		QProcess *avrdudeProcess;
