@@ -193,6 +193,8 @@ Window::Window(const char *device)
 	QAction *openAction = new QAction(tr("&Open..."), this);
 	QAction *avrdudeAction = new QAction(tr("Set &Avrdude Path..."), this);
 	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(getAvrdudePath()));
+	QAction *avrdudeConfAction = new QAction(tr("Set Avrdude &Config..."), this);
+	connect(avrdudeConfAction, SIGNAL(triggered()), this, SLOT(getAvrdudeConfPath()));
 	QAction *exitAction = new QAction(tr("E&xit"), this);
 	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
 	QAction *readAction = new QAction(tr("&Read EEPROM"), this);
@@ -207,6 +209,7 @@ Window::Window(const char *device)
 	fileMenu->addAction(openAction);
 	fileMenu->addSeparator();
 	fileMenu->addAction(avrdudeAction);
+	fileMenu->addAction(avrdudeConfAction);
 	fileMenu->addSeparator();
 	fileMenu->addAction(exitAction);
 
@@ -303,6 +306,13 @@ void Window::getAvrdudePath(void)
 	QString path = QFileDialog::getOpenFileName(this, tr("Select Avrdude Path"));
 	if(!path.isNull())
 		strncpy(avrdudePath, path.toLocal8Bit().data(), sizeof(avrdudePath));
+}
+
+void Window::getAvrdudeConfPath(void)
+{
+	QString path = QFileDialog::getOpenFileName(this, tr("Select Avrdude Configuration File Path"));
+	if(!path.isNull())
+		strncpy(avrdudeConfPath, path.toLocal8Bit().data(), sizeof(avrdudeConfPath));
 }
 
 void Window::cleanupConsole(void)

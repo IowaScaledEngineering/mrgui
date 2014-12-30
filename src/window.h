@@ -78,6 +78,7 @@ class Window : public QMainWindow
 		void readStderr(void);
 		void avrdudeDone(void);
 		void getAvrdudePath(void);
+		void getAvrdudeConfPath(void);
 		void cleanupConsole(void);
 		uint8_t findProgrammerIndex(void);
 		void write(void);
