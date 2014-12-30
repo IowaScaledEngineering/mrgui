@@ -255,7 +255,7 @@ const AVRInfo* Window::getAVRInfo(const char* part_name)
 
 void Window::readStdout(void)
 {
-	consoleText->insertPlainText(avrdudeProcess->readAllStandardError());
+	consoleText->insertPlainText(avrdudeProcess->readAllStandardOutput());
 	consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
 }
 
