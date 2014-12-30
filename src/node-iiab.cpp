@@ -298,9 +298,13 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	}
 	width += simTrainSchedule->verticalHeader()->sectionSize(0);  // Add width of one section of the header
 	width += simTrainSchedule->verticalScrollBar()->sizeHint().width();
-	width += 2;
+	width += 10;
 	simTrainSchedule->setMinimumWidth(width);
 	
+	QSizePolicy schedulePolicy = simTrainSchedule->sizePolicy();
+	schedulePolicy.setVerticalStretch(true);
+	simTrainSchedule->setSizePolicy(schedulePolicy);
+
 	scheduleLayout->addRow(tr("Simulated Trains:"), simTrainSchedule);
 	scheduleLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	schedulePage->setLayout(scheduleLayout);
