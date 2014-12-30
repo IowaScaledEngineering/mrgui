@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include "intelhexmem.h"
@@ -279,7 +278,7 @@ void IntelHexMemory::write_ihex(FILE* outFile)
 			checksum += this->mem[i+j];
 		}
 
-		fprintf(outFile, "%02X\n", (uint8_t)(~checksum)+1);
+		fprintf(outFile, "%02X\n", (uint8_t)((uint8_t)(~checksum)+1));
 	
 		i+=recSize;
 	}
