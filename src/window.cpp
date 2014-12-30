@@ -327,8 +327,8 @@ void Window::write(void)
 	consoleCloseButton->setEnabled(false);
 	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:w:mrgui.eeprom:i 2>&1").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
-	consoleText->append(cmdline);
+	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:w:mrgui.eeprom:i").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
 	avrdudeAction = WRITE_EEPROM;
 	avrdudeProcess->start(cmdline);
 }
@@ -338,8 +338,8 @@ void Window::read(void)
 	consoleCloseButton->setEnabled(false);
 	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:r:mrgui.eeprom:i 2>&1").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
-	consoleText->append(cmdline);
+	QString cmdline = QString("%1 -c %2 -p %3 -B1 -U eeprom:r:mrgui.eeprom:i").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
 	avrdudeAction = READ_EEPROM;
 	avrdudeProcess->start(cmdline);
 }
@@ -354,8 +354,8 @@ void Window::updateFirmware(void)
 		consoleCloseButton->setEnabled(false);
 		consoleText->clear();
 		consoleDialog->show();
-		QString cmdline = QString("%1 -c %2 -p %3 -B1 -U flash:w:%4:i 2>&1").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, path);
-		consoleText->append(cmdline);
+		QString cmdline = QString("%1 -c %2 -p %3 -B1 -U flash:w:%4:i").arg(avrdudePath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, path);
+		consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
 		avrdudeAction = UPDATE_FIRMWARE;
 		avrdudeProcess->start(cmdline);
 	}
@@ -429,7 +429,8 @@ NodeDialog::NodeDialog()
 	nodeList->addItem(tr("MRB-GIM2"));
 	nodeList->sortItems();
 	nodeList->insertItem(0, tr("Generic (ATMega328)"));
-	nodeList->insertItem(1, tr("Generic (ATMega1284)"));
+	nodeList->insertItem(1, tr("Generic (ATMega328P)"));
+	nodeList->insertItem(2, tr("Generic (ATMega1284)"));
 
 	QGridLayout *layout = new QGridLayout;
 	layout->addWidget(nodeList, 0, 0, 1, 2);
