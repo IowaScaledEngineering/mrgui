@@ -32,12 +32,12 @@ LICENSE:
 Window::Window(const char *device)
 {
 #if defined(__APPLE__)
-	strncpy(avrdudePath, "./bin/mac/avrdude", sizeof(avrdudePath));
+	strncpy(avrdudePath, "../../../bin/mac/avrdude", sizeof(avrdudePath));
+	strncpy(avrdudeConfPath, "../../../bin/mac/avrdude.conf", sizeof(avrdudeConfPath));
 #else
 	strncpy(avrdudePath, "./bin/linux/avrdude", sizeof(avrdudePath));
+	strncpy(avrdudeConfPath, "./bin/linux/avrdude.conf", sizeof(avrdudeConfPath));
 #endif
-
-	strncpy(avrdudeConfPath, "./bin/avrdude.conf", sizeof(avrdudeConfPath));
 
 	avrDevice = device;
 	eeprom = (uint8_t*)malloc(getAVRInfo(avrDevice)->eeprom_size);
