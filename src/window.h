@@ -53,6 +53,7 @@ class Window : public QMainWindow
 		uint8_t *eeprom;
 		const AVRInfo* getAVRInfo(const char*);
 		
+		char workingPath[256];
 		char avrdudePath[256];
 		char avrdudeConfPath[256];
 

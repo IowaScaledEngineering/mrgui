@@ -21,6 +21,7 @@ LICENSE:
 *************************************************************************/
 
 #include <stdint.h>
+#include <unistd.h>
 
 #include <QtWidgets>
 #include <QDebug>
@@ -32,11 +33,22 @@ LICENSE:
 Window::Window(const char *device)
 {
 #if defined(__APPLE__)
-	strncpy(avrdudePath, "../../../bin/mac/avrdude", sizeof(avrdudePath));
-	strncpy(avrdudeConfPath, "../../../bin/mac/avrdude.conf", sizeof(avrdudeConfPath));
-#else
-	strncpy(avrdudePath, "./bin/linux/avrdude", sizeof(avrdudePath));
-	strncpy(avrdudeConfPath, "./bin/linux/avrdude.conf", sizeof(avrdudeConfPath));
+	int len;
+	_NSGetExecutablePath(workingPath, sizeof(workingPath));
+	*(strrchr(workingPath, '/')) = '\0';  // Remove exe name
+	strncpy(avrdudePath, workingPath, sizeof(avrdudePath));
+	strncat(avrdudePath, "/bin/mac/avrdude", sizeof(avrdudePath));
+	strncpy(avrdudeConfPath, workingPath, sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "/bin/mac/avrdude.conf", sizeof(avrdudeConfPath));
+#elif defined(__linux__)
+	int len;
+	if ((len = readlink("/proc/self/exe", workingPath, sizeof(workingPath)-1)) != -1)
+		workingPath[len] = '\0';
+	*(strrchr(workingPath, '/')) = '\0';  // Remove exe name
+	strncpy(avrdudePath, workingPath, sizeof(avrdudePath));
+	strncat(avrdudePath, "/bin/linux/avrdude", sizeof(avrdudePath));
+	strncpy(avrdudeConfPath, workingPath, sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "/bin/linux/avrdude.conf", sizeof(avrdudeConfPath));
 #endif
 
 	avrDevice = device;
