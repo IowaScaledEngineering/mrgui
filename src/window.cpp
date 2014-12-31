@@ -194,7 +194,10 @@ Window::Window(const char *device)
 
 
 
-	QAction *openAction = new QAction(tr("&Open..."), this);
+	QAction *loadAction = new QAction(tr("&Load Configuration..."), this);
+// FIXME: Do something
+	QAction *saveAction = new QAction(tr("&Save Configuration..."), this);
+// FIXME: Do something
 	QAction *avrdudeAction = new QAction(tr("Set &Avrdude Path..."), this);
 	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(getAvrdudePath()));
 	QAction *avrdudeConfAction = new QAction(tr("Set Avrdude &Config..."), this);
@@ -207,13 +210,14 @@ Window::Window(const char *device)
 	connect(writeAction, SIGNAL(triggered()), this, SLOT(write()));
 	QAction *updateAction = new QAction(tr("&Update Firmware..."), this);
 	connect(updateAction, SIGNAL(triggered()), this, SLOT(updateFirmware()));
+	QAction *resetAction = new QAction(tr("Reset Configuration to &Defaults..."), this);
+// FIXME: reset confirmation dialog
 	QAction *eepromAction = new QAction(tr("&EEPROM Editor..."), this);
+	connect(eepromAction, SIGNAL(triggered()), eepromDialog, SLOT(show()));
 
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-	fileMenu->addAction(openAction);
-	fileMenu->addSeparator();
-	fileMenu->addAction(avrdudeAction);
-	fileMenu->addAction(avrdudeConfAction);
+	fileMenu->addAction(loadAction);
+	fileMenu->addAction(saveAction);
 	fileMenu->addSeparator();
 	fileMenu->addAction(exitAction);
 
@@ -222,20 +226,26 @@ Window::Window(const char *device)
 	programMenu->addAction(writeAction);
 	programMenu->addAction(updateAction);
 	programMenu->addSeparator();
+	programMenu->addAction(resetAction);
+	programMenu->addSeparator();
 
+	QMenu *programmerMenu = new QMenu(tr("&Programmer"));
 	programmerGroup = new QActionGroup(this);
 	for(uint8_t i=0; i<(sizeof(proginfo)/sizeof(proginfo[0])); i++)
 	{
 		programmerAction[i] = new QAction(tr(proginfo[i].nice_name), this);
 		programmerAction[i]->setCheckable(true);
 		programmerGroup->addAction(programmerAction[i]);
-		programMenu->addAction(programmerAction[i]);
+		programmerMenu->addAction(programmerAction[i]);
 	}
 	programmerAction[0]->setChecked(true);
+	programMenu->addMenu(programmerMenu);
 
 	QMenu *advancedMenu = menuBar()->addMenu(tr("&Advanced"));
 	advancedMenu->addAction(eepromAction);
-	connect(eepromAction, SIGNAL(triggered()), eepromDialog, SLOT(show()));
+	advancedMenu->addSeparator();
+	advancedMenu->addAction(avrdudeAction);
+	advancedMenu->addAction(avrdudeConfAction);
 
 	QVBoxLayout *layout = new QVBoxLayout;
 	layout->addWidget(tabWidget);
