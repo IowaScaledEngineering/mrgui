@@ -30,31 +30,16 @@ LICENSE:
 #include "avrinfo.h"
 #include "intelhexmem.h"
 
-#if defined(__APPLE__)
-#include <libproc.h>
-#endif
-
 Window::Window(const char *device)
 {
+	QString workingPath = QCoreApplication::applicationDirPath();
+	strncpy(avrdudePath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
+	strncpy(avrdudeConfPath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
 #if defined(__APPLE__)
-    pid_t pid = getpid();
-    if ( (proc_pidpath (pid, workingPath, sizeof(workingPath))) <= 0 )
-    {
-		fprintf(stderr, "Error getting working path.\n");
-    }
-	*(strrchr(workingPath, '/')) = '\0';  // Remove exe name
-	strncpy(avrdudePath, workingPath, sizeof(avrdudePath));
 	strncat(avrdudePath, "/avrdude", sizeof(avrdudePath));
-	strncpy(avrdudeConfPath, workingPath, sizeof(avrdudePath));
 	strncat(avrdudeConfPath, "/avrdude.conf", sizeof(avrdudeConfPath));
 #elif defined(__linux__)
-	int len;
-	if ((len = readlink("/proc/self/exe", workingPath, sizeof(workingPath)-1)) != -1)
-		workingPath[len] = '\0';
-	*(strrchr(workingPath, '/')) = '\0';  // Remove exe name
-	strncpy(avrdudePath, workingPath, sizeof(avrdudePath));
 	strncat(avrdudePath, "/bin/linux/avrdude", sizeof(avrdudePath));
-	strncpy(avrdudeConfPath, workingPath, sizeof(avrdudePath));
 	strncat(avrdudeConfPath, "/bin/linux/avrdude.conf", sizeof(avrdudeConfPath));
 #endif
 
