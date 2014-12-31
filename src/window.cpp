@@ -130,6 +130,8 @@ Window::Window(const char *device)
 	nodeLayout->addWidget(writeButton);
 	nodeWidgets->setLayout(nodeLayout);
 
+	setDefaults();
+
 	// Connect signals
 	connect(nodeAddr, SIGNAL(valueChanged(int)), this, SLOT(nodeAddrUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(nodeAddrSet()));
@@ -137,11 +139,7 @@ Window::Window(const char *device)
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(transmitIntervalSet()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(updateEepromTable()));
 	
-	// Set defaults
-	nodeAddr->setValue(0x20);
-	nodeAddrUpdated();  // Force update for initial value, even if value not changed
-	transmitInterval->setValue(5.0);
-	transmitIntervalUpdated();  // Force update for initial value, even if value not changed
+
 
 	tabWidget = new QTabWidget();
 
@@ -211,7 +209,7 @@ Window::Window(const char *device)
 	QAction *updateAction = new QAction(tr("&Update Firmware..."), this);
 	connect(updateAction, SIGNAL(triggered()), this, SLOT(updateFirmware()));
 	QAction *resetAction = new QAction(tr("Reset Configuration to &Defaults..."), this);
-// FIXME: reset confirmation dialog
+	connect(resetAction, SIGNAL(triggered()), this, SLOT(setDefaults()));
 	QAction *eepromAction = new QAction(tr("&EEPROM Editor..."), this);
 	connect(eepromAction, SIGNAL(triggered()), eepromDialog, SLOT(show()));
 
@@ -258,6 +256,17 @@ Window::Window(const char *device)
 	widget->setLayout(layout);
 
 	setWindowTitle(tr("MRGui Programmer"));
+}
+
+void Window::setDefaults()
+{
+	// Set defaults
+	nodeAddr->setValue(0x20);
+	nodeAddrUpdated();  // Force update for initial value, even if value not changed
+	transmitInterval->setValue(5.0);
+	transmitIntervalUpdated();  // Force update for initial value, even if value not changed
+	
+	emit resetDefaults();
 }
 
 const AVRInfo* Window::getAVRInfo(const char* part_name)

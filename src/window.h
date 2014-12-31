@@ -70,9 +70,11 @@ class Window : public QMainWindow
 
 	signals:
 		void eepromUpdated();
+		void resetDefaults();
 
 	public slots:
 		void updateEepromTable(void);
+		void setDefaults(void);
 		
 	private slots:
 		void readStdout(void);

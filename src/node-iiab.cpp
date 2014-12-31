@@ -319,6 +319,71 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	tabWidget->insertTab(5, schedulePage, "Schedules");
 	tabWidget->setCurrentIndex(0);
 
+	setDefaults();
+
+	// Connect signals (after defaults set to avoid excess calls)
+	for(int i=0; i<8; i++)
+	{
+		connect(detectorPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(detectorPolarityUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(detectorPolaritySet()));
+	}
+	connect(timeout0, SIGNAL(valueChanged(int)), this, SLOT(timeout0Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout0Set()));
+	connect(timeout1, SIGNAL(valueChanged(int)), this, SLOT(timeout1Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout1Set()));
+	connect(timeout2, SIGNAL(valueChanged(int)), this, SLOT(timeout2Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout2Set()));
+	connect(timeout3, SIGNAL(valueChanged(int)), this, SLOT(timeout3Updated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout3Set()));
+	connect(debounce, SIGNAL(valueChanged(int)), this, SLOT(debounceUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(debounceSet()));
+	for(int i=0; i<8; i++)
+	{
+		connect(signalPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(signalPolarityUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(signalPolaritySet()));
+	}
+	connect(blinky, SIGNAL(valueChanged(double)), this, SLOT(blinkyUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(blinkySet()));
+	connect(turnoutPolarity0, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
+	connect(turnoutPolarity2, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(turnoutPolaritySet()));
+	connect(lockout, SIGNAL(valueChanged(int)), this, SLOT(lockoutUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(lockoutSet()));
+	connect(timelock, SIGNAL(valueChanged(int)), this, SLOT(timelockUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timelockSet()));
+	connect(interchangePolarity, SIGNAL(currentIndexChanged(int)), this, SLOT(interchangePolarityUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(interchangePolaritySet()));
+	for (int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		connect(simTrainEnable[i], SIGNAL(stateChanged(int)), this, SLOT(simTrainEnableUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainEnableSet()));
+		
+		connect(simTrainDirection[i], SIGNAL(currentIndexChanged(int)), this, SLOT(simTrainDirectionUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainDirectionSet()));
+		
+		connect(simTrainTime[i], SIGNAL(timeChanged(QTime)), this, SLOT(simTrainTimeUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainTimeSet()));
+
+		connect(simTrainTotal[i], SIGNAL(valueChanged(int)), this, SLOT(simTrainTotalUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainTotalSet()));
+
+		connect(simTrainApproach[i], SIGNAL(valueChanged(int)), this, SLOT(simTrainApproachUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainApproachSet()));
+
+		connect(simTrainSound[i], SIGNAL(currentIndexChanged(int)), this, SLOT(simTrainSoundUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainSoundSet()));
+		
+		connect(simTrainInterchange[i], SIGNAL(stateChanged(int)), this, SLOT(simTrainInterchangeUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainInterchangeSet()));
+	}
+	
+	// Connect to reset action
+	connect(this, SIGNAL(resetDefaults()), this, SLOT(setDefaults()));
+}
+
+
+void Node_IIAB::setDefaults(void)
+{
 	// Set unused bits to zero
 	eeprom[EE_INPUT_POLARITY0] = 0;
 	eeprom[EE_INPUT_POLARITY1] = 0;
@@ -381,64 +446,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328p")
 	simTrainApproachUpdated();
 	simTrainSoundUpdated();
 	simTrainInterchangeUpdated();
-
-	// Connect signals (after defaults set to avoid excess calls)
-	for(int i=0; i<8; i++)
-	{
-		connect(detectorPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(detectorPolarityUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(detectorPolaritySet()));
-	}
-	connect(timeout0, SIGNAL(valueChanged(int)), this, SLOT(timeout0Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout0Set()));
-	connect(timeout1, SIGNAL(valueChanged(int)), this, SLOT(timeout1Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout1Set()));
-	connect(timeout2, SIGNAL(valueChanged(int)), this, SLOT(timeout2Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout2Set()));
-	connect(timeout3, SIGNAL(valueChanged(int)), this, SLOT(timeout3Updated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timeout3Set()));
-	connect(debounce, SIGNAL(valueChanged(int)), this, SLOT(debounceUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(debounceSet()));
-	for(int i=0; i<8; i++)
-	{
-		connect(signalPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(signalPolarityUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(signalPolaritySet()));
-	}
-	connect(blinky, SIGNAL(valueChanged(double)), this, SLOT(blinkyUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(blinkySet()));
-	connect(turnoutPolarity0, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
-	connect(turnoutPolarity2, SIGNAL(currentIndexChanged(int)), this, SLOT(turnoutPolarityUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(turnoutPolaritySet()));
-	connect(lockout, SIGNAL(valueChanged(int)), this, SLOT(lockoutUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(lockoutSet()));
-	connect(timelock, SIGNAL(valueChanged(int)), this, SLOT(timelockUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timelockSet()));
-	connect(interchangePolarity, SIGNAL(currentIndexChanged(int)), this, SLOT(interchangePolarityUpdated()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(interchangePolaritySet()));
-	for (int i=0; i<NUM_SIM_TRAINS; i++)
-	{
-		connect(simTrainEnable[i], SIGNAL(stateChanged(int)), this, SLOT(simTrainEnableUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainEnableSet()));
-		
-		connect(simTrainDirection[i], SIGNAL(currentIndexChanged(int)), this, SLOT(simTrainDirectionUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainDirectionSet()));
-		
-		connect(simTrainTime[i], SIGNAL(timeChanged(QTime)), this, SLOT(simTrainTimeUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainTimeSet()));
-
-		connect(simTrainTotal[i], SIGNAL(valueChanged(int)), this, SLOT(simTrainTotalUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainTotalSet()));
-
-		connect(simTrainApproach[i], SIGNAL(valueChanged(int)), this, SLOT(simTrainApproachUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainApproachSet()));
-
-		connect(simTrainSound[i], SIGNAL(currentIndexChanged(int)), this, SLOT(simTrainSoundUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainSoundSet()));
-		
-		connect(simTrainInterchange[i], SIGNAL(stateChanged(int)), this, SLOT(simTrainInterchangeUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainInterchangeSet()));
-	}
 }
-
 
 void Node_IIAB::detectorPolarityUpdated(void)
 {
