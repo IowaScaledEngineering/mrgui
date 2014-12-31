@@ -33,8 +33,13 @@ LICENSE:
 Window::Window(const char *device)
 {
 #if defined(__APPLE__)
-	int len;
-	_NSGetExecutablePath(workingPath, sizeof(workingPath));
+    pid_t pid = getpid();
+    if ( (proc_pidpath (pid, workingPath, sizeof(workingPath))) <= 0 )
+    {
+		fprintf(stderr, "PID %d: proc_pidpath ();\n", pid);
+		fprintf(stderr, "    %s\n", strerror(errno));
+    }
+//	_NSGetExecutablePath(workingPath, sizeof(workingPath));
 	*(strrchr(workingPath, '/')) = '\0';  // Remove exe name
 	strncpy(avrdudePath, workingPath, sizeof(avrdudePath));
 	strncat(avrdudePath, "/bin/mac/avrdude", sizeof(avrdudePath));
