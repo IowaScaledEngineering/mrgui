@@ -30,21 +30,23 @@ LICENSE:
 #include "avrinfo.h"
 #include "intelhexmem.h"
 
+#if defined(__APPLE__)
+#include <libproc.h>
+#endif
+
 Window::Window(const char *device)
 {
 #if defined(__APPLE__)
     pid_t pid = getpid();
     if ( (proc_pidpath (pid, workingPath, sizeof(workingPath))) <= 0 )
     {
-		fprintf(stderr, "PID %d: proc_pidpath ();\n", pid);
-		fprintf(stderr, "    %s\n", strerror(errno));
+		fprintf(stderr, "Error getting working path.\n");
     }
-//	_NSGetExecutablePath(workingPath, sizeof(workingPath));
 	*(strrchr(workingPath, '/')) = '\0';  // Remove exe name
 	strncpy(avrdudePath, workingPath, sizeof(avrdudePath));
-	strncat(avrdudePath, "/bin/mac/avrdude", sizeof(avrdudePath));
+	strncat(avrdudePath, "/avrdude", sizeof(avrdudePath));
 	strncpy(avrdudeConfPath, workingPath, sizeof(avrdudePath));
-	strncat(avrdudeConfPath, "/bin/mac/avrdude.conf", sizeof(avrdudeConfPath));
+	strncat(avrdudeConfPath, "/avrdude.conf", sizeof(avrdudeConfPath));
 #elif defined(__linux__)
 	int len;
 	if ((len = readlink("/proc/self/exe", workingPath, sizeof(workingPath)-1)) != -1)
@@ -287,7 +289,6 @@ void Window::readStderr(void)
 
 void Window::avrdudeDone(void)
 {
-	FILE* ihexInfile;
 	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
 
 	consoleCloseButton->setEnabled(true);
@@ -295,22 +296,17 @@ void Window::avrdudeDone(void)
 	switch(avrdudeAction)
 	{
 		case READ_EEPROM:
-			ihexInfile = fopen("mrgui.eeprom", "r");
-			if(ihexInfile != NULL)
+			eepromMem.read_ihex(fdopen(tempFile.handle(), "rb"));
+			for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
 			{
-				eepromMem.read_ihex(ihexInfile);
-				for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
-				{
-					eeprom[i] = eepromMem.read_uint8(i);
-				}
-				fclose(ihexInfile);	
-				emit eepromUpdated();
+				eeprom[i] = eepromMem.read_uint8(i);
 			}
-			remove("mrgui.eeprom");
+			tempFile.close();
+			emit eepromUpdated();
 			break;
 
 		case WRITE_EEPROM:
-			remove("mrgui.eeprom");
+			tempFile.close();
 			break;
 
 		case UPDATE_FIRMWARE:
@@ -360,14 +356,15 @@ void Window::write(void)
 		eepromMem.write_uint8(i, eeprom[i]);
 	}
 
-	FILE* ihexOutfile = fopen("mrgui.eeprom", "w");
-	eepromMem.write_ihex(ihexOutfile);
-	fclose(ihexOutfile);
+	if(tempFile.open())
+	{
+		eepromMem.write_ihex(fdopen(tempFile.handle(), "wb"));
+	}
 
 	consoleCloseButton->setEnabled(false);
 	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U eeprom:w:mrgui.eeprom:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U eeprom:w:%5:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, tempFile.fileName());
 	consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
 	avrdudeAction = WRITE_EEPROM;
 	avrdudeProcess->start(cmdline);
@@ -378,7 +375,9 @@ void Window::read(void)
 	consoleCloseButton->setEnabled(false);
 	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U eeprom:r:mrgui.eeprom:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
+
+	tempFile.open();
+	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U eeprom:r:%5:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, tempFile.fileName());
 	consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
 	avrdudeAction = READ_EEPROM;
 	avrdudeProcess->start(cmdline);

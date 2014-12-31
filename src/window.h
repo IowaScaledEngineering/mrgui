@@ -48,6 +48,7 @@ class Window : public QMainWindow
 		QDialog *eepromDialog, *consoleDialog;
 		QActionGroup *programmerGroup;
 		QAction *programmerAction[sizeof(proginfo)/sizeof(proginfo[0])];
+		QTemporaryFile tempFile;
 		
 		const char *avrDevice;
 		uint8_t *eeprom;

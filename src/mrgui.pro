@@ -12,4 +12,10 @@ QT += widgets
 HEADERS += hexspinbox.h window.h intelhexmem.h avrinfo.h node-iiab.h
 SOURCES += hexspinbox.cpp main.cpp window.cpp intelhexmem.cpp node-iiab.cpp
 
-macx { QMAKE_MAC_SDK = macosx10.9 }
+macx
+{
+	QMAKE_MAC_SDK = macosx10.9
+	APP_QML_FILES.files = bin/mac/avrdude bin/mac/avrdude.conf
+	APP_QML_FILES.path = Contents/MacOS
+	QMAKE_BUNDLE_DATA += APP_QML_FILES
+}
