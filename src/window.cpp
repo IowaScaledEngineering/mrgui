@@ -43,6 +43,7 @@ Window::Window(const char *device)
 	strncat(avrdudeConfPath, "/bin/linux/avrdude.conf", sizeof(avrdudeConfPath));
 #endif
 
+	// FIXME: Pass preferred device, but provide menu option to change it
 	avrDevice = device;
 	eeprom = (uint8_t*)malloc(getAVRInfo(avrDevice)->eeprom_size);
 	// Preset EEPROM
@@ -188,18 +189,19 @@ Window::Window(const char *device)
 	avrdudeProcess = new QProcess(this);
 	connect(avrdudeProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readStdout()));
 	connect(avrdudeProcess, SIGNAL(readyReadStandardError()), this, SLOT(readStderr()));
-	connect(avrdudeProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(avrdudeDone(void)));
+	connect(avrdudeProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(avrdudeDone(int)));
+
+
+
+	// Connect to reset action
+	connect(this, SIGNAL(resetDefaults()), this, SLOT(setDefaults()));
 
 
 
 	QAction *loadAction = new QAction(tr("&Load Configuration..."), this);
-// FIXME: Do something
+	connect(loadAction, SIGNAL(triggered()), this, SLOT(load()));
 	QAction *saveAction = new QAction(tr("&Save Configuration..."), this);
-// FIXME: Do something
-	QAction *avrdudeAction = new QAction(tr("Set &Avrdude Path..."), this);
-	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(getAvrdudePath()));
-	QAction *avrdudeConfAction = new QAction(tr("Set Avrdude &Config..."), this);
-	connect(avrdudeConfAction, SIGNAL(triggered()), this, SLOT(getAvrdudeConfPath()));
+	connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
 	QAction *exitAction = new QAction(tr("E&xit"), this);
 	connect(exitAction, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
 	QAction *readAction = new QAction(tr("&Read EEPROM"), this);
@@ -209,9 +211,16 @@ Window::Window(const char *device)
 	QAction *updateAction = new QAction(tr("&Update Firmware..."), this);
 	connect(updateAction, SIGNAL(triggered()), this, SLOT(updateFirmware()));
 	QAction *resetAction = new QAction(tr("Reset Configuration to &Defaults..."), this);
-	connect(resetAction, SIGNAL(triggered()), this, SLOT(setDefaults()));
+	connect(resetAction, SIGNAL(triggered()), this, SLOT(reset()));
 	QAction *eepromAction = new QAction(tr("&EEPROM Editor..."), this);
 	connect(eepromAction, SIGNAL(triggered()), eepromDialog, SLOT(show()));
+	QAction *avrdudeAction = new QAction(tr("Set &Avrdude Path..."), this);
+	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(getAvrdudePath()));
+	QAction *avrdudeConfAction = new QAction(tr("Set Avrdude &Config..."), this);
+	connect(avrdudeConfAction, SIGNAL(triggered()), this, SLOT(getAvrdudeConfPath()));
+
+	forceAction = new QAction(tr("&Override Signature Check"), this);
+	forceAction->setCheckable(true);
 
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(loadAction);
@@ -244,6 +253,8 @@ Window::Window(const char *device)
 	advancedMenu->addSeparator();
 	advancedMenu->addAction(avrdudeAction);
 	advancedMenu->addAction(avrdudeConfAction);
+	advancedMenu->addSeparator();
+	advancedMenu->addAction(forceAction);
 
 	QVBoxLayout *layout = new QVBoxLayout;
 	layout->addWidget(tabWidget);
@@ -258,15 +269,42 @@ Window::Window(const char *device)
 	setWindowTitle(tr("MRGui Programmer"));
 }
 
-void Window::setDefaults()
+void Window::reset(void)
+{
+	QMessageBox msgBox;
+	msgBox.setText("All changes will be lost!");
+	msgBox.setInformativeText("Are you sure you want to reset all values to their defaults?");
+	msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+	msgBox.setDefaultButton(QMessageBox::Save);
+	int ret = msgBox.exec();
+	
+	switch (ret)
+	{
+		case QMessageBox::Yes:
+		emit resetDefaults();
+		break;
+	default:
+		break;
+	}
+}
+
+void Window::setDefaults(void)
 {
 	// Set defaults
 	nodeAddr->setValue(0x20);
 	nodeAddrUpdated();  // Force update for initial value, even if value not changed
 	transmitInterval->setValue(5.0);
 	transmitIntervalUpdated();  // Force update for initial value, even if value not changed
-	
-	emit resetDefaults();
+}
+
+void Window::load(void)
+{
+
+}
+
+void Window::save(void)
+{
+
 }
 
 const AVRInfo* Window::getAVRInfo(const char* part_name)
@@ -291,26 +329,31 @@ void Window::readStderr(void)
 	consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
 }
 
-void Window::avrdudeDone(void)
+void Window::avrdudeDone(int exitCode)
 {
 	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
+	FILE *fptr;
 
 	consoleCloseButton->setEnabled(true);
 	
 	switch(avrdudeAction)
 	{
 		case READ_EEPROM:
-			eepromMem.read_ihex(fdopen(tempFile.handle(), "rb"));
-			for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+			if(!exitCode)
 			{
-				eeprom[i] = eepromMem.read_uint8(i);
+				fptr = fdopen(tempFile.handle(), "r");
+				eepromMem.read_ihex(fptr);
+				tempFile.close();
+
+				for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+				{
+					eeprom[i] = eepromMem.read_uint8(i);
+				}
+				emit eepromUpdated();
 			}
-			tempFile.close();
-			emit eepromUpdated();
 			break;
 
 		case WRITE_EEPROM:
-			tempFile.close();
 			break;
 
 		case UPDATE_FIRMWARE:
@@ -351,6 +394,16 @@ uint8_t Window::findProgrammerIndex(void)
 	return(programmerIndex);
 }
 
+QString Window::avrdudeCommandLine(void)
+{
+	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 ").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	if(forceAction->isChecked())
+	{
+		cmdline.append("-F ");
+	}
+	return cmdline;
+}
+
 void Window::write(void)
 {
 	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
@@ -362,14 +415,17 @@ void Window::write(void)
 
 	if(tempFile.open())
 	{
-		eepromMem.write_ihex(fdopen(tempFile.handle(), "wb"));
+		FILE *fptr = fdopen(tempFile.handle(), "w");
+		eepromMem.write_ihex(fptr);
+		fflush(fptr);
+		tempFile.close();
 	}
 
 	consoleCloseButton->setEnabled(false);
 	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U eeprom:w:%5:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, tempFile.fileName());
-	consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
+	QString cmdline = avrdudeCommandLine().append(QString("-U eeprom:w:%1:i").arg(tempFile.fileName()));
+	consoleText->append(cmdline.append("\n\n- - - Writing EEPROM - - -\n\n"));
 	avrdudeAction = WRITE_EEPROM;
 	avrdudeProcess->start(cmdline);
 }
@@ -381,8 +437,8 @@ void Window::read(void)
 	consoleDialog->show();
 
 	tempFile.open();
-	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U eeprom:r:%5:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, tempFile.fileName());
-	consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
+	QString cmdline = avrdudeCommandLine().append(QString("-U eeprom:r:%1:i").arg(tempFile.fileName()));
+	consoleText->append(cmdline.append("\n\n- - - Reading EEPROM - - -\n\n"));
 	avrdudeAction = READ_EEPROM;
 	avrdudeProcess->start(cmdline);
 }
@@ -397,8 +453,8 @@ void Window::updateFirmware(void)
 		consoleCloseButton->setEnabled(false);
 		consoleText->clear();
 		consoleDialog->show();
-		QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 -U flash:w:%4:i").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name, path);
-		consoleText->append(cmdline.append("\n\n- - - - - - -\n\n"));
+		QString cmdline = avrdudeCommandLine().append(QString("-U flash:w:%1:i").arg(path));
+		consoleText->append(cmdline.append("\n\n- - - Updating Firmware - - -\n\n"));
 		avrdudeAction = UPDATE_FIRMWARE;
 		avrdudeProcess->start(cmdline);
 	}

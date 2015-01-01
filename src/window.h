@@ -46,8 +46,8 @@ class Window : public QMainWindow
 		QDoubleSpinBox *transmitInterval;
 		QTextEdit *eepromTable, *consoleText;
 		QDialog *eepromDialog, *consoleDialog;
-		QActionGroup *programmerGroup;
-		QAction *programmerAction[sizeof(proginfo)/sizeof(proginfo[0])];
+		QActionGroup *programmerGroup, *deviceGroup;
+		QAction *programmerAction[sizeof(proginfo)/sizeof(proginfo[0])], *deviceAction[sizeof(avrinfo)/sizeof(avrinfo[0])], *forceAction;
 		QTemporaryFile tempFile;
 		
 		const char *avrDevice;
@@ -67,6 +67,8 @@ class Window : public QMainWindow
 			UPDATE_FIRMWARE,
 		} AvrdudeAction;
 		AvrdudeAction avrdudeAction;
+		uint8_t findProgrammerIndex(void);
+		QString avrdudeCommandLine(void);
 
 	signals:
 		void eepromUpdated();
@@ -74,16 +76,18 @@ class Window : public QMainWindow
 
 	public slots:
 		void updateEepromTable(void);
-		void setDefaults(void);
 		
 	private slots:
+		void reset(void);
+		void setDefaults(void);
+		void load(void);
+		void save(void);
 		void readStdout(void);
 		void readStderr(void);
-		void avrdudeDone(void);
+		void avrdudeDone(int);
 		void getAvrdudePath(void);
 		void getAvrdudeConfPath(void);
 		void cleanupConsole(void);
-		uint8_t findProgrammerIndex(void);
 		void write(void);
 		void read(void);
 		void updateFirmware(void);

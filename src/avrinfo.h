@@ -35,7 +35,8 @@ const AVRInfo avrinfo[] =
 {
 	{"atmega328", 1024},
 	{"atmega328p", 1024},
-	{"atmega48", 256},
+	{"atmega48p", 256},
+	{"atmega1284p", 4096},
 };
 
 typedef struct
