@@ -732,11 +732,10 @@ void Node_IIAB::simTrainTimeSet(void)
 		uint16_t time = (eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TIME + 0] << 8) + eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TIME + 1];
 		if(time > (23*60 + 59))
 		{
-			time = 1439;
+			time = 23*60 + 59;
 		}
 		uint8_t hours = time / 60;
 		uint8_t minutes = time % 60;
-		// FIXME: handle invalud cases
 		simTrainTime[i]->setTime(QTime(hours, minutes));
 	}
 }

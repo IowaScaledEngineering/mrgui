@@ -43,7 +43,6 @@ Window::Window(const char *device)
 	strncat(avrdudeConfPath, "/bin/linux/avrdude.conf", sizeof(avrdudeConfPath));
 #endif
 
-	// FIXME: Pass preferred device, but provide menu option to change it
 	avrDevice = device;
 	eeprom = (uint8_t*)malloc(getAVRInfo(avrDevice)->eeprom_size);
 	// Preset EEPROM
