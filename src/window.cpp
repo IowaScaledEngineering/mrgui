@@ -213,9 +213,9 @@ Window::Window(const char *device)
 	connect(resetAction, SIGNAL(triggered()), this, SLOT(reset()));
 	QAction *eepromAction = new QAction(tr("&EEPROM Editor..."), this);
 	connect(eepromAction, SIGNAL(triggered()), eepromDialog, SLOT(show()));
-	QAction *avrdudeAction = new QAction(tr("Set &Avrdude Path..."), this);
+	QAction *avrdudeAction = new QAction(tr("Select &avrdude Path..."), this);
 	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(getAvrdudePath()));
-	QAction *avrdudeConfAction = new QAction(tr("Set Avrdude &Config..."), this);
+	QAction *avrdudeConfAction = new QAction(tr("Select avrdude &Config..."), this);
 	connect(avrdudeConfAction, SIGNAL(triggered()), this, SLOT(getAvrdudeConfPath()));
 
 	forceAction = new QAction(tr("&Override Signature Check"), this);
@@ -274,16 +274,16 @@ void Window::reset(void)
 	msgBox.setText("All changes will be lost!");
 	msgBox.setInformativeText("Are you sure you want to reset all values to their defaults?");
 	msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-	msgBox.setDefaultButton(QMessageBox::Save);
+	msgBox.setDefaultButton(QMessageBox::No);
 	int ret = msgBox.exec();
 	
 	switch (ret)
 	{
 		case QMessageBox::Yes:
-		emit resetDefaults();
-		break;
-	default:
-		break;
+			emit resetDefaults();
+			break;
+		default:
+			break;
 	}
 }
 
@@ -298,12 +298,49 @@ void Window::setDefaults(void)
 
 void Window::load(void)
 {
+	QString path = QFileDialog::getOpenFileName(this, tr("Load Configuration File"), NULL, "EEP Files (*.eep);;All Files (*.*)");
+	if(!path.isNull())
+	{
+		FILE *fptr;
+		if( (fptr = fopen(path.toLocal8Bit().data(), "r")) != NULL)
+		{
+			IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
+			eepromMem.read_ihex(fptr);
+			fclose(fptr);
 
+			for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+			{
+				eeprom[i] = eepromMem.read_uint8(i);
+			}
+			emit eepromUpdated();
+		}
+	}
 }
 
 void Window::save(void)
 {
+	QString path = QFileDialog::getSaveFileName(this, tr("Save Configuration File"), NULL, "EEP Files (*.eep);;All Files (*.*)");
+	if(!path.isNull())
+	{
+		if( -1 == (path.lastIndexOf(".eep")))
+		{
+			path.append(".eep");
+		}
 
+		FILE *fptr;
+		if( (fptr = fopen(path.toLocal8Bit().data(), "w")) != NULL)
+		{
+			IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
+
+			for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+			{
+				eepromMem.write_uint8(i, eeprom[i]);
+			}
+
+			eepromMem.write_ihex(fptr);
+			fclose(fptr);
+		}
+	}
 }
 
 const AVRInfo* Window::getAVRInfo(const char* part_name)
@@ -362,16 +399,18 @@ void Window::avrdudeDone(int exitCode)
 
 void Window::getAvrdudePath(void)
 {
-	QString path = QFileDialog::getOpenFileName(this, tr("Select Avrdude Path"));
+	QString path = QFileDialog::getOpenFileName(this, tr("Select avrdude Executable"));
 	if(!path.isNull())
 		strncpy(avrdudePath, path.toLocal8Bit().data(), sizeof(avrdudePath));
 }
 
 void Window::getAvrdudeConfPath(void)
 {
-	QString path = QFileDialog::getOpenFileName(this, tr("Select Avrdude Configuration File Path"));
+	QString path = QFileDialog::getOpenFileName(this, tr("Select avrdude Configuration File"), NULL, "CONF Files (*.conf);;All Files (*.*)");
 	if(!path.isNull())
-		strncpy(avrdudeConfPath, path.toLocal8Bit().data(), sizeof(avrdudeConfPath));
+	{
+		strncpy(avrdudeConfPath, path.toLocal8Bit().data(), sizeof(avrdudeConfPath));	
+	}
 }
 
 void Window::cleanupConsole(void)
@@ -444,7 +483,7 @@ void Window::read(void)
 
 void Window::updateFirmware(void)
 {
-	QString path = QFileDialog::getOpenFileName(this, tr("Select Firmware File"), firmwarePath, "HEX Files (*.hex)");
+	QString path = QFileDialog::getOpenFileName(this, tr("Select Firmware File"), firmwarePath, "HEX Files (*.hex);;All Files (*.*)");
 	if(!path.isNull())
 	{
 		firmwarePath = QFileInfo(path).path();
