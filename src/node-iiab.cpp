@@ -466,12 +466,14 @@ void Node_IIAB::detectorPolarityUpdated(void)
 
 void Node_IIAB::detectorPolaritySet(void)
 {
-	// Save a copy of the eeprom value since each widget update will trigger a rewrite of the eeprom with current values from not-yet-updated widgets
-	// This will wipe out any subsequent updates if the eeprom byte is not saved.
-	uint8_t polarity = eeprom[EE_INPUT_POLARITY0];
 	for(int i=0; i<8; i++)
 	{
-		if(polarity & (1 << i))
+		detectorPolarity[i]->blockSignals(true);
+	}
+
+	for(int i=0; i<8; i++)
+	{
+		if(eeprom[EE_INPUT_POLARITY0] & (1 << i))
 		{
 			detectorPolarity[i]->setCurrentIndex(detectorPolarity[i]->findData(1));
 		}
@@ -479,6 +481,11 @@ void Node_IIAB::detectorPolaritySet(void)
 		{
 			detectorPolarity[i]->setCurrentIndex(detectorPolarity[i]->findData(0));
 		}
+	}
+
+	for(int i=0; i<8; i++)
+	{
+		detectorPolarity[i]->blockSignals(false);
 	}
 }
 
@@ -507,10 +514,10 @@ void Node_IIAB::turnoutPolarityUpdated(void)
 
 void Node_IIAB::turnoutPolaritySet(void)
 {
-	// Save a copy of the eeprom value since each widget update will trigger a rewrite of the eeprom with current values from not-yet-updated widgets
-	// This will wipe out any subsequent updates if the eeprom byte is not saved.
-	uint8_t polarity = eeprom[EE_INPUT_POLARITY1];
-	if(polarity & 0x01)
+	turnoutPolarity0->blockSignals(true);
+	turnoutPolarity2->blockSignals(true);
+
+	if(eeprom[EE_INPUT_POLARITY1] & 0x01)
 	{
 		turnoutPolarity0->setCurrentIndex(turnoutPolarity0->findData(1));
 	}
@@ -519,7 +526,7 @@ void Node_IIAB::turnoutPolaritySet(void)
 		turnoutPolarity0->setCurrentIndex(turnoutPolarity0->findData(0));
 	}
 
-	if(polarity & 0x04)
+	if(eeprom[EE_INPUT_POLARITY1] & 0x04)
 	{
 		turnoutPolarity2->setCurrentIndex(turnoutPolarity2->findData(1));
 	}
@@ -527,6 +534,9 @@ void Node_IIAB::turnoutPolaritySet(void)
 	{
 		turnoutPolarity2->setCurrentIndex(turnoutPolarity2->findData(0));
 	}
+
+	turnoutPolarity0->blockSignals(false);
+	turnoutPolarity2->blockSignals(false);
 }
 
 void Node_IIAB::interchangePolarityUpdated(void)
@@ -545,6 +555,8 @@ void Node_IIAB::interchangePolarityUpdated(void)
 
 void Node_IIAB::interchangePolaritySet(void)
 {
+	interchangePolarity->blockSignals(true);
+
 	if(eeprom[EE_OUTPUT_POLARITY4] & 0x20)
 	{
 		interchangePolarity->setCurrentIndex(interchangePolarity->findData(1));
@@ -553,6 +565,8 @@ void Node_IIAB::interchangePolaritySet(void)
 	{
 		interchangePolarity->setCurrentIndex(interchangePolarity->findData(0));
 	}
+
+	interchangePolarity->blockSignals(false);
 }
 
 void Node_IIAB::signalPolarityUpdated(void)
@@ -570,13 +584,21 @@ void Node_IIAB::signalPolarityUpdated(void)
 
 void Node_IIAB::signalPolaritySet(void)
 {
-	// Save a copy of the eeprom value since each widget update will trigger a rewrite of the eeprom with current values from not-yet-updated widgets
-	// This will wipe out any subsequent updates if the eeprom byte is not saved.
+	for(int i=0; i<8; i++)
+	{
+		signalPolarity[i]->blockSignals(true);
+	}
+
 	uint32_t polarity = (eeprom[EE_OUTPUT_POLARITY2] << 16) + (eeprom[EE_OUTPUT_POLARITY1] << 8) + (eeprom[EE_OUTPUT_POLARITY0]);
 	for(int i=0; i<8; i++)
 	{
 		uint8_t bits = (polarity >> (3*i)) & 0x07;
 		signalPolarity[i]->setCurrentIndex(signalPolarity[i]->findData(bits));
+	}
+
+	for(int i=0; i<8; i++)
+	{
+		signalPolarity[i]->blockSignals(false);
 	}
 }
 
@@ -684,10 +706,20 @@ void Node_IIAB::simTrainEnableSet(void)
 {
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
+		simTrainEnable[i]->blockSignals(true);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
 		if(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_ENABLE_BITMASK)
 			simTrainEnable[i]->setChecked(true);
 		else
 			simTrainEnable[i]->setChecked(false);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainEnable[i]->blockSignals(false);
 	}
 }
 
@@ -707,8 +739,18 @@ void Node_IIAB::simTrainDirectionSet(void)
 {
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
+		simTrainDirection[i]->blockSignals(true);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
 		uint8_t direction = eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_DIRECTION] & SIM_TRAIN_DIRECTION_BITMASK;
 		simTrainDirection[i]->setCurrentIndex(simTrainDirection[i]->findData(direction));
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainDirection[i]->blockSignals(false);
 	}
 }
 
@@ -729,6 +771,11 @@ void Node_IIAB::simTrainTimeSet(void)
 {
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
+		simTrainTime[i]->blockSignals(true);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
 		uint16_t time = (eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TIME + 0] << 8) + eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TIME + 1];
 		if(time > (23*60 + 59))
 		{
@@ -737,6 +784,11 @@ void Node_IIAB::simTrainTimeSet(void)
 		uint8_t hours = time / 60;
 		uint8_t minutes = time % 60;
 		simTrainTime[i]->setTime(QTime(hours, minutes));
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainTime[i]->blockSignals(false);
 	}
 }
 
@@ -753,7 +805,17 @@ void Node_IIAB::simTrainTotalSet(void)
 {
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
+		simTrainTotal[i]->blockSignals(true);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
 		simTrainTotal[i]->setValue(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_TOTAL]);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainTotal[i]->blockSignals(false);
 	}
 }
 
@@ -770,7 +832,17 @@ void Node_IIAB::simTrainApproachSet(void)
 {
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
+		simTrainApproach[i]->blockSignals(true);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
 		simTrainApproach[i]->setValue(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_APPROACH]);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainApproach[i]->blockSignals(false);
 	}
 }
 
@@ -790,7 +862,17 @@ void Node_IIAB::simTrainSoundSet(void)
 {
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
+		simTrainSound[i]->blockSignals(true);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
 		simTrainSound[i]->setCurrentIndex(simTrainSound[i]->findData(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_SOUND_BITMASK));
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainSound[i]->blockSignals(false);
 	}
 }
 
@@ -810,10 +892,20 @@ void Node_IIAB::simTrainInterchangeSet(void)
 {
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
+		simTrainInterchange[i]->blockSignals(true);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
 		if(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_INTERCHANGE_BITMASK)
 			simTrainInterchange[i]->setChecked(true);
 		else
 			simTrainInterchange[i]->setChecked(false);
+	}
+
+	for(int i=0; i<NUM_SIM_TRAINS; i++)
+	{
+		simTrainInterchange[i]->blockSignals(false);
 	}
 }
 
