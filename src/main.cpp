@@ -27,8 +27,8 @@ LICENSE:
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
-	
+	QApplication app(argc, argv);
+
 //	NodeDialog nodeDialog;
 //	if (QDialog::Accepted == nodeDialog.exec())
 //	{
