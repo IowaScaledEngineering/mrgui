@@ -108,8 +108,8 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	for(int i=0; i<8; i++)
 	{
 		signalPolarity[i] = new QComboBox;
-		signalPolarity[i]->addItem("Common Cathode",0);
-		signalPolarity[i]->addItem("Common Anode",7);
+		signalPolarity[i]->addItem("Common Cathode (-)",0);
+		signalPolarity[i]->addItem("Common Anode (+)",7);
 	}
 
 	QWidget *signalPage = new QWidget();
@@ -224,7 +224,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	simTrainWindow = new QSpinBox;
 	simTrainWindow->setRange(0, 255);
 	simTrainWindow->setSingleStep(1);
-	simTrainWindow->setSuffix("min");
+	simTrainWindow->setSuffix(" min (fast)");
 	scheduleLayout->addRow(tr("Trigger Window:"), simTrainWindow);
 
 	// Build Simulated Train table
@@ -250,10 +250,10 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 		simTrainSchedule->setCellWidget(i, 0, simTrainEnableWidget[i]);
 		
 		simTrainDirection[i] = new QComboBox;
-		simTrainDirection[i]->addItem("West",0);
-		simTrainDirection[i]->addItem("East",1);
-		simTrainDirection[i]->addItem("North",2);
-		simTrainDirection[i]->addItem("South",3);
+		simTrainDirection[i]->addItem("Eastbound",0);
+		simTrainDirection[i]->addItem("Westbound",1);
+		simTrainDirection[i]->addItem("Southbound",2);
+		simTrainDirection[i]->addItem("Northbound",3);
 		simTrainSchedule->setCellWidget(i, 1, simTrainDirection[i]);
 		
 		simTrainTime[i] = new QDateTimeEdit;
