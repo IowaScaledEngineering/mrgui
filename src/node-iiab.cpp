@@ -353,6 +353,13 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timelockSet()));
 	connect(interchangePolarity, SIGNAL(currentIndexChanged(int)), this, SLOT(interchangePolarityUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(interchangePolaritySet()));
+
+	connect(clockSource, SIGNAL(valueChanged(int)), this, SLOT(clockSourceUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(clockSourceSet()));
+	connect(maxDeadReckoning, SIGNAL(valueChanged(double)), this, SLOT(maxDeadReckoningUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(maxDeadReckoningSet()));
+	connect(simTrainWindow, SIGNAL(valueChanged(int)), this, SLOT(simTrainWindowUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(simTrainWindowSet()));
 	for (int i=0; i<NUM_SIM_TRAINS; i++)
 	{
 		connect(simTrainEnable[i], SIGNAL(stateChanged(int)), this, SLOT(simTrainEnableUpdated()));
@@ -429,6 +436,13 @@ void Node_IIAB::setDefaults(void)
 	timelockUpdated();
 	interchangePolarity->setCurrentIndex(0);
 	interchangePolarityUpdated();
+
+	clockSource->setValue(0xFF);
+	clockSourceUpdated();
+	maxDeadReckoning->setValue(10);
+	maxDeadReckoningUpdated();
+	simTrainWindow->setValue(1);
+	simTrainWindowUpdated();
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
 		simTrainEnable[i]->setChecked(false);
@@ -690,14 +704,47 @@ void Node_IIAB::timelockSet(void)
 	timelock->setValue(eeprom[EE_TIMELOCK_SECONDS]);
 }
 
+void Node_IIAB::clockSourceUpdated(void)
+{
+	eeprom[EE_CLOCK_SOURCE_ADDRESS] = clockSource->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::clockSourceSet(void)
+{
+	clockSource->setValue(eeprom[EE_CLOCK_SOURCE_ADDRESS]);
+}
+
+void Node_IIAB::maxDeadReckoningUpdated(void)
+{
+	eeprom[EE_MAX_DEAD_RECKONING] = maxDeadReckoning->value() * 10.0;
+	updateEepromTable();
+}
+
+void Node_IIAB::maxDeadReckoningSet(void)
+{
+	maxDeadReckoning->setValue(eeprom[EE_MAX_DEAD_RECKONING] / 10.0);
+}
+
+void Node_IIAB::simTrainWindowUpdated(void)
+{
+	eeprom[EE_SIM_TRAIN_WINDOW] = simTrainWindow->value();
+	updateEepromTable();
+}
+
+void Node_IIAB::simTrainWindowSet(void)
+{
+	simTrainWindow->setValue(eeprom[EE_SIM_TRAIN_WINDOW]);
+}
+
 void Node_IIAB::simTrainEnableUpdated(void)
 {
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
 		if(simTrainEnable[i]->isChecked())
-			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] |= SIM_TRAIN_ENABLE_BITMASK;
+			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] |= SIM_TRAIN_FLAGS_ENABLE;
 		else
-			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] &= ~SIM_TRAIN_ENABLE_BITMASK;
+			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] &= ~SIM_TRAIN_FLAGS_ENABLE;
 	}
 	updateEepromTable();
 }
@@ -711,7 +758,7 @@ void Node_IIAB::simTrainEnableSet(void)
 
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
-		if(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_ENABLE_BITMASK)
+		if(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_FLAGS_ENABLE)
 			simTrainEnable[i]->setChecked(true);
 		else
 			simTrainEnable[i]->setChecked(false);
@@ -851,7 +898,7 @@ void Node_IIAB::simTrainSoundUpdated(void)
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
 		uint8_t flags = eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS];
-		flags &= ~SIM_TRAIN_SOUND_BITMASK;
+		flags &= ~SIM_TRAIN_FLAGS_SOUND;
 		flags |= simTrainSound[i]->itemData(simTrainSound[i]->currentIndex()).toInt();
 		eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] = flags;
 	}
@@ -867,7 +914,7 @@ void Node_IIAB::simTrainSoundSet(void)
 
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
-		simTrainSound[i]->setCurrentIndex(simTrainSound[i]->findData(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_SOUND_BITMASK));
+		simTrainSound[i]->setCurrentIndex(simTrainSound[i]->findData(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_FLAGS_SOUND));
 	}
 
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
@@ -881,9 +928,9 @@ void Node_IIAB::simTrainInterchangeUpdated(void)
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
 		if(simTrainInterchange[i]->isChecked())
-			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] |= SIM_TRAIN_INTERCHANGE_BITMASK;
+			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] |= SIM_TRAIN_FLAGS_INTERCHANGE;
 		else
-			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] &= ~SIM_TRAIN_INTERCHANGE_BITMASK;
+			eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] &= ~SIM_TRAIN_FLAGS_INTERCHANGE;
 	}
 	updateEepromTable();
 }
@@ -897,7 +944,7 @@ void Node_IIAB::simTrainInterchangeSet(void)
 
 	for(int i=0; i<NUM_SIM_TRAINS; i++)
 	{
-		if(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_INTERCHANGE_BITMASK)
+		if(eeprom[EE_SIM_TRAINS + (6*i) + SIM_TRAIN_FLAGS] & SIM_TRAIN_FLAGS_INTERCHANGE)
 			simTrainInterchange[i]->setChecked(true);
 		else
 			simTrainInterchange[i]->setChecked(false);
@@ -908,6 +955,5 @@ void Node_IIAB::simTrainInterchangeSet(void)
 		simTrainInterchange[i]->blockSignals(false);
 	}
 }
-
 
 

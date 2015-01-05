@@ -28,8 +28,8 @@ LICENSE:
 #include "window.h"
 #include "hexspinbox.h"
 
-#define EE_TIMEOUT_SECONDS      0x10
 // 0x10 - 0x13 = 4 sets of timeouts, one for each direction
+#define EE_TIMEOUT_SECONDS      0x10
 #define EE_LOCKOUT_SECONDS      0x14
 #define EE_TIMELOCK_SECONDS     0x15
 #define EE_DEBOUNCE_SECONDS     0x16
@@ -55,10 +55,10 @@ LICENSE:
 #define SIM_TRAIN_TOTAL       4
 #define SIM_TRAIN_APPROACH    5
 
-#define SIM_TRAIN_SOUND_BITMASK         0x03
-#define SIM_TRAIN_INTERCHANGE_BITMASK   0x04
-#define SIM_TRAIN_ENABLE_BITMASK        0x80
-
+#define SIM_TRAIN_FLAGS_ENABLE          0x80
+#define SIM_TRAIN_FLAGS_TRIGGER         0x40
+#define SIM_TRAIN_FLAGS_INTERCHANGE     0x04
+#define SIM_TRAIN_FLAGS_SOUND           0x03
 #define SIM_TRAIN_DIRECTION_BITMASK     0x03
 
 class Node_IIAB : public Window
@@ -105,6 +105,12 @@ class Node_IIAB : public Window
 		void lockoutSet(void);
 		void timelockUpdated(void);
 		void timelockSet(void);
+		void clockSourceUpdated(void);
+		void clockSourceSet(void);
+		void maxDeadReckoningUpdated(void);
+		void maxDeadReckoningSet(void);
+		void simTrainWindowUpdated(void);
+		void simTrainWindowSet(void);
 		void simTrainEnableUpdated(void);
 		void simTrainEnableSet(void);
 		void simTrainDirectionUpdated(void);
