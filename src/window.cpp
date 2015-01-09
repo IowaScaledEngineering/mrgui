@@ -322,7 +322,7 @@ void Window::save(void)
 	QString path = QFileDialog::getSaveFileName(this, tr("Save Configuration File"), NULL, "EEP Files (*.eep);;All Files (*.*)");
 	if(!path.isNull())
 	{
-		if( -1 == (path.lastIndexOf(".eep")))
+		if(!path.endsWith(".eep"))
 		{
 			path.append(".eep");
 		}
