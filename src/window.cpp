@@ -526,7 +526,9 @@ void Window::updateEepromTable(void)
 	eepromTable->setText(eepromContents);
 	eepromTable->verticalScrollBar()->setValue(scrollPosition);
 
+	eepromData->blockSignals(true);  // Prevent this update from looping back and triggering updates to a widget in the middle of entering a value
 	eepromData->setValue(eeprom[eepromAddr->value()]);
+	eepromData->blockSignals(false);
 	eepromDataBinary->setText(QString("%1 %2").arg((eepromData->value() >> 4) & 0xF, 4, 2, QChar('0')).arg(eepromData->value() & 0xF, 4, 2, QChar('0')));
 }
 
