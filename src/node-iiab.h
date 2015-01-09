@@ -46,6 +46,13 @@ LICENSE:
 #define EE_OUTPUT_POLARITY4     0x26
 #define EE_MISC_CONFIG          0x30
 #define EE_SIM_TRAINS           0x40
+#define EE_ASPECTS_MAIN         0x100
+#define EE_ASPECTS_SIDING       0x108
+#define EE_SIGNAL_PINS_GREEN    0x110
+#define EE_SIGNAL_PINS_YELLOW1  0x118
+#define EE_SIGNAL_PINS_YELLOW2  0x120
+#define EE_SIGNAL_PINS_RED      0x128
+#define EE_SIGNAL_PINS_LUNAR    0x130
 
 #define NUM_SIM_TRAINS   32
 
@@ -60,6 +67,16 @@ LICENSE:
 #define SIM_TRAIN_FLAGS_INTERCHANGE     0x04
 #define SIM_TRAIN_FLAGS_SOUND           0x03
 #define SIM_TRAIN_DIRECTION_BITMASK     0x03
+
+#define ASPECT_LUNAR     0x07
+#define ASPECT_FL_RED    0x06
+#define ASPECT_FL_GREEN  0x05
+#define ASPECT_RED       0x04
+#define ASPECT_FL_YELLOW 0x03
+#define ASPECT_YELLOW    0x02
+#define ASPECT_GREEN     0x01
+#define ASPECT_OFF       0x00
+
 
 class Node_IIAB : public Window
 {
