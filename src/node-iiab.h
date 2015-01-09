@@ -89,8 +89,9 @@ class Node_IIAB : public Window
 		HexSpinBox *clockSource;
 		QDoubleSpinBox *blinky, *maxDeadReckoning;
 		QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *simTrainWindow, *simTrainTotal[NUM_SIM_TRAINS], *simTrainApproach[NUM_SIM_TRAINS];
-		QRadioButton *ledPolarityAnode, *ledPolarityCathode;
-		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8], *interchangePolarity, *signalPolarity[8], *simTrainDirection[NUM_SIM_TRAINS], *simTrainSound[NUM_SIM_TRAINS];
+		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8], *interchangePolarity, 
+			*signalPolarity[8], *signalAspectsMain[8], *signalAspectsSiding[8],
+			*simTrainDirection[NUM_SIM_TRAINS], *simTrainSound[NUM_SIM_TRAINS];
 		QCheckBox *simTrainEnable[NUM_SIM_TRAINS], *simTrainInterchange[NUM_SIM_TRAINS];
 		QDateTimeEdit *simTrainTime[NUM_SIM_TRAINS];
 
@@ -106,6 +107,8 @@ class Node_IIAB : public Window
 		void interchangePolaritySet(void);
 		void signalPolarityUpdated(void);
 		void signalPolaritySet(void);
+		void signalAspectsUpdated(void);
+		void signalAspectsSet(void);
 		void timeout0Updated(void);
 		void timeout0Set(void);
 		void timeout1Updated(void);

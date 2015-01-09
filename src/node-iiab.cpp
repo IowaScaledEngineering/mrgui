@@ -116,29 +116,29 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 
 	QGroupBox *westSignalGroup = new QGroupBox(tr("West Direction"));
 	QFormLayout *westSignalLayout = new QFormLayout();
-	westSignalLayout->addRow(tr("Polarity (Main):"), signalPolarity[0]);
-	westSignalLayout->addRow(tr("Polarity (Siding):"), signalPolarity[1]);
+	westSignalLayout->addRow(tr("Main Polarity:"), signalPolarity[0]);
+	westSignalLayout->addRow(tr("Siding Polarity:"), signalPolarity[1]);
 	westSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	westSignalGroup->setLayout(westSignalLayout);
 
 	QGroupBox *eastSignalGroup = new QGroupBox(tr("East Direction"));
 	QFormLayout *eastSignalLayout = new QFormLayout();
-	eastSignalLayout->addRow(tr("Polarity (Top):"), signalPolarity[2]);
-	eastSignalLayout->addRow(tr("Polarity (Bottom):"), signalPolarity[3]);
+	eastSignalLayout->addRow(tr("Top Polarity:"), signalPolarity[2]);
+	eastSignalLayout->addRow(tr("Bottom Polarity:"), signalPolarity[3]);
 	eastSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	eastSignalGroup->setLayout(eastSignalLayout);
 
 	QGroupBox *northSignalGroup = new QGroupBox(tr("North Direction"));
 	QFormLayout *northSignalLayout = new QFormLayout();
-	northSignalLayout->addRow(tr("Polarity (Main):"), signalPolarity[4]);
-	northSignalLayout->addRow(tr("Polarity (Siding):"), signalPolarity[5]);
+	northSignalLayout->addRow(tr("Main Polarity:"), signalPolarity[4]);
+	northSignalLayout->addRow(tr("Siding Polarity:"), signalPolarity[5]);
 	northSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	northSignalGroup->setLayout(northSignalLayout);
 
 	QGroupBox *southSignalGroup = new QGroupBox(tr("South Direction"));
 	QFormLayout *southSignalLayout = new QFormLayout();
-	southSignalLayout->addRow(tr("Polarity (Top):"), signalPolarity[6]);
-	southSignalLayout->addRow(tr("Polarity (Bottom):"), signalPolarity[7]);
+	southSignalLayout->addRow(tr("Top Polarity:"), signalPolarity[6]);
+	southSignalLayout->addRow(tr("Bottom Polarity:"), signalPolarity[7]);
 	southSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	southSignalGroup->setLayout(southSignalLayout);
 	
@@ -149,7 +149,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	blinky->setSingleStep(0.1);
 	blinky->setDecimals(1);
 	blinky->setSuffix("s");
-	blinkyLayout->addRow(tr("Blink Time:"), blinky);
+	blinkyLayout->addRow(tr("Flashing Period:"), blinky);
 	blinkyLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	blinkyWidget->setLayout(blinkyLayout);
 
@@ -161,6 +161,79 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	signalLayout->addWidget(blinkyWidget, 1, 1);
 	signalLayout->setAlignment(blinkyWidget, Qt::AlignCenter);
 	signalPage->setLayout(signalLayout);
+	
+	
+	
+	for(int i=0; i<8; i++)
+	{
+		signalAspectsMain[i] = new QComboBox;
+		signalAspectsMain[i]->addItem("Green",ASPECT_GREEN);
+		signalAspectsMain[i]->addItem("Yellow",ASPECT_YELLOW);
+		signalAspectsMain[i]->addItem("Red",ASPECT_RED);
+		signalAspectsMain[i]->addItem("Flashing Green",ASPECT_FL_GREEN);
+		signalAspectsMain[i]->addItem("Flashing Yellow",ASPECT_FL_YELLOW);
+		signalAspectsMain[i]->addItem("Flashing Red",ASPECT_FL_RED);
+		signalAspectsMain[i]->addItem("Lunar",ASPECT_LUNAR);
+
+		signalAspectsSiding[i] = new QComboBox;
+		signalAspectsSiding[i]->addItem("Green",ASPECT_GREEN);
+		signalAspectsSiding[i]->addItem("Yellow",ASPECT_YELLOW);
+		signalAspectsSiding[i]->addItem("Red",ASPECT_RED);
+		signalAspectsSiding[i]->addItem("Flashing Green",ASPECT_FL_GREEN);
+		signalAspectsSiding[i]->addItem("Flashing Yellow",ASPECT_FL_YELLOW);
+		signalAspectsSiding[i]->addItem("Flashing Red",ASPECT_FL_RED);
+		signalAspectsSiding[i]->addItem("Lunar",ASPECT_LUNAR);
+	}
+
+	QWidget *aspectPage = new QWidget();
+	QGridLayout *aspectLayout = new QGridLayout;
+	QLabel *aspectWestTurnout = new QLabel("West Turnout Position:");
+	QLabel *aspectWestMain = new QLabel("Main");
+	QLabel *aspectWestSiding = new QLabel("Siding");
+	QLabel *aspectWestMainSignal = new QLabel("West Main Signal:");
+	QLabel *aspectWestSidingSignal = new QLabel("West Siding Signal:");
+	QLabel *aspectEastTopSignal = new QLabel("East Top Signal:");
+	QLabel *aspectEastBottomSignal = new QLabel("East Bottom Signal:");
+	aspectLayout->addWidget(aspectWestTurnout, 0, 0);
+	aspectLayout->addWidget(aspectWestMain, 0, 1);
+	aspectLayout->addWidget(aspectWestSiding, 0, 2);
+	aspectLayout->addWidget(aspectWestMainSignal, 1, 0);
+	aspectLayout->addWidget(signalAspectsMain[0], 1, 1);
+	aspectLayout->addWidget(signalAspectsSiding[0], 1, 2);
+	aspectLayout->addWidget(aspectWestSidingSignal, 2, 0);
+	aspectLayout->addWidget(signalAspectsMain[1], 2, 1);
+	aspectLayout->addWidget(signalAspectsSiding[1], 2, 2);
+	aspectLayout->addWidget(aspectEastTopSignal, 3, 0);
+	aspectLayout->addWidget(signalAspectsMain[2], 3, 1);
+	aspectLayout->addWidget(signalAspectsSiding[2], 3, 2);
+	aspectLayout->addWidget(aspectEastBottomSignal, 4, 0);
+	aspectLayout->addWidget(signalAspectsMain[3], 4, 1);
+	aspectLayout->addWidget(signalAspectsSiding[3], 4, 2);
+	
+	QLabel *aspectNorthTurnout = new QLabel("North Turnout Position:");
+	QLabel *aspectNorthMain = new QLabel("Main");
+	QLabel *aspectNorthSiding = new QLabel("Siding");
+	QLabel *aspectNorthMainSignal = new QLabel("North Main Signal:");
+	QLabel *aspectNorthSidingSignal = new QLabel("North Siding Signal:");
+	QLabel *aspectSouthTopSignal = new QLabel("South Top Signal:");
+	QLabel *aspectSouthBottomSignal = new QLabel("South Bottom Signal:");
+	aspectLayout->addWidget(aspectNorthTurnout, 6, 0);
+	aspectLayout->addWidget(aspectNorthMain, 6, 1);
+	aspectLayout->addWidget(aspectNorthSiding, 6, 2);
+	aspectLayout->addWidget(aspectNorthMainSignal, 7, 0);
+	aspectLayout->addWidget(signalAspectsMain[4], 7, 1);
+	aspectLayout->addWidget(signalAspectsSiding[4], 7, 2);
+	aspectLayout->addWidget(aspectNorthSidingSignal, 8, 0);
+	aspectLayout->addWidget(signalAspectsMain[5], 8, 1);
+	aspectLayout->addWidget(signalAspectsSiding[5], 8, 2);
+	aspectLayout->addWidget(aspectSouthTopSignal, 9, 0);
+	aspectLayout->addWidget(signalAspectsMain[6], 9, 1);
+	aspectLayout->addWidget(signalAspectsSiding[6], 9, 2);
+	aspectLayout->addWidget(aspectSouthBottomSignal, 10, 0);
+	aspectLayout->addWidget(signalAspectsMain[7], 10, 1);
+	aspectLayout->addWidget(signalAspectsSiding[7], 10, 2);
+
+	aspectPage->setLayout(aspectLayout);
 
 
 
@@ -313,10 +386,11 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 
 	tabWidget->insertTab(0, detectorPage, "Detectors");
 	tabWidget->insertTab(1, signalPage, "Signals");
-	tabWidget->insertTab(2, turnoutPage, "Turnouts");
-	tabWidget->insertTab(3, timingPage, "Timing");
-	tabWidget->insertTab(4, interchangePage, "Interchange");
-	tabWidget->insertTab(5, schedulePage, "Schedules");
+	tabWidget->insertTab(2, aspectPage, "Aspects");
+	tabWidget->insertTab(3, turnoutPage, "Turnouts");
+	tabWidget->insertTab(4, timingPage, "Timing");
+	tabWidget->insertTab(5, interchangePage, "Interchange");
+	tabWidget->insertTab(6, schedulePage, "Schedules");
 	tabWidget->setCurrentIndex(0);
 
 	setDefaults();
@@ -341,6 +415,12 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	{
 		connect(signalPolarity[i], SIGNAL(currentIndexChanged(int)), this, SLOT(signalPolarityUpdated()));
 		connect(this, SIGNAL(eepromUpdated()), this, SLOT(signalPolaritySet()));
+	}
+	for(int i=0; i<8; i++)
+	{
+		connect(signalAspectsMain[i], SIGNAL(currentIndexChanged(int)), this, SLOT(signalAspectsUpdated()));
+		connect(signalAspectsSiding[i], SIGNAL(currentIndexChanged(int)), this, SLOT(signalAspectsUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(signalAspectsSet()));
 	}
 	connect(blinky, SIGNAL(valueChanged(double)), this, SLOT(blinkyUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(blinkySet()));
@@ -426,6 +506,14 @@ void Node_IIAB::setDefaults(void)
 		signalPolarity[i]->setCurrentIndex(0);
 	}
 	signalPolarityUpdated();
+	for(int i=0; i<8; i+=2)
+	{
+		signalAspectsMain[i+0]->setCurrentIndex(signalAspectsMain[i+0]->findData(ASPECT_GREEN));
+		signalAspectsMain[i+1]->setCurrentIndex(signalAspectsMain[i+1]->findData(ASPECT_RED));
+		signalAspectsSiding[i+0]->setCurrentIndex(signalAspectsSiding[i+0]->findData(ASPECT_RED));
+		signalAspectsSiding[i+1]->setCurrentIndex(signalAspectsSiding[i+1]->findData(ASPECT_YELLOW));
+	}
+	signalAspectsUpdated();
 	blinky->setValue(0.5);
 	blinkyUpdated();
 	turnoutPolarity0->setCurrentIndex(0);
@@ -626,6 +714,29 @@ void Node_IIAB::signalPolaritySet(void)
 	for(int i=0; i<8; i++)
 	{
 		signalPolarity[i]->blockSignals(false);
+	}
+}
+
+void Node_IIAB::signalAspectsUpdated(void)
+{
+	// FIXME: do something
+	updateEepromTable();
+}
+
+void Node_IIAB::signalAspectsSet(void)
+{
+	for(int i=0; i<8; i++)
+	{
+		signalAspectsMain[i]->blockSignals(true);
+		signalAspectsSiding[i]->blockSignals(true);
+	}
+
+	// FIXME: do something
+
+	for(int i=0; i<8; i++)
+	{
+		signalAspectsMain[i]->blockSignals(false);
+		signalAspectsSiding[i]->blockSignals(false);
 	}
 }
 
