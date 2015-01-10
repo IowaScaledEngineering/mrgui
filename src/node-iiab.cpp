@@ -187,52 +187,48 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 
 	QWidget *aspectPage = new QWidget();
 	QGridLayout *aspectLayout = new QGridLayout;
-	QLabel *aspectWestTurnout = new QLabel("West Turnout Position:");
-	QLabel *aspectWestMain = new QLabel("Main");
-	QLabel *aspectWestSiding = new QLabel("Siding");
-	QLabel *aspectWestMainSignal = new QLabel("West Main Signal:");
-	QLabel *aspectWestSidingSignal = new QLabel("West Siding Signal:");
-	QLabel *aspectEastTopSignal = new QLabel("East Top Signal:");
-	QLabel *aspectEastBottomSignal = new QLabel("East Bottom Signal:");
-	aspectLayout->addWidget(aspectWestTurnout, 0, 0);
-	aspectLayout->addWidget(aspectWestMain, 0, 1);
-	aspectLayout->addWidget(aspectWestSiding, 0, 2);
-	aspectLayout->addWidget(aspectWestMainSignal, 1, 0);
-	aspectLayout->addWidget(signalAspectsMain[0], 1, 1);
-	aspectLayout->addWidget(signalAspectsSiding[0], 1, 2);
-	aspectLayout->addWidget(aspectWestSidingSignal, 2, 0);
-	aspectLayout->addWidget(signalAspectsMain[1], 2, 1);
-	aspectLayout->addWidget(signalAspectsSiding[1], 2, 2);
-	aspectLayout->addWidget(aspectEastTopSignal, 3, 0);
-	aspectLayout->addWidget(signalAspectsMain[2], 3, 1);
-	aspectLayout->addWidget(signalAspectsSiding[2], 3, 2);
-	aspectLayout->addWidget(aspectEastBottomSignal, 4, 0);
-	aspectLayout->addWidget(signalAspectsMain[3], 4, 1);
-	aspectLayout->addWidget(signalAspectsSiding[3], 4, 2);
-	
-	QLabel *aspectNorthTurnout = new QLabel("North Turnout Position:");
-	QLabel *aspectNorthMain = new QLabel("Main");
-	QLabel *aspectNorthSiding = new QLabel("Siding");
-	QLabel *aspectNorthMainSignal = new QLabel("North Main Signal:");
-	QLabel *aspectNorthSidingSignal = new QLabel("North Siding Signal:");
-	QLabel *aspectSouthTopSignal = new QLabel("South Top Signal:");
-	QLabel *aspectSouthBottomSignal = new QLabel("South Bottom Signal:");
-	aspectLayout->addWidget(aspectNorthTurnout, 6, 0);
-	aspectLayout->addWidget(aspectNorthMain, 6, 1);
-	aspectLayout->addWidget(aspectNorthSiding, 6, 2);
-	aspectLayout->addWidget(aspectNorthMainSignal, 7, 0);
-	aspectLayout->addWidget(signalAspectsMain[4], 7, 1);
-	aspectLayout->addWidget(signalAspectsSiding[4], 7, 2);
-	aspectLayout->addWidget(aspectNorthSidingSignal, 8, 0);
-	aspectLayout->addWidget(signalAspectsMain[5], 8, 1);
-	aspectLayout->addWidget(signalAspectsSiding[5], 8, 2);
-	aspectLayout->addWidget(aspectSouthTopSignal, 9, 0);
-	aspectLayout->addWidget(signalAspectsMain[6], 9, 1);
-	aspectLayout->addWidget(signalAspectsSiding[6], 9, 2);
-	aspectLayout->addWidget(aspectSouthBottomSignal, 10, 0);
-	aspectLayout->addWidget(signalAspectsMain[7], 10, 1);
-	aspectLayout->addWidget(signalAspectsSiding[7], 10, 2);
 
+	QGroupBox *aspectWestMainGroup = new QGroupBox(tr("West Turnout = Main"));
+	QFormLayout *aspectWestMainLayout = new QFormLayout();
+	aspectWestMainLayout->addRow(tr("West Main Signal:"), signalAspectsMain[0]);
+	aspectWestMainLayout->addRow(tr("West Siding Signal:"), signalAspectsMain[1]);
+	aspectWestMainLayout->addRow(tr("East Top Signal:"), signalAspectsMain[2]);
+	aspectWestMainLayout->addRow(tr("East Bottom Signal:"), signalAspectsMain[3]);
+	aspectWestMainLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	aspectWestMainGroup->setLayout(aspectWestMainLayout);
+
+	QGroupBox *aspectWestSidingGroup = new QGroupBox(tr("West Turnout = Siding"));
+	QFormLayout *aspectWestSidingLayout = new QFormLayout();
+	aspectWestSidingLayout->addRow(tr("West Main Signal:"), signalAspectsSiding[0]);
+	aspectWestSidingLayout->addRow(tr("West Siding Signal:"), signalAspectsSiding[1]);
+	aspectWestSidingLayout->addRow(tr("East Top Signal:"), signalAspectsSiding[2]);
+	aspectWestSidingLayout->addRow(tr("East Bottom Signal:"), signalAspectsSiding[3]);
+	aspectWestSidingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	aspectWestSidingGroup->setLayout(aspectWestSidingLayout);
+
+	QGroupBox *aspectNorthMainGroup = new QGroupBox(tr("North Turnout = Main"));
+	QFormLayout *aspectNorthMainLayout = new QFormLayout();
+	aspectNorthMainLayout->addRow(tr("North Main Signal:"), signalAspectsMain[4]);
+	aspectNorthMainLayout->addRow(tr("North Siding Signal:"), signalAspectsMain[5]);
+	aspectNorthMainLayout->addRow(tr("South Top Signal:"), signalAspectsMain[6]);
+	aspectNorthMainLayout->addRow(tr("South Bottom Signal:"), signalAspectsMain[7]);
+	aspectNorthMainLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	aspectNorthMainGroup->setLayout(aspectNorthMainLayout);
+
+	QGroupBox *aspectNorthSidingGroup = new QGroupBox(tr("North Turnout = Siding"));
+	QFormLayout *aspectNorthSidingLayout = new QFormLayout();
+	aspectNorthSidingLayout->addRow(tr("North Main Signal:"), signalAspectsSiding[4]);
+	aspectNorthSidingLayout->addRow(tr("North Siding Signal:"), signalAspectsSiding[5]);
+	aspectNorthSidingLayout->addRow(tr("South Top Signal:"), signalAspectsSiding[6]);
+	aspectNorthSidingLayout->addRow(tr("South Bottom Signal:"), signalAspectsSiding[7]);
+	aspectNorthSidingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	aspectNorthSidingGroup->setLayout(aspectNorthSidingLayout);
+
+	aspectLayout->addWidget(new QLabel(tr("Set the aspects for the proceed indication to use when the turnout is set as shown.")), 0, 0, 1, 2);
+	aspectLayout->addWidget(aspectWestMainGroup, 1, 0);
+	aspectLayout->addWidget(aspectWestSidingGroup, 1, 1);
+	aspectLayout->addWidget(aspectNorthMainGroup, 2, 0);
+	aspectLayout->addWidget(aspectNorthSidingGroup, 2, 1);
 	aspectPage->setLayout(aspectLayout);
 
 
@@ -719,7 +715,11 @@ void Node_IIAB::signalPolaritySet(void)
 
 void Node_IIAB::signalAspectsUpdated(void)
 {
-	// FIXME: do something
+	for(int i=0; i<8; i++)
+	{
+		eeprom[EE_ASPECTS_MAIN + i] = signalAspectsMain[i]->itemData(signalAspectsMain[i]->currentIndex()).toInt();
+		eeprom[EE_ASPECTS_SIDING + i] = signalAspectsSiding[i]->itemData(signalAspectsSiding[i]->currentIndex()).toInt();
+	}
 	updateEepromTable();
 }
 
@@ -731,7 +731,11 @@ void Node_IIAB::signalAspectsSet(void)
 		signalAspectsSiding[i]->blockSignals(true);
 	}
 
-	// FIXME: do something
+	for(int i=0; i<8; i++)
+	{
+		signalAspectsMain[i]->setCurrentIndex(signalAspectsMain[i]->findData(eeprom[EE_ASPECTS_MAIN + i] & 0x07));
+		signalAspectsSiding[i]->setCurrentIndex(signalAspectsSiding[i]->findData(eeprom[EE_ASPECTS_SIDING + i] & 0x07));
+	}
 
 	for(int i=0; i<8; i++)
 	{
