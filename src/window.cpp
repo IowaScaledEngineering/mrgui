@@ -319,26 +319,56 @@ void Window::load(void)
 
 void Window::save(void)
 {
-	QString path = QFileDialog::getSaveFileName(this, tr("Save Configuration File"), NULL, "EEP Files (*.eep);;All Files (*.*)");
+//	QFileDialog dialog(this, tr("Save Configuration File"), NULL, "EEP Files (*.eep);;All Files (*.*)");
+//	dialog.setAcceptMode(QFileDialog::AcceptSave);
+//	dialog.setDefaultSuffix("eep");
+//	dialog.exec();
+//	QStringList path = dialog.selectedFiles();
+
+	QString path = QFileDialog::getSaveFileName(this, tr("Save Configuration File"), NULL, "EEP Files (*.eep);;All Files (*.*)", 0, QFileDialog::DontConfirmOverwrite);
 	if(!path.isNull())
 	{
 		if(!path.endsWith(".eep"))
 		{
 			path.append(".eep");
 		}
-
+		
 		FILE *fptr;
-		if( (fptr = fopen(path.toLocal8Bit().data(), "w")) != NULL)
+		int ret = QMessageBox::Yes;
+
+		if( (fptr = fopen(path.toLocal8Bit().data(), "r")) != NULL)
 		{
-			IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
-
-			for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
-			{
-				eepromMem.write_uint8(i, eeprom[i]);
-			}
-
-			eepromMem.write_ihex(fptr);
+			// File already exists
 			fclose(fptr);
+			QMessageBox msgBox;
+			msgBox.setText(QString("A configuration file named \"%1\" already exists.  Do you want to replace it?").arg(path));
+			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setDefaultButton(QMessageBox::No);
+			ret = msgBox.exec();
+		}
+
+		if(QMessageBox::Yes == ret)
+		{
+			if( (fptr = fopen(path.toLocal8Bit().data(), "w")) != NULL)
+			{
+				IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
+
+				for(uint32_t i=0; i<getAVRInfo(avrDevice)->eeprom_size; i++)
+				{
+					eepromMem.write_uint8(i, eeprom[i]);
+				}
+
+				eepromMem.write_ihex(fptr);
+				fclose(fptr);
+			}
+			else
+			{
+				QMessageBox msgBox;
+				msgBox.setText(QString("Error!  File could not be written."));
+				msgBox.setStandardButtons(QMessageBox::Ok);
+				msgBox.setDefaultButton(QMessageBox::Ok);
+				ret = msgBox.exec();
+			}
 		}
 	}
 }
