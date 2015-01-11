@@ -89,7 +89,7 @@ class Node_IIAB : public Window
 		HexSpinBox *clockSource;
 		QDoubleSpinBox *blinky, *maxDeadReckoning;
 		QSpinBox *timeout0, *timeout1, *timeout2, *timeout3, *lockout, *timelock, *debounce, *simTrainWindow, *simTrainTotal[NUM_SIM_TRAINS], *simTrainApproach[NUM_SIM_TRAINS];
-		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8], *interchangePolarity, 
+		QComboBox *turnoutPolarity0, *turnoutPolarity2, *detectorPolarity[8], *interchangePolarity, *sound0Polarity, *sound1Polarity,
 			*signalPolarity[8], *signalAspectsMain[8], *signalAspectsSiding[8],
 			*simTrainDirection[NUM_SIM_TRAINS], *simTrainSound[NUM_SIM_TRAINS];
 		QCheckBox *simTrainEnable[NUM_SIM_TRAINS], *simTrainInterchange[NUM_SIM_TRAINS];
@@ -103,6 +103,8 @@ class Node_IIAB : public Window
 		void detectorPolaritySet(void);
 		void turnoutPolarityUpdated(void);
 		void turnoutPolaritySet(void);
+		void soundPolarityUpdated(void);
+		void soundPolaritySet(void);
 		void interchangePolarityUpdated(void);
 		void interchangePolaritySet(void);
 		void signalPolarityUpdated(void);

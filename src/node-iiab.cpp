@@ -267,6 +267,21 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 
 
 
+	QWidget *soundPage = new QWidget();
+	QFormLayout *soundLayout = new QFormLayout();
+	sound0Polarity = new QComboBox;
+	sound0Polarity->addItem("High = Sound Activated",0);
+	sound0Polarity->addItem("Low = Sound Activated",1);
+	soundLayout->addRow(tr("Sound 0 Polarity:"), sound0Polarity);
+	sound1Polarity = new QComboBox;
+	sound1Polarity->addItem("High = Sound Activated",0);
+	sound1Polarity->addItem("Low = Sound Activated",1);
+	soundLayout->addRow(tr("Sound 1 Polarity:"), sound1Polarity);
+	soundLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	soundPage->setLayout(soundLayout);
+
+
+
 	QWidget *interchangePage = new QWidget();
 	QFormLayout *interchangeLayout = new QFormLayout();
 	interchangeLayout->addRow(tr("Detector Polarity:"), detectorPolarity[7]);
@@ -387,8 +402,9 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	tabWidget->insertTab(2, aspectPage, "Aspects");
 	tabWidget->insertTab(3, turnoutPage, "Turnouts");
 	tabWidget->insertTab(4, timingPage, "Timing");
-	tabWidget->insertTab(5, interchangePage, "Interchange");
-	tabWidget->insertTab(6, schedulePage, "Schedules");
+	tabWidget->insertTab(5, soundPage, "Sound");
+	tabWidget->insertTab(6, interchangePage, "Interchange");
+	tabWidget->insertTab(7, schedulePage, "Schedules");
 	tabWidget->setCurrentIndex(0);
 
 	setDefaults();
@@ -429,6 +445,10 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(lockoutSet()));
 	connect(timelock, SIGNAL(valueChanged(int)), this, SLOT(timelockUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(timelockSet()));
+	connect(sound0Polarity, SIGNAL(currentIndexChanged(int)), this, SLOT(soundPolarityUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(soundPolaritySet()));
+	connect(sound1Polarity, SIGNAL(currentIndexChanged(int)), this, SLOT(soundPolarityUpdated()));
+	connect(this, SIGNAL(eepromUpdated()), this, SLOT(soundPolaritySet()));
 	connect(interchangePolarity, SIGNAL(currentIndexChanged(int)), this, SLOT(interchangePolarityUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(interchangePolaritySet()));
 
@@ -520,6 +540,9 @@ void Node_IIAB::setDefaults(void)
 	lockoutUpdated();
 	timelock->setValue(30);
 	timelockUpdated();
+	sound0Polarity->setCurrentIndex(0);
+	sound1Polarity->setCurrentIndex(0);
+	soundPolarityUpdated();
 	interchangePolarity->setCurrentIndex(0);
 	interchangePolarityUpdated();
 
@@ -650,6 +673,56 @@ void Node_IIAB::turnoutPolaritySet(void)
 
 	turnoutPolarity0->blockSignals(false);
 	turnoutPolarity2->blockSignals(false);
+}
+
+void Node_IIAB::soundPolarityUpdated(void)
+{
+	if(sound0Polarity->itemData(sound0Polarity->currentIndex()).toBool())
+	{
+		eeprom[EE_OUTPUT_POLARITY4] |= 0x40;
+	}
+	else
+	{
+		eeprom[EE_OUTPUT_POLARITY4] &= ~(0x40);
+	}
+
+	if(sound1Polarity->itemData(sound1Polarity->currentIndex()).toBool())
+	{
+		eeprom[EE_OUTPUT_POLARITY4] |= 0x80;
+	}
+	else
+	{
+		eeprom[EE_OUTPUT_POLARITY4] &= ~(0x80);
+	}
+
+	updateEepromTable();
+}
+
+void Node_IIAB::soundPolaritySet(void)
+{
+	sound0Polarity->blockSignals(true);
+	sound1Polarity->blockSignals(true);
+
+	if(eeprom[EE_OUTPUT_POLARITY4] & 0x40)
+	{
+		sound0Polarity->setCurrentIndex(sound0Polarity->findData(1));
+	}
+	else
+	{
+		sound0Polarity->setCurrentIndex(sound0Polarity->findData(0));
+	}
+
+	if(eeprom[EE_OUTPUT_POLARITY4] & 0x80)
+	{
+		sound1Polarity->setCurrentIndex(sound1Polarity->findData(1));
+	}
+	else
+	{
+		sound1Polarity->setCurrentIndex(sound1Polarity->findData(0));
+	}
+
+	sound0Polarity->blockSignals(false);
+	sound1Polarity->blockSignals(false);
 }
 
 void Node_IIAB::interchangePolarityUpdated(void)
