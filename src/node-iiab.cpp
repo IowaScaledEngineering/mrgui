@@ -174,6 +174,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 		signalAspectsMain[i]->addItem("Flashing Yellow",ASPECT_FL_YELLOW);
 		signalAspectsMain[i]->addItem("Flashing Red",ASPECT_FL_RED);
 		signalAspectsMain[i]->addItem("Lunar",ASPECT_LUNAR);
+		signalAspectsMain[i]->addItem("Off",ASPECT_OFF);
 
 		signalAspectsSiding[i] = new QComboBox;
 		signalAspectsSiding[i]->addItem("Green",ASPECT_GREEN);
@@ -183,6 +184,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 		signalAspectsSiding[i]->addItem("Flashing Yellow",ASPECT_FL_YELLOW);
 		signalAspectsSiding[i]->addItem("Flashing Red",ASPECT_FL_RED);
 		signalAspectsSiding[i]->addItem("Lunar",ASPECT_LUNAR);
+		signalAspectsSiding[i]->addItem("Off",ASPECT_OFF);
 	}
 
 	QWidget *aspectPage = new QWidget();
@@ -192,8 +194,8 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	QFormLayout *aspectWestMainLayout = new QFormLayout();
 	aspectWestMainLayout->addRow(tr("West Main Signal:"), signalAspectsMain[0]);
 	aspectWestMainLayout->addRow(tr("West Siding Signal:"), signalAspectsMain[1]);
-	aspectWestMainLayout->addRow(tr("East Top Signal:"), signalAspectsMain[2]);
-	aspectWestMainLayout->addRow(tr("East Bottom Signal:"), signalAspectsMain[3]);
+	aspectWestMainLayout->addRow(tr("East Top Head:"), signalAspectsMain[2]);
+	aspectWestMainLayout->addRow(tr("East Bottom Head:"), signalAspectsMain[3]);
 	aspectWestMainLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	aspectWestMainGroup->setLayout(aspectWestMainLayout);
 
@@ -201,8 +203,8 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	QFormLayout *aspectWestSidingLayout = new QFormLayout();
 	aspectWestSidingLayout->addRow(tr("West Main Signal:"), signalAspectsSiding[0]);
 	aspectWestSidingLayout->addRow(tr("West Siding Signal:"), signalAspectsSiding[1]);
-	aspectWestSidingLayout->addRow(tr("East Top Signal:"), signalAspectsSiding[2]);
-	aspectWestSidingLayout->addRow(tr("East Bottom Signal:"), signalAspectsSiding[3]);
+	aspectWestSidingLayout->addRow(tr("East Top Head:"), signalAspectsSiding[2]);
+	aspectWestSidingLayout->addRow(tr("East Bottom Head:"), signalAspectsSiding[3]);
 	aspectWestSidingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	aspectWestSidingGroup->setLayout(aspectWestSidingLayout);
 
@@ -210,8 +212,8 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	QFormLayout *aspectNorthMainLayout = new QFormLayout();
 	aspectNorthMainLayout->addRow(tr("North Main Signal:"), signalAspectsMain[4]);
 	aspectNorthMainLayout->addRow(tr("North Siding Signal:"), signalAspectsMain[5]);
-	aspectNorthMainLayout->addRow(tr("South Top Signal:"), signalAspectsMain[6]);
-	aspectNorthMainLayout->addRow(tr("South Bottom Signal:"), signalAspectsMain[7]);
+	aspectNorthMainLayout->addRow(tr("South Top Head:"), signalAspectsMain[6]);
+	aspectNorthMainLayout->addRow(tr("South Bottom Head:"), signalAspectsMain[7]);
 	aspectNorthMainLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	aspectNorthMainGroup->setLayout(aspectNorthMainLayout);
 
@@ -219,8 +221,8 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	QFormLayout *aspectNorthSidingLayout = new QFormLayout();
 	aspectNorthSidingLayout->addRow(tr("North Main Signal:"), signalAspectsSiding[4]);
 	aspectNorthSidingLayout->addRow(tr("North Siding Signal:"), signalAspectsSiding[5]);
-	aspectNorthSidingLayout->addRow(tr("South Top Signal:"), signalAspectsSiding[6]);
-	aspectNorthSidingLayout->addRow(tr("South Bottom Signal:"), signalAspectsSiding[7]);
+	aspectNorthSidingLayout->addRow(tr("South Top Head:"), signalAspectsSiding[6]);
+	aspectNorthSidingLayout->addRow(tr("South Bottom Head:"), signalAspectsSiding[7]);
 	aspectNorthSidingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	aspectNorthSidingGroup->setLayout(aspectNorthSidingLayout);
 
