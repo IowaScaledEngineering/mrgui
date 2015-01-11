@@ -38,7 +38,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 
 	QWidget *detectorPage = new QWidget();
 
-	QGroupBox *westGroup = new QGroupBox(tr("West Direction"));
+	QGroupBox *westGroup = new QGroupBox(tr("West Approach"));
 	QFormLayout *westLayout = new QFormLayout();
 	timeout0 = new QSpinBox;
 	timeout0->setRange(0, 255);
@@ -50,7 +50,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	westLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	westGroup->setLayout(westLayout);
 
-	QGroupBox *eastGroup = new QGroupBox(tr("East Direction"));
+	QGroupBox *eastGroup = new QGroupBox(tr("East Approach"));
 	QFormLayout *eastLayout = new QFormLayout();
 	timeout1 = new QSpinBox;
 	timeout1->setRange(0, 255);
@@ -61,7 +61,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	eastLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	eastGroup->setLayout(eastLayout);
 
-	QGroupBox *northGroup = new QGroupBox(tr("North Direction"));
+	QGroupBox *northGroup = new QGroupBox(tr("North Approach"));
 	QFormLayout *northLayout = new QFormLayout();
 	timeout2 = new QSpinBox;
 	timeout2->setRange(0, 255);
@@ -73,7 +73,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	northLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	northGroup->setLayout(northLayout);
 
-	QGroupBox *southGroup = new QGroupBox(tr("South Direction"));
+	QGroupBox *southGroup = new QGroupBox(tr("South Approach"));
 	QFormLayout *southLayout = new QFormLayout();
 	timeout3 = new QSpinBox;
 	timeout3->setRange(0, 255);
@@ -114,28 +114,28 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 
 	QWidget *signalPage = new QWidget();
 
-	QGroupBox *westSignalGroup = new QGroupBox(tr("West Direction"));
+	QGroupBox *westSignalGroup = new QGroupBox(tr("West Approach"));
 	QFormLayout *westSignalLayout = new QFormLayout();
 	westSignalLayout->addRow(tr("Main Polarity:"), signalPolarity[0]);
 	westSignalLayout->addRow(tr("Siding Polarity:"), signalPolarity[1]);
 	westSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	westSignalGroup->setLayout(westSignalLayout);
 
-	QGroupBox *eastSignalGroup = new QGroupBox(tr("East Direction"));
+	QGroupBox *eastSignalGroup = new QGroupBox(tr("East Approach"));
 	QFormLayout *eastSignalLayout = new QFormLayout();
 	eastSignalLayout->addRow(tr("Top Polarity:"), signalPolarity[2]);
 	eastSignalLayout->addRow(tr("Bottom Polarity:"), signalPolarity[3]);
 	eastSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	eastSignalGroup->setLayout(eastSignalLayout);
 
-	QGroupBox *northSignalGroup = new QGroupBox(tr("North Direction"));
+	QGroupBox *northSignalGroup = new QGroupBox(tr("North Approach"));
 	QFormLayout *northSignalLayout = new QFormLayout();
 	northSignalLayout->addRow(tr("Main Polarity:"), signalPolarity[4]);
 	northSignalLayout->addRow(tr("Siding Polarity:"), signalPolarity[5]);
 	northSignalLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	northSignalGroup->setLayout(northSignalLayout);
 
-	QGroupBox *southSignalGroup = new QGroupBox(tr("South Direction"));
+	QGroupBox *southSignalGroup = new QGroupBox(tr("South Approach"));
 	QFormLayout *southSignalLayout = new QFormLayout();
 	southSignalLayout->addRow(tr("Top Polarity:"), signalPolarity[6]);
 	southSignalLayout->addRow(tr("Bottom Polarity:"), signalPolarity[7]);
