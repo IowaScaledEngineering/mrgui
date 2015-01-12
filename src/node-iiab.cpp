@@ -261,7 +261,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 	timelock->setRange(0, 255);
 	timelock->setSingleStep(1);
 	timelock->setSuffix("s");
-	timingLayout->addRow(tr("Timelock Time:"), timelock);
+	timingLayout->addRow(tr("Time Lock Time:"), timelock);
 	timingLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
 	timingPage->setLayout(timingLayout);
 
