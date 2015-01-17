@@ -489,6 +489,9 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 
 void Node_IIAB::setDefaults(void)
 {
+	nodeAddr->setValue(0xC0);
+	nodeAddrUpdated();  // Force update for initial value, even if value not changed
+
 	// Set unused bits to zero
 	eeprom[EE_INPUT_POLARITY0] = 0;
 	eeprom[EE_INPUT_POLARITY1] = 0;

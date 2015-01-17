@@ -27,6 +27,7 @@ LICENSE:
 #include <QDebug>
 
 #include "window.h"
+#include "nodes.h"
 #include "avrinfo.h"
 #include "intelhexmem.h"
 
@@ -61,7 +62,7 @@ Window::Window(const char *device)
 	eepromTable->setFont(eepromTableFont);
 
 	QWidget *eepromControls = new QWidget();
-	QHBoxLayout *eepromControlsLayout = new QHBoxLayout;
+	eepromControlsLayout = new QHBoxLayout;
 	QLabel *eepromAddrLabel = new QLabel(tr("Address:"));
 	eepromAddr = new HexSpinBox;
 	eepromAddr->setRange(0,(getAVRInfo(avrDevice)->eeprom_size)-1);
@@ -211,7 +212,8 @@ Window::Window(const char *device)
 	connect(updateAction, SIGNAL(triggered()), this, SLOT(updateFirmware()));
 	QAction *resetAction = new QAction(tr("Reset Configuration to &Defaults..."), this);
 	connect(resetAction, SIGNAL(triggered()), this, SLOT(reset()));
-	QAction *eepromAction = new QAction(tr("&EEPROM Editor..."), this);
+	// Declared in .h file so nodes can deactive this menu item
+	eepromAction = new QAction(tr("&EEPROM Editor..."), this);
 	connect(eepromAction, SIGNAL(triggered()), eepromDialog, SLOT(show()));
 	QAction *avrdudeAction = new QAction(tr("Select &avrdude Path..."), this);
 	connect(avrdudeAction, SIGNAL(triggered()), this, SLOT(getAvrdudePath()));
@@ -290,7 +292,7 @@ void Window::reset(void)
 void Window::setDefaults(void)
 {
 	// Set defaults
-	nodeAddr->setValue(0x20);
+	nodeAddr->setValue(0x03);
 	nodeAddrUpdated();  // Force update for initial value, even if value not changed
 	transmitInterval->setValue(5.0);
 	transmitIntervalUpdated();  // Force update for initial value, even if value not changed
@@ -531,6 +533,7 @@ void Window::updateFirmware(void)
 void Window::updateByte(void)
 {
 	eeprom[eepromAddr->value()] = eepromData->value();
+	eepromDataBlockUpdate = true;  // Prevent this update from re-updating the widget mid-typing
 	emit eepromUpdated();
 }
 
@@ -539,12 +542,12 @@ void Window::updateEepromTable(void)
 	uint32_t rows = (getAVRInfo(avrDevice)->eeprom_size) / 16;
 	int scrollPosition = eepromTable->verticalScrollBar()->value();
 	QString eepromContents = QString();
-	for(uint8_t r = 0; r < rows; r++)
+	for(uint32_t r = 0; r < rows; r++)
 	{
 		QString line = QString("%1:  ").arg(r*16, 4, 16, QChar('0'));
 		for(uint8_t c = 0; c < 16; c++)
 		{
-			if(r*16+c == eepromAddr->value())
+			if(r*16+c == (uint32_t)eepromAddr->value())
 				line.append(QString("<font style=\"color: black; background-color: #ccccff\">%1</font> ").arg(eeprom[r*16 + c], 2, 16, QChar('0')));
 			else
 				line.append(QString("%1 ").arg(eeprom[r*16 + c], 2, 16, QChar('0')));
@@ -556,10 +559,14 @@ void Window::updateEepromTable(void)
 	eepromTable->setText(eepromContents);
 	eepromTable->verticalScrollBar()->setValue(scrollPosition);
 
-	eepromData->blockSignals(true);  // Prevent this update from looping back and triggering updates to a widget in the middle of entering a value
-	eepromData->setValue(eeprom[eepromAddr->value()]);
-	eepromData->blockSignals(false);
-	eepromDataBinary->setText(QString("%1 %2").arg((eepromData->value() >> 4) & 0xF, 4, 2, QChar('0')).arg(eepromData->value() & 0xF, 4, 2, QChar('0')));
+	if(!eepromDataBlockUpdate)
+	{
+		eepromData->blockSignals(true);  // Prevent this update from looping back and triggering updates to a widget in the middle of entering a value
+		eepromData->setValue(eeprom[eepromAddr->value()]);
+		eepromDataBinary->setText(QString("%1 %2").arg((eepromData->value() >> 4) & 0xF, 4, 2, QChar('0')).arg(eepromData->value() & 0xF, 4, 2, QChar('0')));
+		eepromData->blockSignals(false);
+	}
+	eepromDataBlockUpdate = false;
 }
 
 void Window::nodeAddrUpdated(void)
@@ -593,13 +600,12 @@ NodeDialog::NodeDialog()
 	connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
 	nodeList = new QListWidget();
-	nodeList->addItem(tr("MRB-IIAB"));
-	nodeList->addItem(tr("MRB-ACSW"));
-	nodeList->addItem(tr("MRB-GIM2"));
-	nodeList->sortItems();
-	nodeList->insertItem(0, tr("Generic (ATMega328)"));
-	nodeList->insertItem(1, tr("Generic (ATMega328P)"));
-	nodeList->insertItem(2, tr("Generic (ATMega1284)"));
+	for(unsigned int i=0; i<sizeof(nodeInfo)/sizeof(nodeInfo[0]); i++)
+	{
+		nodeList->addItem(nodeInfo[i].node_name);
+	}
+
+	connect(nodeList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(accept()));
 
 	QGridLayout *layout = new QGridLayout;
 	layout->addWidget(nodeList, 0, 0, 1, 2);
@@ -609,5 +615,4 @@ NodeDialog::NodeDialog()
 	setLayout(layout);
 	setWindowTitle(tr("Select Node"));
 }
-
 

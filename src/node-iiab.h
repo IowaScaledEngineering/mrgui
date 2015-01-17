@@ -96,9 +96,9 @@ class Node_IIAB : public Window
 		QDateTimeEdit *simTrainTime[NUM_SIM_TRAINS];
 
 	public slots:
-		void setDefaults(void);
 	
 	private slots:
+		void setDefaults(void);
 		void detectorPolarityUpdated(void);
 		void detectorPolaritySet(void);
 		void turnoutPolarityUpdated(void);

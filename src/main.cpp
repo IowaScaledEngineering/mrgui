@@ -23,21 +23,79 @@ LICENSE:
 #include <QApplication>
 
 #include "window.h"
+#include "nodes.h"
+#include "node-generic.h"
 #include "node-iiab.h"
 
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 
-//	NodeDialog nodeDialog;
-//	if (QDialog::Accepted == nodeDialog.exec())
-//	{
+	Window *window = NULL;
+	
+	NodeDialog nodeDialog;
+	if (QDialog::Accepted == nodeDialog.exec())
+	{
+		Nodes node = NODE_GENERIC_MEGA_328P;
+		
+		for(unsigned int i=0; i<sizeof(nodeInfo)/sizeof(nodeInfo[0]); i++)
+		{
+			if( !nodeDialog.nodeList->currentItem()->text().compare(nodeInfo[i].node_name) )
+			{
+				node = nodeInfo[i].node;
+			}
+		}
+
+		switch(node)
+		{
+			case NODE_ACSW:
+				// FIXME
+				app.quit();
+				return(0);
+				break;
+			case NODE_GIM2:
+				// FIXME
+				app.quit();
+				return(0);
+				break;
+			case NODE_IIAB:
+				window = new Node_IIAB;
+				break;
+			case NODE_GENERIC_MEGA_48P:
+				window = new Node_Generic("atmega48p");
+				break;
+			case NODE_GENERIC_MEGA_328:
+				window = new Node_Generic("atmega328");
+				break;
+			case NODE_GENERIC_MEGA_328P:
+				window = new Node_Generic("atmega328p");
+				break;
+			case NODE_GENERIC_MEGA_1284P:
+				window = new Node_Generic("atmega1284p");
+				break;
+		}
+
+		window->show();
+		return app.exec();
+
 //		QString selectedNode = nodeDialog.nodeList->currentItem()->text();
-//		if(!selectedNode.compare("MRB-IIAB"))
+//		if(!selectedNode.compare("MRB-ACSW"))
 //		{
-			Node_IIAB window;
-			window.show();
-			return app.exec();
+//			Node_ACSW window;
+//			window.show();
+//			return app.exec();
+//		}
+//		else if(!selectedNode.compare("MRB-GIM2"))
+//		{
+//			Node_GIM2 window;
+//			window.show();
+//			return app.exec();
+//		}
+//		/*else*/ if(!selectedNode.compare("MRB-IIAB"))
+//		{
+//			Node_IIAB window;
+//			window.show();
+//			return app.exec();
 //		}
 //		else if(!selectedNode.compare("Generic (ATMega328)"))
 //		{
@@ -61,10 +119,10 @@ int main(int argc, char *argv[])
 //		{
 //			app.quit();
 //		}
-//	}
-//	else
-//	{
-//		app.quit();
-//	}
+	}
+	else
+	{
+		app.quit();
+	}
 }
 

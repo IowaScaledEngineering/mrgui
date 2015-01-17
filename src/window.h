@@ -47,8 +47,10 @@ class Window : public QMainWindow
 		QTextEdit *eepromTable, *consoleText;
 		QDialog *eepromDialog, *consoleDialog;
 		QActionGroup *programmerGroup, *deviceGroup;
+		QAction *eepromAction;
 		QAction *programmerAction[sizeof(proginfo)/sizeof(proginfo[0])], *deviceAction[sizeof(avrinfo)/sizeof(avrinfo[0])], *forceAction;
 		QTemporaryFile tempFile;
+		QHBoxLayout *eepromControlsLayout;
 		
 		const char *avrDevice;
 		uint8_t *eeprom;
@@ -69,6 +71,7 @@ class Window : public QMainWindow
 		AvrdudeAction avrdudeAction;
 		uint8_t findProgrammerIndex(void);
 		QString avrdudeCommandLine(void);
+		bool eepromDataBlockUpdate;
 
 	signals:
 		void eepromUpdated();
@@ -76,6 +79,8 @@ class Window : public QMainWindow
 
 	public slots:
 		void updateEepromTable(void);
+		void nodeAddrUpdated(void);
+		void transmitIntervalUpdated(void);
 		
 	private slots:
 		void reset(void);
@@ -92,9 +97,7 @@ class Window : public QMainWindow
 		void read(void);
 		void updateFirmware(void);
 		void updateByte(void);
-		void nodeAddrUpdated(void);
 		void nodeAddrSet(void);
-		void transmitIntervalUpdated(void);
 		void transmitIntervalSet(void);
 };
 
