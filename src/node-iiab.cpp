@@ -489,7 +489,7 @@ Node_IIAB::Node_IIAB(void) : Window("atmega328")
 
 void Node_IIAB::setDefaults(void)
 {
-	nodeAddr->setValue(0xC0);
+	nodeAddr->setValue(0x20);
 	nodeAddrUpdated();  // Force update for initial value, even if value not changed
 
 	// Set unused bits to zero
