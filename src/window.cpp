@@ -138,7 +138,7 @@ Window::Window(const char *device)
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(nodeAddrSet()));
 	connect(transmitInterval, SIGNAL(valueChanged(double)), this, SLOT(transmitIntervalUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(transmitIntervalSet()));
-	connect(this, SIGNAL(eepromUpdated()), this, SLOT(updateEepromTable()));
+//	connect(this, SIGNAL(eepromUpdated()), this, SLOT(updateEepromTable()));
 	
 
 
@@ -534,10 +534,25 @@ void Window::updateByte(void)
 {
 	eeprom[eepromAddr->value()] = eepromData->value();
 	eepromDataBlockUpdate = true;  // Prevent this update from re-updating the widget mid-typing
+	drawEepromTable();
 	emit eepromUpdated();
 }
 
 void Window::updateEepromTable(void)
+{
+	drawEepromTable();
+
+	if(!eepromDataBlockUpdate)
+	{
+		eepromData->blockSignals(true);  // Prevent this update from looping back and triggering updates to a widget in the middle of entering a value
+		eepromData->setValue(eeprom[eepromAddr->value()]);
+		eepromDataBinary->setText(QString("%1 %2").arg((eepromData->value() >> 4) & 0xF, 4, 2, QChar('0')).arg(eepromData->value() & 0xF, 4, 2, QChar('0')));
+		eepromData->blockSignals(false);
+	}
+	eepromDataBlockUpdate = false;  // First widget update after changing eepromData will clear this, but that widget's change shouldn't loop back and update eepromData mid-typing
+}
+
+void Window::drawEepromTable(void)
 {
 	uint32_t rows = (getAVRInfo(avrDevice)->eeprom_size) / 16;
 	int scrollPosition = eepromTable->verticalScrollBar()->value();
@@ -558,15 +573,6 @@ void Window::updateEepromTable(void)
 	}
 	eepromTable->setText(eepromContents);
 	eepromTable->verticalScrollBar()->setValue(scrollPosition);
-
-	if(!eepromDataBlockUpdate)
-	{
-		eepromData->blockSignals(true);  // Prevent this update from looping back and triggering updates to a widget in the middle of entering a value
-		eepromData->setValue(eeprom[eepromAddr->value()]);
-		eepromDataBinary->setText(QString("%1 %2").arg((eepromData->value() >> 4) & 0xF, 4, 2, QChar('0')).arg(eepromData->value() & 0xF, 4, 2, QChar('0')));
-		eepromData->blockSignals(false);
-	}
-	eepromDataBlockUpdate = false;
 }
 
 void Window::nodeAddrUpdated(void)

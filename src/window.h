@@ -72,6 +72,7 @@ class Window : public QMainWindow
 		uint8_t findProgrammerIndex(void);
 		QString avrdudeCommandLine(void);
 		bool eepromDataBlockUpdate;
+		void drawEepromTable(void);
 
 	signals:
 		void eepromUpdated();
