@@ -533,23 +533,14 @@ void Window::updateFirmware(void)
 void Window::updateByte(void)
 {
 	eeprom[eepromAddr->value()] = eepromData->value();
-	eepromDataBlockUpdate = true;  // Prevent this update from re-updating the widget mid-typing
-	drawEepromTable();
+	drawEepromTable();  // Don't do a full update since that will be a circular update to the eepromData widget
 	emit eepromUpdated();
 }
 
 void Window::updateEepromTable(void)
 {
 	drawEepromTable();
-
-	if(!eepromDataBlockUpdate)
-	{
-		eepromData->blockSignals(true);  // Prevent this update from looping back and triggering updates to a widget in the middle of entering a value
-		eepromData->setValue(eeprom[eepromAddr->value()]);
-		eepromDataBinary->setText(QString("%1 %2").arg((eepromData->value() >> 4) & 0xF, 4, 2, QChar('0')).arg(eepromData->value() & 0xF, 4, 2, QChar('0')));
-		eepromData->blockSignals(false);
-	}
-	eepromDataBlockUpdate = false;  // First widget update after changing eepromData will clear this, but that widget's change shouldn't loop back and update eepromData mid-typing
+	eepromData->setValue(eeprom[eepromAddr->value()]);
 }
 
 void Window::drawEepromTable(void)
@@ -573,6 +564,8 @@ void Window::drawEepromTable(void)
 	}
 	eepromTable->setText(eepromContents);
 	eepromTable->verticalScrollBar()->setValue(scrollPosition);
+
+	eepromDataBinary->setText(QString("%1 %2").arg((eepromData->value() >> 4) & 0xF, 4, 2, QChar('0')).arg(eepromData->value() & 0xF, 4, 2, QChar('0')));
 }
 
 void Window::nodeAddrUpdated(void)
@@ -583,7 +576,9 @@ void Window::nodeAddrUpdated(void)
 
 void Window::nodeAddrSet(void)
 {
+	nodeAddr->blockSignals(true);
 	nodeAddr->setValue(eeprom[MRBUS_EE_DEVICE_ADDR]);
+	nodeAddr->blockSignals(false);
 }
 
 void Window::transmitIntervalUpdated(void)
@@ -595,7 +590,9 @@ void Window::transmitIntervalUpdated(void)
 
 void Window::transmitIntervalSet(void)
 {
+	transmitInterval->blockSignals(true);
 	transmitInterval->setValue((eeprom[MRBUS_EE_DEVICE_UPDATE_H]*256 + eeprom[MRBUS_EE_DEVICE_UPDATE_L]) / 10.0);
+	transmitInterval->blockSignals(false);
 }
 
 NodeDialog::NodeDialog()

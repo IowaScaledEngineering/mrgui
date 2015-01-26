@@ -830,7 +830,9 @@ void Node_IIAB::timeout0Updated(void)
 
 void Node_IIAB::timeout0Set(void)
 {
+	timeout0->blockSignals(true);
 	timeout0->setValue(eeprom[EE_TIMEOUT_SECONDS+0]);
+	timeout0->blockSignals(false);
 }
 
 void Node_IIAB::timeout1Updated(void)
@@ -841,7 +843,9 @@ void Node_IIAB::timeout1Updated(void)
 
 void Node_IIAB::timeout1Set(void)
 {
+	timeout1->blockSignals(true);
 	timeout1->setValue(eeprom[EE_TIMEOUT_SECONDS+1]);
+	timeout1->blockSignals(false);
 }
 
 void Node_IIAB::timeout2Updated(void)
@@ -852,7 +856,9 @@ void Node_IIAB::timeout2Updated(void)
 
 void Node_IIAB::timeout2Set(void)
 {
+	timeout2->blockSignals(true);
 	timeout2->setValue(eeprom[EE_TIMEOUT_SECONDS+2]);
+	timeout2->blockSignals(false);
 }
 
 void Node_IIAB::timeout3Updated(void)
@@ -863,7 +869,9 @@ void Node_IIAB::timeout3Updated(void)
 
 void Node_IIAB::timeout3Set(void)
 {
+	timeout3->blockSignals(true);
 	timeout3->setValue(eeprom[EE_TIMEOUT_SECONDS+3]);
+	timeout3->blockSignals(false);
 }
 
 void Node_IIAB::debounceUpdated(void)
@@ -874,7 +882,9 @@ void Node_IIAB::debounceUpdated(void)
 
 void Node_IIAB::debounceSet(void)
 {
+	debounce->blockSignals(true);
 	debounce->setValue(eeprom[EE_DEBOUNCE_SECONDS]);
+	debounce->blockSignals(false);
 }
 
 void Node_IIAB::blinkyUpdated(void)
@@ -885,7 +895,9 @@ void Node_IIAB::blinkyUpdated(void)
 
 void Node_IIAB::blinkySet(void)
 {
+	blinky->blockSignals(true);
 	blinky->setValue(eeprom[EE_BLINKY_DECISECS] / 10.0);
+	blinky->blockSignals(false);
 }
 
 void Node_IIAB::lockoutUpdated(void)
@@ -896,7 +908,9 @@ void Node_IIAB::lockoutUpdated(void)
 
 void Node_IIAB::lockoutSet(void)
 {
+	lockout->blockSignals(true);
 	lockout->setValue(eeprom[EE_LOCKOUT_SECONDS]);
+	lockout->blockSignals(false);
 }
 
 void Node_IIAB::timelockUpdated(void)
@@ -907,7 +921,9 @@ void Node_IIAB::timelockUpdated(void)
 
 void Node_IIAB::timelockSet(void)
 {
+	timelock->blockSignals(true);
 	timelock->setValue(eeprom[EE_TIMELOCK_SECONDS]);
+	timelock->blockSignals(false);
 }
 
 void Node_IIAB::clockSourceUpdated(void)
@@ -918,7 +934,9 @@ void Node_IIAB::clockSourceUpdated(void)
 
 void Node_IIAB::clockSourceSet(void)
 {
+	clockSource->blockSignals(true);
 	clockSource->setValue(eeprom[EE_CLOCK_SOURCE_ADDRESS]);
+	clockSource->blockSignals(false);
 }
 
 void Node_IIAB::maxDeadReckoningUpdated(void)
@@ -929,7 +947,9 @@ void Node_IIAB::maxDeadReckoningUpdated(void)
 
 void Node_IIAB::maxDeadReckoningSet(void)
 {
+	maxDeadReckoning->blockSignals(true);
 	maxDeadReckoning->setValue(eeprom[EE_MAX_DEAD_RECKONING] / 10.0);
+	maxDeadReckoning->blockSignals(false);
 }
 
 void Node_IIAB::simTrainWindowUpdated(void)
@@ -940,7 +960,9 @@ void Node_IIAB::simTrainWindowUpdated(void)
 
 void Node_IIAB::simTrainWindowSet(void)
 {
+	simTrainWindow->blockSignals(true);
 	simTrainWindow->setValue(eeprom[EE_SIM_TRAIN_WINDOW]);
+	simTrainWindow->blockSignals(false);
 }
 
 void Node_IIAB::simTrainEnableUpdated(void)
