@@ -146,7 +146,7 @@ Window::Window(const char *device)
 
 
 
-	eepromDialog = new QDialog();
+	eepromDialog = new QDialog(this);
 	QVBoxLayout *eepromLayout = new QVBoxLayout;
 	eepromLayout->addWidget(eepromTable);
 	eepromLayout->addWidget(eepromControls);

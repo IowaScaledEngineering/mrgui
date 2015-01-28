@@ -26,6 +26,7 @@ LICENSE:
 #include "nodes.h"
 #include "node-generic.h"
 #include "node-iiab.h"
+#include "node-gim2.h"
 
 int main(int argc, char *argv[])
 {
@@ -48,15 +49,8 @@ int main(int argc, char *argv[])
 
 		switch(node)
 		{
-			case NODE_ACSW:
-				// FIXME
-				app.quit();
-				return(0);
-				break;
 			case NODE_GIM2:
-				// FIXME
-				app.quit();
-				return(0);
+				window = new Node_GIM2;
 				break;
 			case NODE_IIAB:
 				window = new Node_IIAB;

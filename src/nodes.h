@@ -25,7 +25,6 @@ LICENSE:
 
 typedef enum
 {
-	NODE_ACSW,
 	NODE_GIM2,
 	NODE_IIAB,
 	NODE_GENERIC_MEGA_48P,
@@ -42,7 +41,6 @@ typedef struct
 
 const NodeInfo nodeInfo[] = 
 {
-	{NODE_ACSW, "MRB-ACSW"},
 	{NODE_GIM2, "MRB-GIM2"},
 	{NODE_IIAB, "MRB-IIAB"},
 	{NODE_GENERIC_MEGA_48P, "Generic ATmega48P"},

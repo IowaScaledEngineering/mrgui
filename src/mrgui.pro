@@ -9,8 +9,8 @@ INCLUDEPATH += .
 QT += widgets
 
 # Input
-HEADERS += window.h nodes.h hexspinbox.h intelhexmem.h avrinfo.h node-generic.h node-iiab.h
-SOURCES += main.cpp window.cpp hexspinbox.cpp intelhexmem.cpp node-generic.cpp node-iiab.cpp
+HEADERS += window.h nodes.h hexspinbox.h intelhexmem.h avrinfo.h node-generic.h node-iiab.h node-gim2.h
+SOURCES += main.cpp window.cpp hexspinbox.cpp intelhexmem.cpp node-generic.cpp node-iiab.cpp node-gim2.cpp
 
 macx
 {
