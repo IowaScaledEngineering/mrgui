@@ -35,6 +35,30 @@ LICENSE:
 #define EE_OCC_BITBYTE    0x90
 
 
+class PktTypeSpinBox : public QSpinBox
+{
+    Q_OBJECT
+public:
+    PktTypeSpinBox(QWidget *parent = 0);
+	typedef enum
+	{
+		INT,
+		HEX,
+		CHAR,
+	} SpinBoxMode;
+	SpinBoxMode spinBoxMode;
+
+protected:
+    QValidator::State validate(QString &text, int &pos) const;
+    int valueFromText(const QString &text) const;
+    QString textFromValue(int value) const;
+
+private:
+    QRegExpValidator *hexValidator;
+    QRegExpValidator *charValidator;
+    QRegExpValidator *intValidator;
+};
+
 class Node_GIM2 : public Window
 {
     Q_OBJECT
@@ -44,21 +68,20 @@ class Node_GIM2 : public Window
 
 	private:
 		HexSpinBox *sourceAddress[NUM_OUTPUTS];
-		QLineEdit *packetTypeText[NUM_OUTPUTS];
-		HexSpinBox *packetTypeHex[NUM_OUTPUTS];
+		PktTypeSpinBox *packetType[NUM_OUTPUTS];
 		QSpinBox *listenByte[NUM_OUTPUTS];
 		QSpinBox *listenBit[NUM_OUTPUTS];
+		QComboBox *pktTypeMode;
 
 	public slots:
 	
 	private slots:
 		void setDefaults(void);
+		void pktTypeModeChanged(void);
 		void sourceAddressUpdated(void);
 		void sourceAddressSet(void);
-		void packetTypeTextUpdated(void);
-		void packetTypeTextSet(void);
-		void packetTypeHexUpdated(void);
-		void packetTypeHexSet(void);
+		void packetTypeUpdated(void);
+		void packetTypeSet(void);
 		void listenByteUpdated(void);
 		void listenByteSet(void);
 		void listenBitUpdated(void);
