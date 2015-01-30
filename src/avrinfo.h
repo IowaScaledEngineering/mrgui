@@ -43,12 +43,13 @@ typedef struct
 {
 	const char* nice_name;
 	const char* avrdude_name;
+	const char* avrdude_additional_args;
 } AVRProgrammerInfo;
 
 const AVRProgrammerInfo proginfo[] = 
 {
-	{"USBtinyISP", "usbtiny"},
-	{"Ferrets", "ferrets"},
+	{"USBtinyISP", "usbtiny", ""},
+	{"AVRISP mkII", "avrispmkii", "-P usb"},
 };
 
 

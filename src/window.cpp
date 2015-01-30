@@ -467,7 +467,8 @@ uint8_t Window::findProgrammerIndex(void)
 
 QString Window::avrdudeCommandLine(void)
 {
-	QString cmdline = QString("%1 -C %2 -c %3 -p %4 -B1 ").arg(avrdudePath, avrdudeConfPath, proginfo[findProgrammerIndex()].avrdude_name, getAVRInfo(avrDevice)->part_name);
+	uint8_t progIdx = findProgrammerIndex();
+	QString cmdline = QString("%1 -C %2 -c %3 %4 -p %5 -B1 ").arg(avrdudePath, avrdudeConfPath, proginfo[progIdx].avrdude_name, proginfo[progIdx].avrdude_additional_args, getAVRInfo(avrDevice)->part_name);
 	if(forceAction->isChecked())
 	{
 		cmdline.append("-F ");
