@@ -118,10 +118,10 @@ Node_GIM2::Node_GIM2(void) : Window("atmega328")
 		connect(this, SIGNAL(eepromUpdated()), this, SLOT(sourceAddressSet()));
 		connect(packetType[i], SIGNAL(valueChanged(int)), this, SLOT(packetTypeUpdated()));
 		connect(this, SIGNAL(eepromUpdated()), this, SLOT(packetTypeSet()));
-		connect(listenByte[i], SIGNAL(valueChanged(int)), this, SLOT(listenByteUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(listenByteSet()));
-		connect(listenBit[i], SIGNAL(valueChanged(int)), this, SLOT(listenBitUpdated()));
-		connect(this, SIGNAL(eepromUpdated()), this, SLOT(listenBitSet()));
+		connect(listenByte[i], SIGNAL(valueChanged(int)), this, SLOT(listenBitByteUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(listenBitByteSet()));
+		connect(listenBit[i], SIGNAL(valueChanged(int)), this, SLOT(listenBitByteUpdated()));
+		connect(this, SIGNAL(eepromUpdated()), this, SLOT(listenBitByteSet()));
 	}
 
 	connect(pktTypeMode, SIGNAL(currentIndexChanged(int)), this, SLOT(pktTypeModeChanged()));
@@ -144,8 +144,7 @@ void Node_GIM2::setDefaults(void)
 
 	sourceAddressUpdated();
 	packetTypeUpdated();
-	listenByteUpdated();
-	listenBitUpdated();
+	listenBitByteUpdated();
 	
 	nodeAddr->setValue(0x20);
 	nodeAddrUpdated();  // Force update for initial value, even if value not changed
@@ -206,34 +205,6 @@ void Node_GIM2::sourceAddressSet(void)
 	}
 }
 
-//void Node_GIM2::packetTypeTextUpdated(void)
-//{
-//	for(int i=0; i<NUM_OUTPUTS; i++)
-//	{
-//		eeprom[EE_OCC_PKT+i] = packetTypeText[i]->text()[0].toLatin1();
-//	}
-//	updateEepromTable();
-//	packetTypeHexSet();
-//}
-
-//void Node_GIM2::packetTypeTextSet(void)
-//{
-//	for(int i=0; i<NUM_OUTPUTS; i++)
-//	{
-//		packetTypeText[i]->blockSignals(true);
-//	}
-
-//	for(int i=0; i<NUM_OUTPUTS; i++)
-//	{
-//		packetTypeText[i]->setText(QChar(eeprom[EE_OCC_PKT+i]));
-//	}
-
-//	for(int i=0; i<NUM_OUTPUTS; i++)
-//	{
-//		packetTypeText[i]->blockSignals(false);
-//	}
-//}
-
 void Node_GIM2::packetTypeUpdated(void)
 {
 	for(int i=0; i<NUM_OUTPUTS; i++)
@@ -241,7 +212,6 @@ void Node_GIM2::packetTypeUpdated(void)
 		eeprom[EE_OCC_PKT+i] = packetType[i]->value();
 	}
 	updateEepromTable();
-//	packetTypeTextSet();
 };
 
 void Node_GIM2::packetTypeSet(void)
@@ -262,24 +232,35 @@ void Node_GIM2::packetTypeSet(void)
 	}
 }
 
-void Node_GIM2::listenByteUpdated(void)
+void Node_GIM2::listenBitByteUpdated(void)
 {
-
+	for(int i=0; i<NUM_OUTPUTS; i++)
+	{
+		eeprom[EE_OCC_BITBYTE+i] = ((listenBit[i]->value() & 0x07) << 5) | (listenByte[i]->value() & 0x1F);
+	}
+	updateEepromTable();
 }
 
-void Node_GIM2::listenByteSet(void)
+void Node_GIM2::listenBitByteSet(void)
 {
+	for(int i=0; i<NUM_OUTPUTS; i++)
+	{
+		listenBit[i]->blockSignals(true);
+		listenByte[i]->blockSignals(true);
+	}
 
-}
+	for(int i=0; i<NUM_OUTPUTS; i++)
+	{
+		listenBit[i]->setValue((eeprom[EE_OCC_BITBYTE+i] >> 5) & 0x07);
+		listenByte[i]->setValue(eeprom[EE_OCC_BITBYTE+i] & 0x1F);
+		packetType[i]->setValue(eeprom[EE_OCC_PKT+i]);
+	}
 
-void Node_GIM2::listenBitUpdated(void)
-{
-
-}
-
-void Node_GIM2::listenBitSet(void)
-{
-
+	for(int i=0; i<NUM_OUTPUTS; i++)
+	{
+		listenBit[i]->blockSignals(false);
+		listenByte[i]->blockSignals(false);
+	}
 }
 
 
@@ -287,7 +268,7 @@ void Node_GIM2::listenBitSet(void)
 PktTypeSpinBox::PktTypeSpinBox(QWidget *parent) : QSpinBox(parent)
 {
 	spinBoxMode = HEX;
-	setRange(0, 255);
+		setRange(0, 255);
 	hexValidator = new QRegExpValidator(QRegExp("0x[0-9A-Fa-f]{1,2}"), this);
 	charValidator = new QRegExpValidator(QRegExp("."), this);
 	intValidator = new QRegExpValidator(QRegExp("[0-9]{1,3}"), this);

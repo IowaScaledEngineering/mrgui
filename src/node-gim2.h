@@ -82,10 +82,8 @@ class Node_GIM2 : public Window
 		void sourceAddressSet(void);
 		void packetTypeUpdated(void);
 		void packetTypeSet(void);
-		void listenByteUpdated(void);
-		void listenByteSet(void);
-		void listenBitUpdated(void);
-		void listenBitSet(void);
+		void listenBitByteUpdated(void);
+		void listenBitByteSet(void);
 };
 
 #endif

@@ -138,7 +138,6 @@ Window::Window(const char *device)
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(nodeAddrSet()));
 	connect(transmitInterval, SIGNAL(valueChanged(double)), this, SLOT(transmitIntervalUpdated()));
 	connect(this, SIGNAL(eepromUpdated()), this, SLOT(transmitIntervalSet()));
-//	connect(this, SIGNAL(eepromUpdated()), this, SLOT(updateEepromTable()));
 	
 
 
@@ -314,6 +313,7 @@ void Window::load(void)
 			{
 				eeprom[i] = eepromMem.read_uint8(i);
 			}
+			updateEepromTable();
 			emit eepromUpdated();
 		}
 	}
@@ -417,6 +417,7 @@ void Window::avrdudeDone(int exitCode)
 				{
 					eeprom[i] = eepromMem.read_uint8(i);
 				}
+				updateEepromTable();
 				emit eepromUpdated();
 			}
 			break;
