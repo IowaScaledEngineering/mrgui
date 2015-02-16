@@ -60,6 +60,7 @@ class Window : public QMainWindow
 		char avrdudeConfPath[1024];
 
 	private:
+		QAction *aboutAction;
 		QProcess *avrdudeProcess;
 		QString firmwarePath;
 		typedef enum
@@ -84,6 +85,7 @@ class Window : public QMainWindow
 		
 	private slots:
 		void reset(void);
+		void about(void);
 		void setDefaults(void);
 		void load(void);
 		void save(void);

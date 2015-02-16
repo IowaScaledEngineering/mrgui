@@ -12,10 +12,12 @@ QT += widgets
 HEADERS += window.h nodes.h hexspinbox.h intelhexmem.h avrinfo.h node-generic.h node-iiab.h node-gim2.h
 SOURCES += main.cpp window.cpp hexspinbox.cpp intelhexmem.cpp node-generic.cpp node-iiab.cpp node-gim2.cpp
 
-macx
-{
+DEFINES += MRGUI_VERSION=\\\"0.9.0\\\"
+
+macx {
 	QMAKE_MAC_SDK = macosx10.9
 	APP_QML_FILES.files = bin/mac/avrdude bin/mac/avrdude.conf
 	APP_QML_FILES.path = Contents/MacOS
 	QMAKE_BUNDLE_DATA += APP_QML_FILES
+	QMAKE_POST_LINK = macdeployqt mrgui.app -dmg
 }

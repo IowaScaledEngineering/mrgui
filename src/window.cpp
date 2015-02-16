@@ -256,6 +256,11 @@ Window::Window(const char *device)
 	advancedMenu->addSeparator();
 	advancedMenu->addAction(forceAction);
 
+	QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+	QAction *aboutAction = new QAction(tr("&About"), this);
+	connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+	helpMenu->addAction(aboutAction);
+
 	QVBoxLayout *layout = new QVBoxLayout;
 	layout->addWidget(tabWidget);
 	layout->addWidget(nodeWidgets);
@@ -286,6 +291,16 @@ void Window::reset(void)
 		default:
 			break;
 	}
+}
+
+void Window::about(void)
+{
+	QMessageBox msgBox;
+	msgBox.setText("MRGui");
+	msgBox.setInformativeText(QString("Iowa Scaled Engineering\nVersion %1").arg(MRGUI_VERSION));
+	msgBox.setStandardButtons(QMessageBox::Close);
+	msgBox.setDefaultButton(QMessageBox::Close);
+	msgBox.exec();
 }
 
 void Window::setDefaults(void)
