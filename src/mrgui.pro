@@ -12,7 +12,7 @@ QT += widgets
 HEADERS += window.h nodes.h hexspinbox.h intelhexmem.h avrinfo.h node-generic.h node-iiab.h node-gim2.h
 SOURCES += main.cpp window.cpp hexspinbox.cpp intelhexmem.cpp node-generic.cpp node-iiab.cpp node-gim2.cpp
 
-DEFINES += MRGUI_VERSION=\\\"0.9.0\\\"
+DEFINES += MRGUI_VERSION=\\\"0.9.1\\\"
 
 macx {
 	QMAKE_MAC_SDK = macosx10.9
@@ -20,4 +20,8 @@ macx {
 	APP_QML_FILES.path = Contents/MacOS
 	QMAKE_BUNDLE_DATA += APP_QML_FILES
 	QMAKE_POST_LINK = macdeployqt mrgui.app -dmg
+}
+
+win32 {
+	QMAKE_POST_LINK = ./win32post.sh
 }

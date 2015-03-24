@@ -36,12 +36,15 @@ Window::Window(const char *device)
 	QString workingPath = QCoreApplication::applicationDirPath();
 	strncpy(avrdudePath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
 	strncpy(avrdudeConfPath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
-#if defined(__APPLE__)
-	strncat(avrdudePath, "/avrdude", sizeof(avrdudePath));
-	strncat(avrdudeConfPath, "/avrdude.conf", sizeof(avrdudeConfPath));
-#elif defined(__linux__)
+#if defined(__linux__)
 	strncat(avrdudePath, "/bin/linux/avrdude", sizeof(avrdudePath));
 	strncat(avrdudeConfPath, "/bin/linux/avrdude.conf", sizeof(avrdudeConfPath));
+#elif defined(__APPLE__)
+	strncat(avrdudePath, "/avrdude", sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "/avrdude.conf", sizeof(avrdudeConfPath));
+#elif defined(_WIN32)
+	strncat(avrdudePath, "./avrdude", sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "./avrdude.conf", sizeof(avrdudeConfPath));
 #endif
 
 	avrDevice = device;
