@@ -16,8 +16,8 @@ DEFINES += MRGUI_VERSION=\\\"0.9.1\\\"
 
 macx {
 	QMAKE_MAC_SDK = macosx10.9
-	APP_QML_FILES.files = bin/mac/avrdude bin/mac/avrdude.conf
-	APP_QML_FILES.path = Contents/MacOS
+	APP_QML_FILES.files = avrdude/i386-apple-darwin11/avrdude-6.0.1
+	APP_QML_FILES.path = Contents/MacOS/
 	QMAKE_BUNDLE_DATA += APP_QML_FILES
 	QMAKE_POST_LINK = macdeployqt mrgui.app -dmg
 }

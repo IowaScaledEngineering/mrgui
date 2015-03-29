@@ -37,14 +37,14 @@ Window::Window(const char *device)
 	strncpy(avrdudePath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
 	strncpy(avrdudeConfPath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
 #if defined(__linux__)
-	strncat(avrdudePath, "/bin/linux/avrdude", sizeof(avrdudePath));
-	strncat(avrdudeConfPath, "/bin/linux/avrdude.conf", sizeof(avrdudeConfPath));
+	strncat(avrdudePath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
 #elif defined(__APPLE__)
-	strncat(avrdudePath, "/avrdude", sizeof(avrdudePath));
-	strncat(avrdudeConfPath, "/avrdude.conf", sizeof(avrdudeConfPath));
+	strncat(avrdudePath, "/avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "/avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
 #elif defined(_WIN32)
-	strncat(avrdudePath, "./avrdude", sizeof(avrdudePath));
-	strncat(avrdudeConfPath, "./avrdude.conf", sizeof(avrdudeConfPath));
+	strncat(avrdudePath, "./avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "./avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
 #endif
 
 	avrDevice = device;
