@@ -422,7 +422,7 @@ void Window::avrdudeDone(int exitCode)
 
 	consoleCloseButton->setEnabled(true);
 	
-	switch(avrdudeAction)
+	switch(avrdudeActivity)
 	{
 		case READ_EEPROM:
 			if(!exitCode)
@@ -516,7 +516,7 @@ void Window::write(void)
 	consoleDialog->show();
 	QString cmdline = avrdudeCommandLine().append(QString("-U eeprom:w:%1:i").arg(tempFile.fileName()));
 	consoleText->append(cmdline.append("\n\n- - - Writing EEPROM - - -\n\n"));
-	avrdudeAction = WRITE_EEPROM;
+	avrdudeActivity = WRITE_EEPROM;
 	avrdudeProcess->start(cmdline);
 }
 
@@ -529,7 +529,7 @@ void Window::read(void)
 	tempFile.open();
 	QString cmdline = avrdudeCommandLine().append(QString("-U eeprom:r:%1:i").arg(tempFile.fileName()));
 	consoleText->append(cmdline.append("\n\n- - - Reading EEPROM - - -\n\n"));
-	avrdudeAction = READ_EEPROM;
+	avrdudeActivity = READ_EEPROM;
 	avrdudeProcess->start(cmdline);
 }
 
@@ -545,7 +545,7 @@ void Window::updateFirmware(void)
 		consoleDialog->show();
 		QString cmdline = avrdudeCommandLine().append(QString("-U flash:w:%1:i").arg(path));
 		consoleText->append(cmdline.append("\n\n- - - Updating Firmware - - -\n\n"));
-		avrdudeAction = UPDATE_FIRMWARE;
+		avrdudeActivity = UPDATE_FIRMWARE;
 		avrdudeProcess->start(cmdline);
 	}
 }
@@ -560,7 +560,9 @@ void Window::updateByte(void)
 void Window::updateEepromTable(void)
 {
 	drawEepromTable();
+	eepromData->blockSignals(true);  // Don't trigger signals - this would cause circular updates since this function is called when a widget is updated
 	eepromData->setValue(eeprom[eepromAddr->value()]);
+	eepromData->blockSignals(false);
 }
 
 void Window::drawEepromTable(void)

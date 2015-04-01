@@ -68,8 +68,8 @@ class Window : public QMainWindow
 			READ_EEPROM,
 			WRITE_EEPROM,
 			UPDATE_FIRMWARE,
-		} AvrdudeAction;
-		AvrdudeAction avrdudeAction;
+		} AvrdudeActivity;
+		AvrdudeActivity avrdudeActivity;
 		uint8_t findProgrammerIndex(void);
 		QString avrdudeCommandLine(void);
 		void drawEepromTable(void);
