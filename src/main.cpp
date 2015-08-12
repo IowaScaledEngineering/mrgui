@@ -71,52 +71,11 @@ int main(int argc, char *argv[])
 
 		window->show();
 		return app.exec();
-
-//		QString selectedNode = nodeDialog.nodeList->currentItem()->text();
-//		if(!selectedNode.compare("MRB-ACSW"))
-//		{
-//			Node_ACSW window;
-//			window.show();
-//			return app.exec();
-//		}
-//		else if(!selectedNode.compare("MRB-GIM2"))
-//		{
-//			Node_GIM2 window;
-//			window.show();
-//			return app.exec();
-//		}
-//		/*else*/ if(!selectedNode.compare("MRB-IIAB"))
-//		{
-//			Node_IIAB window;
-//			window.show();
-//			return app.exec();
-//		}
-//		else if(!selectedNode.compare("Generic (ATMega328)"))
-//		{
-//			Window window("atmega328");
-//		    window.show();
-//		    return app.exec();
-//		}
-//		else if(!selectedNode.compare("Generic (ATMega328P)"))
-//		{
-//			Window window("atmega328p");
-//		    window.show();
-//		    return app.exec();
-//		}
-//		else if(!selectedNode.compare("Generic (ATMega1284P)"))
-//		{
-//			Window window("atmega1284p");
-//		    window.show();
-//		    return app.exec();
-//		}
-//		else
-//		{
-//			app.quit();
-//		}
 	}
 	else
 	{
 		app.quit();
+		return 0;
 	}
 }
 

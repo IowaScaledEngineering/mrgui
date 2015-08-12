@@ -36,6 +36,7 @@ Window::Window(const char *device)
 	QString workingPath = QCoreApplication::applicationDirPath();
 	strncpy(avrdudePath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
 	strncpy(avrdudeConfPath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
+	strncpy(zadicPath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
 #if defined(__linux__)
 	strncat(avrdudePath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
 	strncat(avrdudeConfPath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
@@ -43,8 +44,9 @@ Window::Window(const char *device)
 	strncat(avrdudePath, "/avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
 	strncat(avrdudeConfPath, "/avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
 #elif defined(_WIN32)
-	strncat(avrdudePath, "./avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
-	strncat(avrdudeConfPath, "./avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
+	strncat(avrdudePath, "/avrdude.exe", sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "/avrdude.conf", sizeof(avrdudeConfPath));
+	strncat(zadicPath, "/zadic.exe", sizeof(zadicPath));
 #endif
 
 	avrDevice = device;
@@ -188,10 +190,10 @@ Window::Window(const char *device)
 	
 	
 	
-	avrdudeProcess = new QProcess(this);
-	connect(avrdudeProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readStdout()));
-	connect(avrdudeProcess, SIGNAL(readyReadStandardError()), this, SLOT(readStderr()));
-	connect(avrdudeProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(avrdudeDone(int)));
+	cmdLineProcess = new QProcess(this);
+	connect(cmdLineProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readStdout()));
+	connect(cmdLineProcess, SIGNAL(readyReadStandardError()), this, SLOT(readStderr()));
+	connect(cmdLineProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(cmdLineDone(int)));
 
 
 
@@ -214,6 +216,9 @@ Window::Window(const char *device)
 	connect(updateAction, SIGNAL(triggered()), this, SLOT(updateFirmware()));
 	QAction *resetAction = new QAction(tr("Reset Configuration to &Defaults..."), this);
 	connect(resetAction, SIGNAL(triggered()), this, SLOT(reset()));
+	QAction *installAction = new QAction(tr("&Install USBtinyISP Driver..."), this);
+	connect(installAction, SIGNAL(triggered()), this, SLOT(install()));
+	installAction->setEnabled(false);
 	// Declared in .h file so nodes can deactive this menu item
 	eepromAction = new QAction(tr("&EEPROM Editor..."), this);
 	connect(eepromAction, SIGNAL(triggered()), eepromDialog, SLOT(show()));
@@ -250,6 +255,10 @@ Window::Window(const char *device)
 	}
 	programmerAction[0]->setChecked(true);
 	programMenu->addMenu(programmerMenu);
+	programMenu->addAction(installAction);
+#if defined(_WIN32)
+	installAction->setEnabled(true);
+#endif
 
 	QMenu *advancedMenu = menuBar()->addMenu(tr("&Advanced"));
 	advancedMenu->addAction(eepromAction);
@@ -405,24 +414,24 @@ const AVRInfo* Window::getAVRInfo(const char* part_name)
 
 void Window::readStdout(void)
 {
-	consoleText->insertPlainText(avrdudeProcess->readAllStandardOutput());
+	consoleText->insertPlainText(cmdLineProcess->readAllStandardOutput());
 	consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
 }
 
 void Window::readStderr(void)
 {
-	consoleText->insertPlainText(avrdudeProcess->readAllStandardError());
+	consoleText->insertPlainText(cmdLineProcess->readAllStandardError());
 	consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
 }
 
-void Window::avrdudeDone(int exitCode)
+void Window::cmdLineDone(int exitCode)
 {
 	IntelHexMemory eepromMem(getAVRInfo(avrDevice)->eeprom_size);
 	FILE *fptr;
 
 	consoleCloseButton->setEnabled(true);
 	
-	switch(avrdudeActivity)
+	switch(cmdLineActivity)
 	{
 		case READ_EEPROM:
 			if(!exitCode)
@@ -445,6 +454,9 @@ void Window::avrdudeDone(int exitCode)
 
 		case UPDATE_FIRMWARE:
 			break;
+
+		case INSTALL:
+			break;
 	}
 }
 
@@ -466,9 +478,9 @@ void Window::getAvrdudeConfPath(void)
 
 void Window::cleanupConsole(void)
 {
-	if(QProcess::NotRunning != avrdudeProcess->state())
+	if(QProcess::NotRunning != cmdLineProcess->state())
 	{
-		avrdudeProcess->close();
+		cmdLineProcess->close();
 	}
 }
 
@@ -516,8 +528,8 @@ void Window::write(void)
 	consoleDialog->show();
 	QString cmdline = avrdudeCommandLine().append(QString("-U eeprom:w:%1:i").arg(tempFile.fileName()));
 	consoleText->append(cmdline.append("\n\n- - - Writing EEPROM - - -\n\n"));
-	avrdudeActivity = WRITE_EEPROM;
-	avrdudeProcess->start(cmdline);
+	cmdLineActivity = WRITE_EEPROM;
+	cmdLineProcess->start(cmdline);
 }
 
 void Window::read(void)
@@ -529,8 +541,8 @@ void Window::read(void)
 	tempFile.open();
 	QString cmdline = avrdudeCommandLine().append(QString("-U eeprom:r:%1:i").arg(tempFile.fileName()));
 	consoleText->append(cmdline.append("\n\n- - - Reading EEPROM - - -\n\n"));
-	avrdudeActivity = READ_EEPROM;
-	avrdudeProcess->start(cmdline);
+	cmdLineActivity = READ_EEPROM;
+	cmdLineProcess->start(cmdline);
 }
 
 void Window::updateFirmware(void)
@@ -545,9 +557,22 @@ void Window::updateFirmware(void)
 		consoleDialog->show();
 		QString cmdline = avrdudeCommandLine().append(QString("-U flash:w:%1:i").arg(path));
 		consoleText->append(cmdline.append("\n\n- - - Updating Firmware - - -\n\n"));
-		avrdudeActivity = UPDATE_FIRMWARE;
-		avrdudeProcess->start(cmdline);
+		cmdLineActivity = UPDATE_FIRMWARE;
+		cmdLineProcess->start(cmdline);
 	}
+}
+
+void Window::install(void)
+{
+	consoleCloseButton->setEnabled(false);
+	consoleText->clear();
+	consoleDialog->show();
+
+	tempFile.open();
+	QString cmdline = QString("%1 ").arg(zadicPath);
+	consoleText->append(cmdline.append("\n\n- - - Running Driver Installation - - -\n\n"));
+	cmdLineActivity = INSTALL;
+	cmdLineProcess->start(cmdline);
 }
 
 void Window::updateByte(void)

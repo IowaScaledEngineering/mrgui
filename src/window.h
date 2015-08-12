@@ -58,18 +58,20 @@ class Window : public QMainWindow
 		
 		char avrdudePath[1024];
 		char avrdudeConfPath[1024];
+		char zadicPath[1024];
 
 	private:
 		QAction *aboutAction;
-		QProcess *avrdudeProcess;
+		QProcess *cmdLineProcess;
 		QString firmwarePath;
 		typedef enum
 		{
 			READ_EEPROM,
 			WRITE_EEPROM,
 			UPDATE_FIRMWARE,
-		} AvrdudeActivity;
-		AvrdudeActivity avrdudeActivity;
+			INSTALL,
+		} CmdLineActivity;
+		CmdLineActivity cmdLineActivity;
 		uint8_t findProgrammerIndex(void);
 		QString avrdudeCommandLine(void);
 		void drawEepromTable(void);
@@ -91,13 +93,14 @@ class Window : public QMainWindow
 		void save(void);
 		void readStdout(void);
 		void readStderr(void);
-		void avrdudeDone(int);
+		void cmdLineDone(int);
 		void getAvrdudePath(void);
 		void getAvrdudeConfPath(void);
 		void cleanupConsole(void);
 		void write(void);
 		void read(void);
 		void updateFirmware(void);
+		void install(void);
 		void updateByte(void);
 		void nodeAddrSet(void);
 		void transmitIntervalSet(void);
