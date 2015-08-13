@@ -430,11 +430,11 @@ void Window::cmdLineDone(int exitCode)
 	FILE *fptr;
 
 	consoleCloseButton->setEnabled(true);
-	
+
 	switch(cmdLineActivity)
 	{
 		case READ_EEPROM:
-			if(!exitCode)
+			if(exitCode <= 0)  // Ick: windows avrdude sometimes crashes on read with negative exit code, but read was complete.  Real failures are +1.
 			{
 				fptr = fdopen(tempFile.handle(), "r");
 				eepromMem.read_ihex(fptr);
@@ -456,6 +456,16 @@ void Window::cmdLineDone(int exitCode)
 			break;
 
 		case INSTALL:
+			if(!exitCode)
+			{
+				consoleText->insertPlainText(QString("\nInstallation Complete."));
+				consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
+			}
+			else
+			{
+				consoleText->insertPlainText(QString("\nInstallation Failed."));
+				consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
+			}
 			break;
 	}
 }
@@ -569,7 +579,7 @@ void Window::install(void)
 	consoleDialog->show();
 
 	tempFile.open();
-	QString cmdline = QString("%1 ").arg(zadicPath);
+	QString cmdline = QString("%1 --vid 0x1781 --pid 0x0C9F --noprompt").arg(zadicPath);
 	consoleText->append(cmdline.append("\n\n- - - Running Driver Installation - - -\n\n"));
 	cmdLineActivity = INSTALL;
 	cmdLineProcess->start(cmdline);
