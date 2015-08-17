@@ -509,7 +509,7 @@ void Node_IIAB::setDefaults(void)
 	// Set defaults
 	for(int i=0; i<8; i++)
 	{
-		detectorPolarity[i]->setCurrentIndex(0);
+		detectorPolarity[i]->setCurrentIndex(1);
 	}
 	detectorPolarityUpdated();  // Force update for initial value, even if value not changed
 	timeout0->setValue(15);
@@ -539,14 +539,14 @@ void Node_IIAB::setDefaults(void)
 	blinkyUpdated();
 	turnoutPolarity0->setCurrentIndex(0);
 	turnoutPolarity2->setCurrentIndex(0);
-	lockout->setValue(12);
+	lockout->setValue(60);
 	lockoutUpdated();
-	timelock->setValue(30);
+	timelock->setValue(60);
 	timelockUpdated();
-	sound0Polarity->setCurrentIndex(0);
-	sound1Polarity->setCurrentIndex(0);
+	sound0Polarity->setCurrentIndex(1);
+	sound1Polarity->setCurrentIndex(1);
 	soundPolarityUpdated();
-	interchangePolarity->setCurrentIndex(0);
+	interchangePolarity->setCurrentIndex(1);
 	interchangePolarityUpdated();
 
 	clockSource->setValue(0xFF);
