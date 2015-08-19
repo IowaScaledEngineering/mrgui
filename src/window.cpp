@@ -31,22 +31,29 @@ LICENSE:
 #include "avrinfo.h"
 #include "intelhexmem.h"
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#include <shellapi.h>
+#endif
+
 Window::Window(const char *device)
 {
 	QString workingPath = QCoreApplication::applicationDirPath();
 	strncpy(avrdudePath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
-	strncpy(avrdudeConfPath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
-	strncpy(zadicPath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
-#if defined(__linux__)
+	strncpy(avrdudeConfPath, workingPath.toLocal8Bit().data(), sizeof(avrdudeConfPath));
+#if defined(Q_OS_LINUX)
 	strncat(avrdudePath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
 	strncat(avrdudeConfPath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
-#elif defined(__APPLE__)
+#elif defined(Q_OS_MAC)
 	strncat(avrdudePath, "/avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
 	strncat(avrdudeConfPath, "/avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
-#elif defined(_WIN32)
+#elif defined(Q_OS_WIN)
 	strncat(avrdudePath, "/avrdude.exe", sizeof(avrdudePath));
 	strncat(avrdudeConfPath, "/avrdude.conf", sizeof(avrdudeConfPath));
-	strncat(zadicPath, "/zadic.exe", sizeof(zadicPath));
+
+	zadicPath = workingPath;
+	zadicPath.replace("/","\\");
+	zadicPath.append("\\zadic.exe");
 #endif
 
 	avrDevice = device;
@@ -216,9 +223,10 @@ Window::Window(const char *device)
 	connect(updateAction, SIGNAL(triggered()), this, SLOT(updateFirmware()));
 	QAction *resetAction = new QAction(tr("Reset Configuration to &Defaults..."), this);
 	connect(resetAction, SIGNAL(triggered()), this, SLOT(reset()));
+#ifdef Q_OS_WIN
 	QAction *installAction = new QAction(tr("&Install USBtinyISP Driver..."), this);
 	connect(installAction, SIGNAL(triggered()), this, SLOT(install()));
-	installAction->setEnabled(false);
+#endif
 	// Declared in .h file so nodes can deactive this menu item
 	eepromAction = new QAction(tr("&EEPROM Editor..."), this);
 	connect(eepromAction, SIGNAL(triggered()), eepromDialog, SLOT(show()));
@@ -255,9 +263,8 @@ Window::Window(const char *device)
 	}
 	programmerAction[0]->setChecked(true);
 	programMenu->addMenu(programmerMenu);
+#if defined(Q_OS_WIN)
 	programMenu->addAction(installAction);
-#if defined(_WIN32)
-	installAction->setEnabled(true);
 #endif
 
 	QMenu *advancedMenu = menuBar()->addMenu(tr("&Advanced"));
@@ -454,19 +461,6 @@ void Window::cmdLineDone(int exitCode)
 
 		case UPDATE_FIRMWARE:
 			break;
-
-		case INSTALL:
-			if(!exitCode)
-			{
-				consoleText->insertPlainText(QString("\nInstallation Complete."));
-				consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
-			}
-			else
-			{
-				consoleText->insertPlainText(QString("\nInstallation Failed."));
-				consoleText->verticalScrollBar()->setValue(consoleText->verticalScrollBar()->maximum());
-			}
-			break;
 	}
 }
 
@@ -572,18 +566,62 @@ void Window::updateFirmware(void)
 	}
 }
 
+#ifdef Q_OS_WIN
 void Window::install(void)
 {
-	consoleCloseButton->setEnabled(false);
-	consoleText->clear();
-	consoleDialog->show();
+	SHELLEXECUTEINFO ShExecInfo = {0};
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+	ShExecInfo.hwnd = NULL;
+	ShExecInfo.lpVerb = L"open";
+	ShExecInfo.lpFile = (const wchar_t*)zadicPath.utf16();
+	ShExecInfo.lpParameters = L"--vid 0x1781 --pid 0x0C9F --noprompt";
+	ShExecInfo.lpDirectory = NULL;
+	ShExecInfo.nShow = SW_SHOWNORMAL;
+	ShExecInfo.hInstApp = NULL;
+	ShellExecuteEx(&ShExecInfo);
+	WaitForSingleObject(ShExecInfo.hProcess,INFINITE);
+	if (SE_ERR_ACCESSDENIED == GetLastError())
+	{
+		// Requesting elevation
+		ShExecInfo.lpVerb = L"runas";
+		ShellExecuteEx(&ShExecInfo);
+		WaitForSingleObject(ShExecInfo.hProcess,INFINITE);
+	}
 
-	tempFile.open();
-	QString cmdline = QString("%1 --vid 0x1781 --pid 0x0C9F --noprompt").arg(zadicPath);
-	consoleText->append(cmdline.append("\n\n- - - Running Driver Installation - - -\n\n"));
-	cmdLineActivity = INSTALL;
-	cmdLineProcess->start(cmdline);
+	int error = GetLastError();
+	
+	DWORD result;
+	GetExitCodeProcess(ShExecInfo.hProcess, &result);
+
+	if(result || error)
+	{
+		QMessageBox msgBox;
+		msgBox.setText("Installation Failed!");
+		msgBox.setIcon(QMessageBox::Warning);
+		msgBox.setInformativeText(QString("Check that the programmer is plugged into a USB port.\nTry unplugging and re-plugging the programmer.\nIs the driver already installed?\n\nError: %1\nExit Code: %2").arg(error).arg(result));
+		msgBox.setStandardButtons(QMessageBox::Close);
+		msgBox.setDefaultButton(QMessageBox::Close);
+		QSpacerItem* horizontalSpacer = new QSpacerItem(400, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+		QGridLayout* layout = (QGridLayout*)msgBox.layout();
+		layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+		msgBox.exec();
+	}
+	else
+	{
+		QMessageBox msgBox;
+		msgBox.setText("Installation Succeeded!");
+		msgBox.setIcon(QMessageBox::Information);
+		msgBox.setInformativeText(QString("Click Close to continue..."));
+		msgBox.setStandardButtons(QMessageBox::Close);
+		msgBox.setDefaultButton(QMessageBox::Close);
+		QSpacerItem* horizontalSpacer = new QSpacerItem(400, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+		QGridLayout* layout = (QGridLayout*)msgBox.layout();
+		layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+		msgBox.exec();
+	}
 }
+#endif
 
 void Window::updateByte(void)
 {

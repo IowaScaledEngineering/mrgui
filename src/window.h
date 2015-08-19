@@ -58,7 +58,7 @@ class Window : public QMainWindow
 		
 		char avrdudePath[1024];
 		char avrdudeConfPath[1024];
-		char zadicPath[1024];
+		QString zadicPath;
 
 	private:
 		QAction *aboutAction;
@@ -69,7 +69,6 @@ class Window : public QMainWindow
 			READ_EEPROM,
 			WRITE_EEPROM,
 			UPDATE_FIRMWARE,
-			INSTALL,
 		} CmdLineActivity;
 		CmdLineActivity cmdLineActivity;
 		uint8_t findProgrammerIndex(void);
@@ -100,7 +99,9 @@ class Window : public QMainWindow
 		void write(void);
 		void read(void);
 		void updateFirmware(void);
+#ifdef Q_OS_WIN
 		void install(void);
+#endif
 		void updateByte(void);
 		void nodeAddrSet(void);
 		void transmitIntervalSet(void);
