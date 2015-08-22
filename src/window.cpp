@@ -438,10 +438,12 @@ void Window::cmdLineDone(int exitCode)
 
 	consoleCloseButton->setEnabled(true);
 
+//	printf("ExitCode: %d\n", exitCode);
+
 	switch(cmdLineActivity)
 	{
 		case READ_EEPROM:
-			if(exitCode <= 0)  // Ick: windows avrdude sometimes crashes on read with negative exit code, but read was complete.  Real failures are +1.
+			if(exitCode != 1)  // Real failures always seem to be exitCode=1, others are crashes, etc but still produce the correct results
 			{
 				fptr = fdopen(tempFile.handle(), "r");
 				eepromMem.read_ihex(fptr);
