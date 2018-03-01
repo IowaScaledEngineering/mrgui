@@ -238,6 +238,9 @@ Window::Window(const char *device)
 	forceAction = new QAction(tr("&Override Signature Check"), this);
 	forceAction->setCheckable(true);
 
+	bitClockAction = new QAction(tr("&Slow Programming (Safe Mode)"), this);
+	bitClockAction->setCheckable(true);
+
 	QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(loadAction);
 	fileMenu->addAction(saveAction);
@@ -274,6 +277,7 @@ Window::Window(const char *device)
 	advancedMenu->addAction(avrdudeConfAction);
 	advancedMenu->addSeparator();
 	advancedMenu->addAction(forceAction);
+	advancedMenu->addAction(bitClockAction);
 
 	QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
 	QAction *aboutAction = new QAction(tr("&About"), this);
@@ -506,7 +510,7 @@ uint8_t Window::findProgrammerIndex(void)
 QString Window::avrdudeCommandLine(void)
 {
 	uint8_t progIdx = findProgrammerIndex();
-	QString cmdline = QString("\"%1\" -C \"%2\" -c \"%3\" %4 -p %5 -B1 ").arg(avrdudePath, avrdudeConfPath, proginfo[progIdx].avrdude_name, proginfo[progIdx].avrdude_additional_args, getAVRInfo(avrDevice)->part_name);
+	QString cmdline = QString("\"%1\" -C \"%2\" -c \"%3\" %4 -p %5 -B%6 ").arg(avrdudePath, avrdudeConfPath, proginfo[progIdx].avrdude_name, proginfo[progIdx].avrdude_additional_args, getAVRInfo(avrDevice)->part_name, bitClockAction->isChecked()?"32":"1");
 	if(forceAction->isChecked())
 	{
 		cmdline.append("-F ");

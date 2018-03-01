@@ -48,7 +48,7 @@ class Window : public QMainWindow
 		QDialog *eepromDialog, *consoleDialog;
 		QActionGroup *programmerGroup, *deviceGroup;
 		QAction *eepromAction;
-		QAction *programmerAction[sizeof(proginfo)/sizeof(proginfo[0])], *deviceAction[sizeof(avrinfo)/sizeof(avrinfo[0])], *forceAction;
+		QAction *programmerAction[sizeof(proginfo)/sizeof(proginfo[0])], *deviceAction[sizeof(avrinfo)/sizeof(avrinfo[0])], *forceAction, *bitClockAction;
 		QTemporaryFile tempFile;
 		QHBoxLayout *eepromControlsLayout;
 		
