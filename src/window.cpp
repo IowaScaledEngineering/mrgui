@@ -316,6 +316,7 @@ void Window::about(void)
 {
 	QMessageBox msgBox;
 	msgBox.setIconPixmap(QPixmap(":/img/ise.png"));
+	msgBox.setWindowTitle("About MRGui");
 	msgBox.setText("MRGui");
 	msgBox.setInformativeText(QString("Version %1 (Qt %2)\n\nIowa Scaled Engineering").arg(MRGUI_VERSION, qVersion()));
 	msgBox.setStandardButtons(QMessageBox::Close);

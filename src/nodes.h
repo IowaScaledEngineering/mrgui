@@ -41,8 +41,8 @@ typedef struct
 
 const NodeInfo nodeInfo[] = 
 {
+	{NODE_IIAB, "Interlocking-In-A-Box (MRB-IIAB)"},
 	{NODE_GIM2, "MRB-GIM2"},
-	{NODE_IIAB, "MRB-IIAB"},
 	{NODE_GENERIC_MEGA_48P, "Generic ATmega48P"},
 	{NODE_GENERIC_MEGA_328, "Generic ATmega328"},
 	{NODE_GENERIC_MEGA_328P, "Generic ATmega328P"},
