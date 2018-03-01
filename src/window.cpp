@@ -42,18 +42,18 @@ Window::Window(const char *device)
 	strncpy(avrdudePath, workingPath.toLocal8Bit().data(), sizeof(avrdudePath));
 	strncpy(avrdudeConfPath, workingPath.toLocal8Bit().data(), sizeof(avrdudeConfPath));
 #if defined(Q_OS_LINUX)
-	strncat(avrdudePath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
-	strncat(avrdudeConfPath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
+	strncat(avrdudePath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.3.0/bin/avrdude", sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "/avrdude/x86_64-pc-linux-gnu/avrdude-6.3.0/etc/avrdude.conf", sizeof(avrdudeConfPath));
 #elif defined(Q_OS_MAC)
-	strncat(avrdudePath, "/avrdude-6.0.1/bin/avrdude", sizeof(avrdudePath));
-	strncat(avrdudeConfPath, "/avrdude-6.0.1/etc/avrdude.conf", sizeof(avrdudeConfPath));
+	strncat(avrdudePath, "/avrdude-6.3.0/bin/avrdude", sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "/avrdude-6.3.0/etc/avrdude.conf", sizeof(avrdudeConfPath));
 #elif defined(Q_OS_WIN)
-	strncat(avrdudePath, "/avrdude.exe", sizeof(avrdudePath));
-	strncat(avrdudeConfPath, "/avrdude.conf", sizeof(avrdudeConfPath));
+	strncat(avrdudePath, "/bin/avrdude.exe", sizeof(avrdudePath));
+	strncat(avrdudeConfPath, "/etc/avrdude.conf", sizeof(avrdudeConfPath));
 
 	zadicPath = workingPath;
 	zadicPath.replace("/","\\");
-	zadicPath.append("\\zadic.exe");
+	zadicPath.append("\\bin\\zadic.exe");
 #endif
 
 	avrDevice = device;
@@ -504,7 +504,7 @@ uint8_t Window::findProgrammerIndex(void)
 QString Window::avrdudeCommandLine(void)
 {
 	uint8_t progIdx = findProgrammerIndex();
-	QString cmdline = QString("%1 -C %2 -c %3 %4 -p %5 -B1 ").arg(avrdudePath, avrdudeConfPath, proginfo[progIdx].avrdude_name, proginfo[progIdx].avrdude_additional_args, getAVRInfo(avrDevice)->part_name);
+	QString cmdline = QString("\"%1\" -C \"%2\" -c \"%3\" %4 -p %5 -B1 ").arg(avrdudePath, avrdudeConfPath, proginfo[progIdx].avrdude_name, proginfo[progIdx].avrdude_additional_args, getAVRInfo(avrDevice)->part_name);
 	if(forceAction->isChecked())
 	{
 		cmdline.append("-F ");

@@ -1,3 +1,7 @@
 #!/bin/bash
 
-zip -j mrgui-win32.zip release/mrgui.exe bin/win32/avrdude.exe bin/win32/avrdude.conf bin/win32/libusb0.dll bin/win32/zadic.exe
+zip -j mrgui-win32.zip release/mrgui.exe
+cd avrdude/i686-mingw32/avrdude-6.3.0/
+zip -g ../../../mrgui-win32.zip bin/avrdude.exe etc/avrdude.conf
+cd ../../../zadic/
+zip -g ../mrgui-win32.zip bin/libusb0.dll bin/zadic.exe
