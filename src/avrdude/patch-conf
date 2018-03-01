@@ -1,0 +1,24 @@
+#!/bin/bash
+
+declare -a arr=("i386-apple-darwin11" "x86_64-pc-linux-gnu" "i686-mingw32")
+
+for i in "${arr[@]}"
+do
+   cd $i
+   cd $(ls | grep avrdude- | tail -n1)/etc/
+   echo $i
+   echo Checking avrdude.conf ...
+   if ! grep -q iseavrprog avrdude.conf; then
+      echo Patching avrdude.conf ...
+      echo 'programmer' >> avrdude.conf
+      echo '  id    = "iseavrprog";' >> avrdude.conf
+      echo '  desc  = "USBtiny-based USB programmer, https://github.com/IowaScaledEngineering/ckt-avrprogrammer";' >> avrdude.conf
+      echo '  type  = "usbtiny";' >> avrdude.conf
+      echo '  connection_type = usb;' >> avrdude.conf
+      echo '  usbvid     = 0x1781;   # FIXME: Update these!' >> avrdude.conf
+      echo '  usbpid     = 0x0c9f;   # FIXME: Update these!' >> avrdude.conf
+      echo ';' >> avrdude.conf
+   fi
+   cd ../../../
+   echo
+done

@@ -48,6 +48,7 @@ typedef struct
 
 const AVRProgrammerInfo proginfo[] = 
 {
+	{"ISE AVR Programmer", "iseavrprog", ""},
 	{"USBtinyISP", "usbtiny", ""},
 	{"AVRISP mkII", "avrispmkii", "-P usb"},
 };

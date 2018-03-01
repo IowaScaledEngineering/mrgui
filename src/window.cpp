@@ -224,7 +224,7 @@ Window::Window(const char *device)
 	QAction *resetAction = new QAction(tr("Reset Configuration to &Defaults..."), this);
 	connect(resetAction, SIGNAL(triggered()), this, SLOT(reset()));
 #ifdef Q_OS_WIN
-	QAction *installAction = new QAction(tr("&Install USBtinyISP Driver..."), this);
+	QAction *installAction = new QAction(tr("&Install Driver..."), this);
 	connect(installAction, SIGNAL(triggered()), this, SLOT(install()));
 #endif
 	// Declared in .h file so nodes can deactive this menu item
@@ -577,13 +577,38 @@ void Window::updateFirmware(void)
 #ifdef Q_OS_WIN
 void Window::install(void)
 {
+	uint8_t progIdx = findProgrammerIndex();
+
 	SHELLEXECUTEINFO ShExecInfo = {0};
+
+	if (0 == strcmp("iseavrprog", proginfo[progIdx].avrdude_name))
+	{
+		ShExecInfo.lpParameters = L"--vid 0x1781 --pid 0x0C9F --noprompt";  // FIXME: Update VID/PID
+	}
+	else if (0 == strcmp("usbtiny", proginfo[progIdx].avrdude_name))
+	{
+		ShExecInfo.lpParameters = L"--vid 0x1781 --pid 0x0C9F --noprompt";
+	}
+	else
+	{
+		QMessageBox msgBox;
+		msgBox.setText("No drivers found!");
+		msgBox.setIcon(QMessageBox::Warning);
+		msgBox.setInformativeText(QString("Check that the programmer type is set correctly."));
+		msgBox.setStandardButtons(QMessageBox::Close);
+		msgBox.setDefaultButton(QMessageBox::Close);
+		QSpacerItem* horizontalSpacer = new QSpacerItem(400, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+		QGridLayout* layout = (QGridLayout*)msgBox.layout();
+		layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+		msgBox.exec();
+		return;
+	}
+
 	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
 	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
 	ShExecInfo.hwnd = NULL;
 	ShExecInfo.lpVerb = L"open";
 	ShExecInfo.lpFile = (const wchar_t*)zadicPath.utf16();
-	ShExecInfo.lpParameters = L"--vid 0x1781 --pid 0x0C9F --noprompt";
 	ShExecInfo.lpDirectory = NULL;
 	ShExecInfo.nShow = SW_SHOWNORMAL;
 	ShExecInfo.hInstApp = NULL;
