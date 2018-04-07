@@ -15,8 +15,8 @@ do
       echo '  desc  = "USBtiny-based USB programmer, https://github.com/IowaScaledEngineering/ckt-avrprogrammer";' >> avrdude.conf
       echo '  type  = "usbtiny";' >> avrdude.conf
       echo '  connection_type = usb;' >> avrdude.conf
-      echo '  usbvid     = 0x1781;   # FIXME: Update these!' >> avrdude.conf
-      echo '  usbpid     = 0x0c9f;   # FIXME: Update these!' >> avrdude.conf
+      echo '  usbvid     = 0x1209;' >> avrdude.conf
+      echo '  usbpid     = 0x6570;' >> avrdude.conf
       echo ';' >> avrdude.conf
    fi
    cd ../../../

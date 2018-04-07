@@ -583,7 +583,7 @@ void Window::install(void)
 
 	if (0 == strcmp("iseavrprog", proginfo[progIdx].avrdude_name))
 	{
-		ShExecInfo.lpParameters = L"--vid 0x1781 --pid 0x0C9F --noprompt";  // FIXME: Update VID/PID
+		ShExecInfo.lpParameters = L"--vid 0x1209 --pid 0x6570 --noprompt";
 	}
 	else if (0 == strcmp("usbtiny", proginfo[progIdx].avrdude_name))
 	{
