@@ -538,7 +538,7 @@ void Window::write(void)
 	consoleCloseButton->setEnabled(false);
 	consoleText->clear();
 	consoleDialog->show();
-	QString cmdline = avrdudeCommandLine().append(QString("-U eeprom:w:%1:i").arg(tempFile.fileName()));
+	QString cmdline = avrdudeCommandLine().append(QString("-U \"eeprom:w:%1:i\"").arg(tempFile.fileName()));
 	consoleText->append(cmdline.append("\n\n- - - Writing EEPROM - - -\n\n"));
 	cmdLineActivity = WRITE_EEPROM;
 	cmdLineProcess->start(cmdline);
@@ -551,7 +551,7 @@ void Window::read(void)
 	consoleDialog->show();
 
 	tempFile.open();
-	QString cmdline = avrdudeCommandLine().append(QString("-U eeprom:r:%1:i").arg(tempFile.fileName()));
+	QString cmdline = avrdudeCommandLine().append(QString("-U \"eeprom:r:%1:i\"").arg(tempFile.fileName()));
 	consoleText->append(cmdline.append("\n\n- - - Reading EEPROM - - -\n\n"));
 	cmdLineActivity = READ_EEPROM;
 	cmdLineProcess->start(cmdline);
@@ -567,7 +567,7 @@ void Window::updateFirmware(void)
 		consoleCloseButton->setEnabled(false);
 		consoleText->clear();
 		consoleDialog->show();
-		QString cmdline = avrdudeCommandLine().append(QString("-U flash:w:%1:i").arg(path));
+		QString cmdline = avrdudeCommandLine().append(QString("-U \"flash:w:%1:i\"").arg(path));
 		consoleText->append(cmdline.append("\n\n- - - Updating Firmware - - -\n\n"));
 		cmdLineActivity = UPDATE_FIRMWARE;
 		cmdLineProcess->start(cmdline);
