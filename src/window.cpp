@@ -632,7 +632,7 @@ void Window::install(void)
 		QMessageBox msgBox;
 		msgBox.setText("Installation Failed!");
 		msgBox.setIcon(QMessageBox::Warning);
-		msgBox.setInformativeText(QString("Check that the programmer is plugged into a USB port.\nTry unplugging and re-plugging the programmer.\nIs the driver already installed?\n\nError: %1\nExit Code: %2").arg(error).arg(result));
+		msgBox.setInformativeText(QString("Error: %2\nExit Code: %3\n\n1) Check that the programmer is plugged into a USB port.\n2) Try unplugging and re-plugging the programmer.\n3) Is the driver already installed?\n4) Try manually installing the driver:\n\tFrom the folder where you ran mrgui.exe, click the bin folder.\n\tThen click install-%1.bat").arg(proginfo[progIdx].avrdude_name).arg(error).arg(result));
 		msgBox.setStandardButtons(QMessageBox::Close);
 		msgBox.setDefaultButton(QMessageBox::Close);
 		QSpacerItem* horizontalSpacer = new QSpacerItem(400, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);

@@ -12,7 +12,7 @@ QT += widgets
 HEADERS += window.h nodes.h hexspinbox.h intelhexmem.h avrinfo.h node-generic.h node-iiab.h node-gim2.h
 SOURCES += main.cpp window.cpp hexspinbox.cpp intelhexmem.cpp node-generic.cpp node-iiab.cpp node-gim2.cpp
 
-DEFINES += MRGUI_VERSION=\\\"1.1.1\\\"
+DEFINES += MRGUI_VERSION=\\\"1.1.2\\\"
 
 RESOURCES = mrgui.qrc
 
