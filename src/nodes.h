@@ -27,6 +27,7 @@ typedef enum
 {
 	NODE_GIM2,
 	NODE_IIAB,
+	NODE_IRSENSE,
 	NODE_GENERIC_MEGA_48P,
 	NODE_GENERIC_MEGA_328,
 	NODE_GENERIC_MEGA_328P,
@@ -41,6 +42,7 @@ typedef struct
 
 const NodeInfo nodeInfo[] = 
 {
+	{NODE_IRSENSE, "TrainSpotter (CKT-IRSENSE)"},
 	{NODE_IIAB, "Interlocking-In-A-Box (MRB-IIAB)"},
 	{NODE_GIM2, "MRB-GIM2"},
 	{NODE_GENERIC_MEGA_48P, "Generic ATmega48P"},

@@ -2,7 +2,7 @@
 Title:    MRGui
 Authors:  Michael Petersen <railfan@drgw.net>
           Nathan D. Holmes <maverick@drgw.net>
-File:     avrinfo.h
+File:     node-irsense.h
 License:  GNU General Public License v3
 
 LICENSE:
@@ -20,40 +20,35 @@ LICENSE:
 
 *************************************************************************/
 
-#ifndef AVRINFO_H
-#define AVRINFO_H
+#ifndef NODE_IRSENSE_H
+#define NODE_IRSENSE_H
 
-#include <stdint.h>
+#include <QtWidgets>
 
-typedef struct
+#include "window.h"
+#include "hexspinbox.h"
+
+#define EE_PROX_THR_HIGH  0x00
+#define EE_PROX_THR_LOW   0x01
+
+
+class Node_IRSENSE : public Window
 {
-	const char* part_name;
-	const uint32_t eeprom_size;
-} AVRInfo;
+    Q_OBJECT
 
-const AVRInfo avrinfo[] = 
-{
-	{"atmega328", 1024},
-	{"atmega328p", 1024},
-	{"atmega48p", 256},
-	{"atmega1284p", 4096},
-	{"attiny13", 64},
+	public:
+		Node_IRSENSE(void);
+
+	private:
+		QSpinBox *proximityThreshold;
+
+	public slots:
+	
+	private slots:
+		void setDefaults(void);
+		void proximityThresholdUpdated(void);
+		void proximityThresholdSet(void);
 };
-
-typedef struct
-{
-	const char* nice_name;
-	const char* avrdude_name;
-	const char* avrdude_additional_args;
-} AVRProgrammerInfo;
-
-const AVRProgrammerInfo proginfo[] = 
-{
-	{"ISE AVR Programmer", "iseavrprog", ""},
-	{"USBtinyISP", "usbtiny", ""},
-	{"AVRISP mkII", "avrispmkii", "-P usb"},
-};
-
 
 #endif
 

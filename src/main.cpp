@@ -27,6 +27,7 @@ LICENSE:
 #include "node-generic.h"
 #include "node-iiab.h"
 #include "node-gim2.h"
+#include "node-irsense.h"
 
 int main(int argc, char *argv[])
 {
@@ -54,6 +55,9 @@ int main(int argc, char *argv[])
 				break;
 			case NODE_IIAB:
 				window = new Node_IIAB;
+				break;
+			case NODE_IRSENSE:
+				window = new Node_IRSENSE;
 				break;
 			case NODE_GENERIC_MEGA_48P:
 				window = new Node_Generic("atmega48p");
